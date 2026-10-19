@@ -363,6 +363,9 @@ export async function createBaymax() {
     material.frustumCulled = false;
   });
   const jetLight = new THREE.PointLight('#ff8a46', 0, 9, 1.8);
+  // Thrust light ignites at once but falls off over a fraction of a second when output is cut.
+  let jetLevel = 0,
+    jetAt = 0;
   jetLight.position.set(0, -0.6, 0);
   model.add(jetLight);
 
@@ -1074,7 +1077,13 @@ export async function createBaymax() {
         material.scale.y =
           (material.parent === model ? 1 : 0.8) * (0.5 + power * 0.9);
       });
-      jetLight.intensity = power * 9;
+      const jetStep = Math.min(0.1, Math.max(0, timeSeconds - jetAt));
+      jetAt = timeSeconds;
+      jetLevel =
+        power * 9 >= jetLevel
+          ? power * 9
+          : THREE.MathUtils.damp(jetLevel, power * 9, 11, jetStep);
+      jetLight.intensity = jetLevel < 0.01 ? 0 : jetLevel;
       // The bay: its own authored opening; the combat chip's glow grows into the missing piece.
       const pulse = pose2.chipGlow * (1 + 0.45 * Math.sin(timeSeconds * 4));
       bay.update({
