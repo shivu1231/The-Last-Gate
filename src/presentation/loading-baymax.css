@@ -1,0 +1,7 @@
+.baymax-loading{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:22px;min-height:180px;color:#e5e7e4;text-align:center;pointer-events:none}
+.baymax-loading pre{margin:0;font:14px/1.15 Consolas,'Courier New',monospace;white-space:pre;letter-spacing:0;color:#f1f2ee;animation:baymax-breathe 2.8s ease-in-out infinite}
+.baymax-loading>span{font:9px/1.5 'Segoe UI',sans-serif;letter-spacing:.19em;color:#a7b0b5}
+.baymax-loading-overlay{position:fixed;inset:0;z-index:90;background:#060c10;pointer-events:auto}
+.baymax-loading-overlay.is-ready{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .45s ease,visibility 0s linear .45s}
+@keyframes baymax-breathe{50%{opacity:.65}}
+@media(prefers-reduced-motion:reduce){.baymax-loading pre{animation:none}.baymax-loading-overlay.is-ready{transition:none}}

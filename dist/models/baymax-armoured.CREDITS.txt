@@ -1,0 +1,5 @@
+baymax-armoured.glb is converted from "Armored Baymax (from Disney's Big Hero 6)" by DoodleNotes1,
+http://www.blendswap.com/blends/view/76636, licensed Creative Commons Attribution 3.0
+(http://creativecommons.org/licenses/by/3.0). Marked as fan art: non-commercial use only.
+Changes: exported to glTF with modifiers applied, cloth simulation removed, subdivision reduced,
+textures downscaled; posed at runtime by the project's own rigs.

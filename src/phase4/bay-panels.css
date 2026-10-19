@@ -1,0 +1,84 @@
+@import '../ui/theme.css';
+
+/* Bay 6 detail panels: chapter strip, next-step line, floor plan, pin distances, controls hint and
+   the regulator drawing. */
+
+.bay-top{gap:20px}
+.bay-chapters{display:flex;align-items:center;gap:6px;margin:0 auto;padding:5px;list-style:none;border-radius:var(--lg-radius-pill);background:rgba(10,20,32,.5);backdrop-filter:blur(10px);border:1px solid rgba(247,244,239,.14)}
+.bay-chapters li{display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:var(--lg-radius-pill);font:600 12px/1 var(--lg-display);color:rgba(247,244,239,.6)}
+.bay-chapters b{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;font:500 9px/1 var(--lg-mono);background:rgba(247,244,239,.12)}
+.bay-chapters .is-done b{background:rgba(247,244,239,.25);color:var(--lg-paper);font-size:11px}
+.bay-chapters .is-now{background:var(--lg-paper);color:var(--lg-ink-strong)}
+.bay-chapters .is-now b{background:var(--lg-dusk);color:var(--lg-white)}
+
+.bay-card-next{display:flex;gap:10px;align-items:baseline;margin-top:14px!important;padding-top:12px;border-top:1px solid var(--lg-paper-deep);font-size:13px;color:var(--lg-ink-strong)!important}
+.bay-card-next span{flex:none;font:500 10px/1 var(--lg-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--lg-dusk)}
+
+.bay-plan{padding:16px 18px;background:var(--lg-paper);border-radius:var(--lg-radius-panel);box-shadow:var(--lg-shadow-panel);display:grid;grid-template-columns:146px 1fr;column-gap:18px;animation:bayCard .6s .15s both var(--lg-ease)}
+.bay-plan header{grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.bay-plan header .bay-kicker{margin:0!important}
+.bay-plan-scale{display:flex;align-items:center;gap:6px;font:500 10px/1 var(--lg-mono);color:var(--lg-ink-dim)}
+/* 10 m is 60 plan units; the plan is 144 units drawn 146 px wide. */
+.bay-plan-scale i{display:block;width:61px;height:5px;border:1.5px solid var(--lg-ink-dim);border-top:0}
+.bay-plan svg{width:146px;height:auto;display:block;overflow:visible}
+.bay-plan-floor{fill:var(--lg-white)}
+.bay-plan-wall{fill:none;stroke:var(--lg-ink-strong);stroke-width:2.4;stroke-linejoin:round}
+.bay-plan-hatch{stroke:var(--lg-paper-deep);stroke-width:1.6}
+.bay-plan-block{fill:var(--lg-paper-deep);stroke:#b9b3a8;stroke-width:.8}
+.bay-plan-hazard{fill:none;stroke:#d9a91e;stroke-width:1.2;stroke-dasharray:3 2}
+.bay-plan-toolwall{stroke:var(--lg-ink);stroke-width:2.2}
+.bay-plan-rack{fill:none;stroke:#9aa3ad;stroke-width:.9}
+.bay-plan-stairs{fill:var(--lg-paper);stroke:var(--lg-ink-dim);stroke-width:.9}
+.bay-plan-tread{stroke:var(--lg-ink-dim);stroke-width:.5}
+.bay-plan-dock{fill:#cfe8f2;stroke:#7fb6cf;stroke-width:.7}
+.bay-plan-cable{fill:none;stroke:#c9b48a;stroke-width:1.6;stroke-dasharray:2 3;stroke-linecap:round;opacity:.55}
+.bay-plan-cable.is-live{stroke:#e0952e;stroke-width:2.2;opacity:1;animation:bayCable 1.2s linear infinite}
+.bay-plan-mark circle{fill:var(--lg-white);stroke:var(--lg-dusk);stroke-width:1.6}
+.bay-plan-mark .bay-plan-dot{fill:var(--lg-dusk);stroke:none}
+.bay-plan-mark.is-seen circle{stroke:var(--lg-ink-dim)}
+.bay-plan-mark.is-seen .bay-plan-dot{fill:var(--lg-ink-dim)}
+.bay-plan-mark.is-target circle{stroke:var(--lg-red);stroke-width:2}
+.bay-plan-mark.is-target .bay-plan-dot{fill:var(--lg-red)}
+.bay-plan-hiro circle{fill:var(--lg-dusk);stroke:var(--lg-white);stroke-width:1.6}
+.bay-plan-cone{fill:var(--lg-dusk-glow)}
+.bay-plan-label{font:500 5.6px var(--lg-mono);letter-spacing:.12em;fill:var(--lg-ink-dim)}
+.bay-plan-side{display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.bay-plan-where{margin:0;font-size:12px;line-height:1.4;color:var(--lg-ink)}
+.bay-plan-where b{display:block;font:600 15px/1.2 var(--lg-display);color:var(--lg-ink-strong)}
+.bay-plan-legend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:12px;color:var(--lg-ink)}
+.bay-plan-legend li{display:flex;align-items:center;gap:9px}
+.bay-plan-legend i{width:12px;height:12px;border-radius:50%;flex:none}
+.bay-plan-legend .is-you{background:var(--lg-dusk);box-shadow:0 0 0 3px var(--lg-dusk-soft)}
+.bay-plan-legend .is-todo{background:var(--lg-white);box-shadow:inset 0 0 0 2px var(--lg-dusk)}
+.bay-plan-legend .is-seen{background:var(--lg-white);box-shadow:inset 0 0 0 2px var(--lg-ink-dim)}
+.bay-plan-legend .is-line{height:3px;border-radius:2px;background:repeating-linear-gradient(90deg,#e0952e 0 4px,transparent 4px 7px)}
+@keyframes bayCable{to{stroke-dashoffset:-10}}
+
+.bay-pin small{margin-left:2px;padding:3px 7px;border-radius:var(--lg-radius-pill);background:var(--lg-paper-deep);font:500 10px/1 var(--lg-mono);color:var(--lg-ink-dim)}
+.bay-pin small:empty{display:none}
+
+.bay-controls{position:absolute;left:28px;bottom:26px;display:flex;align-items:center;gap:8px;margin:0;padding:8px 14px;border-radius:var(--lg-radius-pill);background:rgba(10,20,32,.5);backdrop-filter:blur(10px);border:1px solid rgba(247,244,239,.14);font-size:12px;color:rgba(247,244,239,.78)}
+.bay-controls span{padding:3px 8px;border-radius:8px;background:rgba(247,244,239,.14);font:500 10px/1 var(--lg-mono);letter-spacing:.06em;color:var(--lg-paper)}
+.bay-controls i{width:3px;height:3px;border-radius:50%;background:rgba(247,244,239,.4);margin:0 4px}
+
+.bay-schem{margin:10px -6px 2px;padding:6px 6px 0;border-radius:16px;background:var(--lg-white)}
+.bay-schem svg{display:block;width:100%;height:auto}
+.bay-schem .s-body{fill:#e7e3da;stroke:var(--lg-ink-strong);stroke-width:1.3}
+.bay-schem .s-dark{fill:#59626d;stroke:var(--lg-ink-strong);stroke-width:1.3}
+.bay-schem .s-cap{fill:#3c4652;stroke:var(--lg-ink-strong);stroke-width:1.3}
+.bay-schem .s-steel{fill:#c3c9cf;stroke:var(--lg-ink-strong);stroke-width:1.1}
+.bay-schem .s-plate{fill:#2a323b;stroke:var(--lg-ink-strong);stroke-width:1}
+.bay-schem .s-bezel{fill:#c3c9cf;stroke:var(--lg-ink-strong);stroke-width:1.2}
+.bay-schem .s-face{fill:#f3eee0;stroke:var(--lg-ink);stroke-width:.8}
+.bay-schem .s-needle{stroke:var(--lg-red);stroke-width:2;stroke-linecap:round}
+.bay-schem .s-chev{fill:var(--lg-red)}
+.bay-schem .s-spec{fill:#efe9d8;stroke:var(--lg-ink-strong);stroke-width:1}
+.bay-schem .s-text{stroke:var(--lg-ink);stroke-width:1.4}
+.bay-schem .s-led{fill:#5fd98a;stroke:var(--lg-ink-strong);stroke-width:.8}
+.bay-schem .s-cable-y{fill:none;stroke:#d9a91e;stroke-width:4;stroke-linecap:round}
+.bay-schem .s-cable-k{fill:none;stroke:#1f252b;stroke-width:6;stroke-linecap:round}
+.bay-schem .s-call polyline{fill:none;stroke:var(--lg-dusk);stroke-width:1}
+.bay-schem .s-call circle{fill:var(--lg-dusk)}
+.bay-schem .s-call-a{font:600 10px var(--lg-display);fill:var(--lg-ink-strong)}
+.bay-schem .s-call-b{font:500 8px var(--lg-mono);fill:var(--lg-ink-dim)}
+.bay-found .bay-spec{margin:12px 0 10px}

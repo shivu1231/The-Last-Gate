@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* The Last Gate's website layer: soft white panels and a few Big Hero 6 reference colours, used
+   sparingly. Dusk purple for actions and the gate, Hiro's blue-grey for text, Baymax red only for
+   danger and combat. Any phase's UI can import this and read the tokens. */
+:root{
+  --lg-paper:#F3F0E9; --lg-white:#FFFFFF; --lg-paper-deep:#E9E4DC;
+  --lg-dusk:#F08A3C; --lg-dusk-hi:#F2924A; --lg-dusk-soft:rgba(240,138,60,.16); --lg-dusk-glow:rgba(240,138,60,.34);
+  --lg-ink:#2E3336; --lg-ink-strong:#1F2326; --lg-ink-dim:#6d7a89;
+  --lg-red:#C8102E; --lg-red-soft:rgba(200,16,46,.16);
+  --lg-display:"Space Grotesk","Sora","Outfit",ui-sans-serif,system-ui,sans-serif;
+  --lg-body:Manrope,ui-rounded,"Segoe UI",system-ui,sans-serif;
+  --lg-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --lg-radius-panel:22px; --lg-radius-pill:999px;
+  --lg-shadow-panel:0 24px 60px rgba(3,10,18,.32),0 2px 6px rgba(3,10,18,.12);
+  --lg-ease:cubic-bezier(.2,.8,.2,1);
+}

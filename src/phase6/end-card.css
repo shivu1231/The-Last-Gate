@@ -1,0 +1,77 @@
+/* Phase 6 end screen: sits over the live harbour drift, lets the scene breathe first. */
+.lg-ending{
+  --end-text:#F3F0E9; --end-dim:rgba(243,240,233,.66); --end-faint:rgba(243,240,233,.44);
+  --end-accent:#F08A3C; --end-rule:rgba(243,240,233,.16); --end-graphite:20,22,26;
+  position:absolute;inset:0;z-index:30;pointer-events:none;
+  display:flex;flex-direction:column;gap:clamp(22px,4vh,44px);
+  padding:clamp(24px,5vw,72px) clamp(24px,5vw,72px) clamp(20px,3.6vh,36px);
+  overflow-x:hidden;overflow-y:auto;box-sizing:border-box;
+  color:var(--end-text);font-family:var(--lg-body);
+  background:
+    linear-gradient(to top,rgba(var(--end-graphite),.82) 0%,rgba(var(--end-graphite),.42) 26%,rgba(var(--end-graphite),0) 54%),
+    radial-gradient(ellipse 60% 70% at 0% 78%,rgba(var(--end-graphite),.42),rgba(var(--end-graphite),0) 70%);
+  animation:lg-end-fade 1.6s ease both;
+}
+.lg-ending *{box-sizing:border-box}
+.lg-ending p{margin:0}
+
+.lg-ending-stage{margin-top:auto;display:flex;flex-direction:column;gap:clamp(18px,3.4vh,34px)}
+
+/* 1 — Baymax, a quiet subtitle */
+.lg-ending-line{align-self:center;max-width:min(560px,100%);text-align:center;display:flex;flex-direction:column;gap:6px;
+  font-size:clamp(15px,1.25vw,17px);line-height:1.55;color:var(--end-text);text-shadow:0 1px 14px rgba(var(--end-graphite),.6);
+  animation:lg-end-rise 1.4s var(--lg-ease) .6s both}
+.lg-ending-speaker{font:500 10px/1 var(--lg-mono);letter-spacing:.24em;text-transform:uppercase;color:var(--end-faint)}
+
+/* 2 — title, lower-left third */
+.lg-ending-title{max-width:min(760px,100%);animation:lg-end-rise 1.8s var(--lg-ease) 2.2s both}
+.lg-ending h1{margin:0;outline:none;font-family:var(--lg-display);font-weight:500;
+  font-size:clamp(30px,5.4vw,78px);line-height:1.08;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--end-text);text-shadow:0 2px 30px rgba(var(--end-graphite),.45)}
+.lg-ending-home{margin-top:clamp(8px,1.4vh,14px) !important;font-family:var(--lg-display);
+  font-size:clamp(17px,1.7vw,24px);letter-spacing:.06em;color:var(--end-accent)}
+
+/* 3 — slim bottom band */
+.lg-ending-band{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,300px);gap:clamp(24px,4vw,64px);align-items:end;
+  padding-top:16px;border-top:1px solid var(--end-rule);
+  animation:lg-end-rise 1.4s var(--lg-ease) 4.5s both}
+.lg-ending-label{font:500 10px/1 var(--lg-mono);letter-spacing:.2em;text-transform:uppercase;color:var(--end-faint);margin-bottom:12px !important}
+.lg-ending ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px clamp(16px,2.4vw,32px)}
+.lg-ending li{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;row-gap:2px;font-size:12px;line-height:1.45}
+.lg-ending-num{grid-row:span 2;font:500 10px/1.7 var(--lg-mono);color:var(--end-faint)}
+.lg-ending-chap{color:var(--end-text);font-weight:600}
+.lg-ending-text{color:var(--end-dim)}
+
+.lg-ending-credits{display:flex;flex-direction:column;gap:4px;font-size:12px;line-height:1.5}
+.lg-ending-team{color:var(--end-text);font-weight:600}
+.lg-ending-tech{color:var(--end-dim)}
+.lg-ending-extras{margin-top:8px !important;color:var(--end-accent);font-style:italic}
+.lg-ending-tech span{font:500 10px/1 var(--lg-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--end-faint);margin-right:6px}
+.lg-ending-return{pointer-events:auto;align-self:flex-start;margin-top:12px;padding:4px 0;background:none;border:0;border-radius:2px;cursor:pointer;
+  font:500 12px/1.4 var(--lg-body);letter-spacing:.04em;color:var(--end-dim);
+  text-decoration:underline;text-decoration-color:var(--end-rule);text-underline-offset:5px;
+  transition:color .25s ease,text-decoration-color .25s ease}
+.lg-ending-return:hover{color:var(--end-text);text-decoration-color:var(--end-accent)}
+.lg-ending-return:focus-visible{outline:2px solid var(--end-accent);outline-offset:4px;color:var(--end-text)}
+
+@keyframes lg-end-fade{from{opacity:0}to{opacity:1}}
+@keyframes lg-end-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+@media(max-width:900px){
+  .lg-ending ol{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  .lg-ending{padding:24px 16px 20px;gap:22px;pointer-events:auto;
+    background:linear-gradient(to top,rgba(var(--end-graphite),.86) 0%,rgba(var(--end-graphite),.5) 45%,rgba(var(--end-graphite),.1) 75%)}
+  .lg-ending h1{letter-spacing:.22em}
+  .lg-ending-band{grid-template-columns:1fr;gap:20px}
+  .lg-ending ol{grid-template-columns:1fr;gap:8px}
+}
+/* short viewports: the band may overflow, so the card takes wheel/touch scrolling */
+@media(max-height:560px){
+  .lg-ending{pointer-events:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  .lg-ending,.lg-ending-line,.lg-ending-title,.lg-ending-band{animation:none}
+  .lg-ending-return{transition:none}
+}

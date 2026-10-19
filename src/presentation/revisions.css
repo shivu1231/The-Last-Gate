@@ -1,0 +1,59 @@
+/* Follow-up corrections: keep the physical scene readable beside its instruments. */
+.board .board-summary {
+  top: 104px;
+  bottom: 30px;
+  max-height: calc(100dvh - 134px);
+  height: max-content;
+  transform: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  width: min(440px, 35vw);
+  padding: 24px 24px 24px 0;
+}
+.board .board-summary h2 { font-size: clamp(25px, 2.1vw, 32px); line-height: 1.24; }
+.board .board-summary h2 em { display: inline-block; margin-top: 8px; font-size: .74em; color: #a9b8aa; }
+.board .board-summary-actions { display: grid; grid-template-columns: 1fr; gap: 9px; }
+.board .board-summary-actions button { width: 100%; white-space: normal; min-height: 44px; }
+.board .board-summary dl div { gap: 14px; }
+.board .board-summary dd { text-align: right; }
+.p5 .p5-bearing { display: grid; grid-template-columns: 1fr auto; gap: 9px; padding: 14px 0; border-block: 1px solid #adc9b52c; font: 10px/1.5 var(--mono); letter-spacing: .045em; }
+.p5 .p5-bearing span { color: #91a69d; }
+.p5 .p5-bearing b { color: #d6bf94; font-weight: 500; }
+.p5 .p5-fine { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; gap: 8px; margin-top: -8px; }
+.p5 .p5-fine button { border: 1px solid #adc9b540; background: #101c20; color: #d7e5d8; font: 12px var(--mono); min-height: 36px; cursor: pointer; }
+.p5 .p5-fine button:hover { background: #b1cda51f; border-color: #bdcda5; }
+.p5 .p5-fine span { color: #b6c9bc; font: 9px/1.5 var(--mono); text-align: center; }
+.p5 .p5-reset { padding: 11px 0; border: 0; border-bottom: 1px solid #adc9b52c; color: #93a99f; background: none; cursor: pointer; font: 9px var(--mono); letter-spacing: .1em; }
+.p5 .p5-reset:hover { color: #e0e8db; }
+.p5 .p5-trace-progress { display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #adc9b533; font: 10px var(--mono); color: #94aaa0; }
+.p5 .p5-trace-progress b { color: #d8c296; font-weight: 500; }
+.p5 .p5-fixes { display: grid; gap: 2px; }
+.p5 .p5-fixes button { display: grid; grid-template-columns: 28px 1fr 20px; align-items: center; gap: 10px; min-height: 66px; padding: 11px 8px; border: 0; border-bottom: 1px solid #b3c5b325; text-align: left; background: #b4cda806; color: #d1ded3; font: 12px var(--mono); cursor: pointer; }
+.p5 .p5-fixes button:hover:not(:disabled) { background: #b4cda817; }
+.p5 .p5-fixes i { font: 11px var(--mono); color: #d8b887; font-style: normal; }
+.p5 .p5-fixes small { display: block; margin-top: 7px; color: #8ca298; font: 8px var(--mono); letter-spacing: .04em; }
+.p5 .p5-fixes b { font-weight: 400; }
+.p5 .p5-fixes .placed { opacity: 1; color: #a6c5ac; background: #91b7a00c; cursor: default; }
+.p5 .p5-spatial-caption { position: absolute; bottom: 34px; left: 460px; right: 30px; color: #c5d7ce; font: 10px/1.7 var(--mono); letter-spacing: .1em; text-shadow: 0 2px 10px #000; pointer-events: none; }
+.p5 .p5-spatial-caption span { display: block; color: #8ca79c; font-size: 8px; }
+.p5 .p5-world-fix { position: absolute; left: 0; top: 0; padding: 7px 9px; color: #ead5a8; border-left: 1px solid #dabd81; background: #0b181fbd; font: 10px var(--mono); pointer-events: none; visibility: hidden; }
+.p5 .p5-world-fix i { color: #97b5ae; margin-right: 9px; font-style: normal; }
+.p5 .p5-found { top: auto; bottom: 6vh; left: 5vw; width: min(490px, 38vw); transform: none; max-height: calc(100dvh - 140px); padding: 22px 24px 22px 0; overflow: auto; border-top: 1px solid #b1c9b34a; background: linear-gradient(90deg,#0b161add,#0b161a55); }
+.p5 .p5-found h2 { margin: 0 0 16px; font: 400 clamp(27px,2.6vw,40px)/1.18 'DM Sans',sans-serif; letter-spacing: -.025em; }
+.p5 .p5-found .p5-body { margin: 0; color: #d2bea0; font-size: 17px; }
+@media (max-height: 800px) {
+  .board .board-summary { top: 86px; bottom: 20px; max-height: calc(100dvh - 106px); padding-block: 16px; }
+  .board .board-summary dl div { padding: 10px 0; }
+  .board .board-question { margin: 15px 0; font-size: 13px; }
+  .p5 .p5-console { gap: 14px; }
+  .p5 .p5-console .p5-body { font-size: 13px; line-height: 1.6; }
+  .p5 .p5-console .p5-fine { margin-top: -5px; }
+}
+@media (max-width: 1400px) {
+  .p5 .p5-spatial-caption { left: 400px; }
+  .board .board-summary { left: 30px; width: 355px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .p5 .p5-found { animation: none; }
+}

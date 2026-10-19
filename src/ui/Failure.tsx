@@ -1,0 +1,1 @@
+export function Failure({message,detail}:{message:string;detail?:string}){return <div className="failure" role="alert"><p>{message}</p>{detail&&<span>{detail}</span>}<button onClick={()=>location.reload()}>RELOAD ?</button></div>}
