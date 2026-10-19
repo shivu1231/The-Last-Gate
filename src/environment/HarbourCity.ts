@@ -15,6 +15,8 @@ export function createSanFransokyo() {
     red = sceneKit.standard('#773e37', 0.7, 0.28);
   const warm = sceneKit.basic('#ddbc85', 1),
     cream = sceneKit.standard('#b8b5a0', 0.8, 0.1);
+  const tile = sceneKit.standard('#27313a', 0.72, 0.2),
+    plant = sceneKit.standard('#5a676c', 0.6, 0.45);
   const windows = [
     sceneKit.basic('#172c3a'),
     sceneKit.basic('#233e49'),
@@ -115,7 +117,7 @@ export function createSanFransokyo() {
       uniforms: { uTime: { value: 0 } },
       vertexShader:
         'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-      fragmentShader: `varying vec3 vP;uniform float uTime;void main(){float ripple=sin(vP.x*2.7+vP.z*4.2+uTime*.45)*sin(vP.z*8.-uTime*.7);float streak=pow(max(0.,sin(vP.x*.21+sin(vP.z*.12)*.13)),16.);float breakUp=.3+.7*pow(max(0.,.5+.5*sin(vP.z*5.+uTime*.3)),3.);vec3 col=vec3(.035,.09,.12)+ripple*.006+vec3(.11,.11,.075)*streak*breakUp;gl_FragColor=vec4(col,1.);}`,
+      fragmentShader: `varying vec3 vP;uniform float uTime;void main(){float ripple=sin(vP.x*2.7+vP.z*4.2+uTime*.45)*sin(vP.z*8.-uTime*.7);float streak=pow(max(0.,sin(vP.x*.21+sin(vP.z*.12)*.13)),16.);float breakUp=.3+.7*pow(max(0.,.5+.5*sin(vP.z*5.+uTime*.3)),3.);vec3 col=vec3(.035,.09,.12)+ripple*.006+vec3(.11,.11,.075)*streak*breakUp;float wz=128.-vP.y;float shore=smoothstep(52.,106.,wz)*step(wz,108.6);float lights=pow(max(0.,sin(vP.x*1.7+sin(vP.x*.23)*2.4)),10.)*(.35+.65*pow(max(0.,sin(vP.x*.37+1.3)),2.));float chop=.35+.65*pow(max(0.,.5+.5*sin(wz*2.6+vP.x*.9+uTime*1.1)),2.);col+=vec3(.5,.38,.24)*lights*chop*shore*.75+vec3(.05,.08,.1)*shore*.35;gl_FragColor=vec4(col,1.);}`,
     }),
   );
   sceneKit.mesh(new THREE.PlaneGeometry(310, 210), waterMaterial, {
@@ -171,6 +173,19 @@ export function createSanFransokyo() {
         built,
       );
     }
+    if (index3 % 3 === 2)
+      // A low tiled eave over the shopfronts: the Japanese half of the city's waterfront.
+      sceneKit.box(
+        { p: [xx, 4.9, 110.3], s: [width + 0.4, 0.22, 1.7], r: [-0.34, 0, 0] },
+        tile,
+        built,
+      );
+    if (index3 % 2 === 0)
+      sceneKit.box(
+        { p: [xx + width * 0.22, height + 1.2, 117], s: [2.2, 1.2, 1.8] },
+        plant,
+        built,
+      );
     if (index3 % 3 === 1) {
       sceneKit.box(
         { p: [xx, 4.6, 109.8], s: [width * 0.75, 0.15, 2.1], r: [-0.13, 0, 0] },
@@ -184,51 +199,141 @@ export function createSanFransokyo() {
       );
     }
   }
-  const tower = (
+  // The harbour edge: timber pilings under the quay, a ferry-building clock tower in the middle of
+  // the low waterfront row, and the street's power line on short poles in front of the shops.
+  const piling = sceneKit.standard('#3b3631', 0.9, 0.05);
+  for (let xx = -128; xx <= 128; xx += 4.8)
+    sceneKit.box(
+      { p: [xx, -0.85, 108.3], s: [0.34, 1.9, 0.34] },
+      piling,
+      built,
+    );
+  sceneKit.box({ p: [2, 11, 114.5], s: [4.4, 22, 4.4] }, cream, built);
+  for (const yPosition of [8, 15, 21.6])
+    sceneKit.box(
+      { p: [2, yPosition, 114.5], s: [4.9, 0.3, 4.9] },
+      trim,
+      built,
+    );
+  sceneKit.mesh(
+    new THREE.CircleGeometry(1.15, 24),
+    sceneKit.basic('#e8d8b4', 0.9),
+    { p: [2, 18.2, 112.27], r: [0, Math.PI, 0] },
+    built,
+  );
+  sceneKit.mesh(
+    new THREE.CylinderGeometry(0, 0.5 * Math.SQRT2, 1, 4).rotateY(Math.PI / 4),
+    tile,
+    { p: [2, 24, 114.5], s: [5.6, 3.6, 5.6] },
+    built,
+  );
+  const poleTops: THREE.Vector3[] = [];
+  for (let xx = -112; xx <= 112; xx += 14) {
+    sceneKit.box({ p: [xx, 4, 110.3], s: [0.2, 8, 0.2] }, trim, built);
+    sceneKit.box({ p: [xx, 7.6, 110.3], s: [1.6, 0.1, 0.1] }, trim, built);
+    poleTops.push(new THREE.Vector3(xx, 7.55, 110.3));
+  }
+  const wirePoints: THREE.Vector3[] = [];
+  for (const dx of [-0.65, 0, 0.65])
+    for (let index = 0; index < poleTops.length - 1; index++)
+      for (let step = 0; step < 6; step++) {
+        const from = poleTops[index],
+          to = poleTops[index + 1],
+          at = (blend: number) =>
+            from
+              .clone()
+              .lerp(to, blend)
+              .add(new THREE.Vector3(dx, -Math.sin(blend * Math.PI) * 0.7, 0));
+        wirePoints.push(at(step / 6), at((step + 1) / 6));
+      }
+  sceneKit.root.add(
+    new THREE.LineSegments(
+      sceneKit.ownGeometry(new THREE.BufferGeometry().setFromPoints(wirePoints)),
+      sceneKit.ownMaterial(
+        new THREE.LineBasicMaterial({
+          color: '#0e1a22',
+          transparent: true,
+          opacity: 0.8,
+        }),
+      ),
+    ),
+  );
+  // Facade depth instead of flat slabs: piers stand proud of the street face so the windows read as
+  // set into the wall, sills catch the light, and tall towers step back near the top. Everything is
+  // merged per material below, so the extra pieces cost triangles, not draws.
+  const hip = (
+    xx: number,
+    yy: number,
+    zz: number,
+    width: number,
+    height: number,
+    depth: number,
+  ) =>
+    sceneKit.mesh(
+      new THREE.CylinderGeometry(0, 0.5 * Math.SQRT2, 1, 4).rotateY(Math.PI / 4),
+      tile,
+      { p: [xx, yy + height / 2, zz], s: [width, height, depth] },
+      built,
+    );
+  const block = (
     xx: number,
     zz: number,
     width2: number,
     depth: number,
-    height2: number,
+    y0: number,
+    y1: number,
     style: number,
+    detail: boolean,
   ) => {
-    const material = walls[style % walls.length];
+    const material = walls[style % walls.length],
+      height = y1 - y0,
+      face = zz - depth / 2,
+      bays = Math.max(2, Math.round(width2 / 3.4)),
+      bay = width2 / bays;
     sceneKit.box(
-      { p: [xx, height2 / 2, zz], s: [width2, height2, depth] },
+      { p: [xx, y0 + height / 2, zz], s: [width2, height, depth] },
       material,
       built,
     );
-    sceneKit.box(
-      { p: [xx, height2 + 0.4, zz], s: [width2 + 0.55, 0.8, depth + 0.55] },
-      trim,
-      built,
-    );
-    sceneKit.box(
-      { p: [xx, 2.2, zz], s: [width2 + 1.2, 4.4, depth + 1.2] },
-      material,
-      built,
-    );
-    for (let yPosition2 = 5.2; yPosition2 < height2 - 1; yPosition2 += 2.65) {
+    for (let pier = 0; pier <= bays; pier++)
+      sceneKit.box(
+        {
+          p: [xx - width2 / 2 + pier * bay, y0 + height / 2, face - 0.16],
+          s: [0.4, height, 0.32],
+        },
+        material,
+        built,
+      );
+    for (
+      let yPosition2 = Math.max(y0 + 1.6, 5.2);
+      yPosition2 < y1 - 1;
+      yPosition2 += 2.65
+    ) {
       if (Math.round(yPosition2) % 3 === 0)
         sceneKit.box(
           {
-            p: [xx, yPosition2 - 0.95, zz],
-            s: [width2 + 0.18, 0.15, depth + 0.18],
+            p: [xx, yPosition2 - 0.95, zz - 0.16],
+            s: [width2 + 0.18, 0.15, depth + 0.5],
           },
           trim,
           built,
         );
-      for (let col = -width2 / 2 + 0.8; col < width2 / 2 - 0.5; col += 1.75) {
-        const lit = random();
-        sceneKit.box(
-          {
-            p: [xx + col, yPosition2, zz - depth / 2 - 0.035],
-            s: [1.03, 1.48, 0.08],
-          },
-          windows[lit > 0.88 ? 2 : lit > 0.79 ? 3 : style % 2],
-          built,
-        );
-      }
+      for (let index = 0; index < bays; index++)
+        for (const side of [-0.24, 0.24]) {
+          const lit = random(),
+            px = xx - width2 / 2 + (index + 0.5) * bay + side * bay;
+          sceneKit.box(
+            { p: [px, yPosition2, face - 0.035], s: [1.03, 1.48, 0.08] },
+            windows[lit > 0.88 ? 2 : lit > 0.79 ? 3 : style % 2],
+            built,
+          );
+          if (detail)
+            sceneKit.box(
+              { p: [px, yPosition2 - 0.82, face - 0.12], s: [1.2, 0.09, 0.22] },
+              trim,
+              built,
+            );
+        }
       for (let col = -depth / 2 + 0.8; col < depth / 2 - 0.5; col += 1.85)
         for (const side of [-1, 1])
           sceneKit.box(
@@ -240,15 +345,76 @@ export function createSanFransokyo() {
             built,
           );
     }
+    sceneKit.box(
+      { p: [xx, y1 + 0.4, zz], s: [width2 + 0.55, 0.8, depth + 0.55] },
+      trim,
+      built,
+    );
+  };
+  const tower = (
+    xx: number,
+    zz: number,
+    width2: number,
+    depth: number,
+    height2: number,
+    style: number,
+    detail = true,
+  ) => {
+    const material = walls[style % walls.length],
+      lower = height2 > 38 ? Math.round(height2 * 0.7) : height2;
+    sceneKit.box(
+      { p: [xx, 2.2, zz], s: [width2 + 1.2, 4.4, depth + 1.2] },
+      material,
+      built,
+    );
+    block(xx, zz, width2, depth, 0, lower, style, detail);
+    let top = lower,
+      topWidth = width2,
+      topDepth = depth;
+    if (lower < height2) {
+      // The setback: a narrower upper tier on the stepped base.
+      topWidth = width2 * 0.76;
+      topDepth = depth * 0.76;
+      block(xx, zz + 0.5, topWidth, topDepth, lower + 0.8, height2, style, detail);
+      top = height2;
+    }
     if (style % 3 === 0) {
       sceneKit.box(
-        { p: [xx, height2 + 2.1, zz], s: [width2 * 0.6, 3.5, depth * 0.6] },
+        { p: [xx, top + 2.1, zz], s: [topWidth * 0.6, 3.5, topDepth * 0.6] },
         material,
         built,
       );
       sceneKit.box(
-        { p: [xx, height2 + 4, zz], s: [width2 * 0.68, 0.3, depth * 0.68] },
+        { p: [xx, top + 4, zz], s: [topWidth * 0.68, 0.3, topDepth * 0.68] },
         warm,
+        built,
+      );
+    } else if (style % 3 === 1) {
+      // San Fransokyo's tiered cap: two shallow hipped tile roofs over a short drum.
+      hip(xx, top + 0.8, zz, topWidth * 1.06, 2.2, topDepth * 1.06);
+      sceneKit.box(
+        { p: [xx, top + 3.4, zz], s: [topWidth * 0.46, 1.6, topDepth * 0.46] },
+        material,
+        built,
+      );
+      hip(xx, top + 4.2, zz, topWidth * 0.66, 1.7, topDepth * 0.66);
+    } else {
+      // Plant on the roof: a timber water tank, cooling units and a mast.
+      sceneKit.mesh(
+        new THREE.CylinderGeometry(1.1, 1.1, 2.2, 10),
+        red,
+        { p: [xx - topWidth * 0.2, top + 2.3, zz + topDepth * 0.15] },
+        built,
+      );
+      for (const dx of [0.15, 0.32])
+        sceneKit.box(
+          { p: [xx + topWidth * dx, top + 1.3, zz - topDepth * 0.2], s: [1.6, 1, 1.2] },
+          plant,
+          built,
+        );
+      sceneKit.box(
+        { p: [xx + topWidth * 0.25, top + 4.5, zz + topDepth * 0.2], s: [0.12, 7, 0.12] },
+        trim,
         built,
       );
     }
@@ -277,6 +443,7 @@ export function createSanFransokyo() {
       randomBetween(9, 14),
       randomBetween(18, 43),
       index4 % 4,
+      false,
     );
   // Distinct central stepped landmark, rather than an identical glowing box grid.
   for (let tier = 0; tier < 4; tier++) {
