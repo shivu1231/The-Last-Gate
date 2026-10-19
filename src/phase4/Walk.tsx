@@ -538,13 +538,15 @@ function WalkWorld({
     <>
       <color attach="background" args={['#0a1622']} />
       <fog attach="fog" args={['#172d39', 20, 135]} />
-      <hemisphereLight args={['#a1c2cc', '#151c1d', 0.95]} />
-      <directionalLight position={[-8, 16, 6]} intensity={2} color="#d5dfdb" />
+      {/* Cool, low sky fill and a neutral key; the warm service practicals at the bay door are the
+          brightest pocket on the street, so the light itself leads the walk toward Bay 6. */}
+      <hemisphereLight args={['#9cb9c6', '#121819', 0.62]} />
+      <directionalLight position={[-8, 16, 6]} intensity={2.15} color="#d3dde0" />
       <pointLight
         position={[0, 3.1, GATE_Z + 3]}
-        intensity={10}
+        intensity={11}
         distance={14}
-        color="#ffd3a0"
+        color="#ffdcb4"
       />
       <pointLight
         position={[4.7, 2.2, GATE_Z + 1.4]}
@@ -556,9 +558,9 @@ function WalkWorld({
         <pointLight
           key={index}
           position={point}
-          intensity={5}
+          intensity={4}
           distance={11}
-          color="#ffc062"
+          color="#ffd6a4"
         />
       ))}
     </>

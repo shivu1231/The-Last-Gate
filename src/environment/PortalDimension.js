@@ -747,8 +747,10 @@ export function createPortalDimension() {
       ),
     );
   }
-  scene.add(new THREE.HemisphereLight('#b8cee8', '#161d30', 0.65));
-  const key = new THREE.DirectionalLight('#ece7db', 1.8);
+  // Corrupted city: a cold, low sky fill and a cool-neutral moon key carry the forms; warmth is
+  // left to the few surviving practicals and Baymax's red, never to the base light.
+  scene.add(new THREE.HemisphereLight('#a9c0dc', '#121827', 0.6));
+  const key = new THREE.DirectionalLight('#dbe2ea', 1.85);
   key.position.set(-7, 15, -4);
   key.castShadow = true;
   key.shadow.mapSize.set(2048, 2048);
@@ -765,16 +767,17 @@ export function createPortalDimension() {
   scene.add(key);
   scene.add(key.target);
   key.target.position.set(1, 0, -10);
-  key.shadow.mapSize.set(4096, 4096);
+  // Capped per quality tier by RenderPolicy; 2048 is the HIGH budget.
+  key.shadow.mapSize.set(2048, 2048);
   key.shadow.radius = 3;
   const rim = new THREE.DirectionalLight('#8ed4ff', 1.25);
   rim.position.set(12, 8, -30);
   scene.add(rim);
-  const front = new THREE.PointLight('#c7d7ec', 1.1, 24, 1.8);
+  const front = new THREE.PointLight('#c7d7ec', 0.8, 24, 1.8);
   front.position.set(-2, 5, -4);
   scene.add(front);
-  // Broad reflected sky warmth, without a spotlight cone on the character.
-  const companionLight = new THREE.DirectionalLight('#ffe4c5', 0.55);
+  // Broad, soft front fill so the white shell keeps its curvature, without a spotlight cone.
+  const companionLight = new THREE.DirectionalLight('#dfe3ea', 0.5);
   companionLight.position.set(-4, 8, 3);
   scene.add(companionLight);
   const details = createCinematicDetails(scene, {

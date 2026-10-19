@@ -2422,7 +2422,7 @@ export function createServiceBay() {
     near: 1,
     far: 50,
   });
-  const spot = new THREE.SpotLight('#ffd9a8', 85, 16, 0.55, 0.65, 1.6);
+  const spot = new THREE.SpotLight('#ffecd8', 85, 16, 0.55, 0.65, 1.6);
   spot.position.set(2, 8.4, -12);
   spot.target.position.set(2, 0, -15.5);
   lights.add(spot, spot.target);
