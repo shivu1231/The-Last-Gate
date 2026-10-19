@@ -23,10 +23,19 @@ Renderer stays ACES filmic with sRGB output; bloom threshold (1.65) already keep
 Verified: `npm run build`, `node scripts/later-refinement-check.mjs` (all pass), and visual checks of
 fight, fitting, Bay 6, telemetry, pursuit, portal site, opening portal and home in the dev server.
 
-## Not yet done / candidates
+| Exposure | `SceneQuality` takes a per-chapter exposure, eases in after the reveal and damps on set changes (walk/fitting/pursuit 1.0, telemetry 0.98, home 1.03) | `src/presentation/SceneQuality.tsx` + callers |
+| Contact (pursuit/home) | Soft footprint under Baymax on the shadowless sets, fading with height | `src/phase6/World.tsx` |
+| Recovery shadows | Depth bias -0.0005 → -0.0002 plus normalBias 0.02 for tighter contact | `src/recovery/district.ts` |
+| Home lawn | Sky fill 0.78 → 0.66, city-side fill trimmed | `src/phase6/home.ts` |
 
-- Smooth exposure/fog transitions between chapters (each Canvas sets its own exposure today).
-- Per-chapter exposure via `SceneQuality` (all later chapters share 1.02).
-- Shadow bias/frustum audit per chapter; FPS measurement at DPR 1 / 1.5 / 2 on the RTX 3050.
-- Home lawn still reads slightly bright under the city-side fill.
+Shadow audit: opening key 2048 with small bias + normalBias (sound); Bay 6 moon 2048 (unchanged);
+recovery key tightened as above; pursuit/home have no shadow map by design (contact blob instead).
+
+## Not verified / candidates
+
+- Real FPS: the preview pane ran as a background page (rAF throttled), so the dev frame audit's FPS
+  figures were meaningless. Draw calls stayed ~450–540 and the rework added one draw call and no
+  shadow passes. Measure on the RTX 3050 at DPR 1 / 1.5 / 2 in a focused browser window.
+- Contact blob verified on the home lawn; the street chase/landing uses the same code with the
+  street floor function but was not watched live.
 - Recovery engineering view could not be framed in the narrow preview pane; check at 1920×1080.
