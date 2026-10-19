@@ -181,7 +181,8 @@ button[hidden] {
   letter-spacing: .1em;
   opacity: 0;
   pointer-events: none;
-  color: #9eada5;
+  font-family: 'IBM Plex Mono',monospace;
+  color: rgba(243,240,233,.62);
 }
 .suit-readout span {
   display: block;
@@ -189,13 +190,13 @@ button[hidden] {
 .suit-readout b {
   font-weight: 400;
   margin-left: 18px;
-  color: #c6d1c3;
+  color: #F08A3C;
 }
 .suit-readout i {
   display: block;
   font-style: normal;
   font-size: 6px;
-  color: #9c8f80;
+  color: rgba(243,240,233,.42);
   margin-top: 12px;
   letter-spacing: .15em;
 }
@@ -246,7 +247,7 @@ button[hidden] {
   font:
     7px 'IBM Plex Mono',monospace;
   letter-spacing: .2em;
-  color: #a0b29e;
+  color: #F08A3C;
   margin-bottom: 9px;
 }
 @keyframes caption {

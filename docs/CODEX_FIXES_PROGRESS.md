@@ -12,6 +12,7 @@ Source: `THE_LAST_GATE_DEEP_CODEX_FIXES.docx` (9 issues). Each fixed issue is it
 | 04 | Combat chip clips into chest | Root cause: Phase 1 chip was world-space 1:1 while the dock is scaled with the 0.79 shell, so the card overran its keyed frame. Chip now uses `LATER_BAYMAX_SCALE` (same as the Phase 6 card) and the shared dock-space seat `CHIP_SEAT_Z` (`characters/RedChip.js`). | `d74375d` |
 | 07 | Fight wall clip + facing | Ignition: Baymax fully squares up to Hiro (damped yaw) and holds it while rising; lift rises first and drifts back later so legs/thrusters clear the low street wall. Same end pose as the chase start. Opening refinement check passes. | `5c8837b` |
 | 03 | Phase 1 / landing colour system (partial) | Landing title (`presentation/opening-title.css`) uses `--lg-dusk` orange for eyebrow/rule/control chips, soft-white paper text and the shared font tokens. | `4c5212d` |
+| 03 | Phase 1 HUD (partial) | Suit readout values and subtitle speaker labels use the project orange; labels soft-white; Baymax's speaker label stays restrained red (`src/ui/experience.css`). | see log |
 
 All commits: `npx tsc --noEmit` clean; `npm run build` succeeds; `scripts/later-refinement-check.mjs` (later + opening) pass.
 
@@ -24,7 +25,7 @@ All commits: `npx tsc --noEmit` clean; `npm run build` succeeds; `scripts/later-
 
 ## Remaining
 
-- **03 (rest):** Phase 1 in-world HUD (top-left LOCATION / EXIT SIGNAL readout, subtitles, hold markers) still uses cool grey/cyan; move it to the same tokens (`src/ui/experience.css`, `src/experience/*`). Check hover/active/disabled/focus-visible.
+- **03 (rest):** the remaining Phase 1 UI in `src/ui/experience.css` (hold markers, diagnostic panel, chip/chest prompts, ~30 sage/cyan literals) still uses the older cool palette; move it to the same tokens (`src/ui/experience.css`, `src/experience/*`). Check hover/active/disabled/focus-visible.
 - **06 Typography:** `src/presentation/later-refinement.css:52` forces `--lg-display/--lg-body` to Segoe UI inside `.walk/.bay/.p5/.p6`, which undoes the Space Grotesk/Manrope/IBM Plex Mono system in `src/ui/theme.css`. Decide one display + one mono pair, remove the override, and check for layout shift. Fonts load from Google Fonts (`theme.css`, `experience.css` also loads DM Sans).
 - **05 Final background:** home set (`src/phase6/home.ts`, skyline `src/environment/SanFransokyoSkyline.ts`): flat lawn, sparse props. Add curb/paving transitions, planters, street furniture and better trees, instanced and without moving interaction anchors (`HOME_BAYMAX`, `CARE_CHIP_AT`, bin, gate).
 - **08 Phase 0 city:** `src/environment/HarbourCity.ts` + skyline; replace boxy silhouettes with modular facade depth, keep the portal view unobstructed.
