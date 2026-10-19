@@ -19,14 +19,13 @@ Renderer stays ACES filmic with sRGB output; bloom threshold (1.65) already keep
 | Thrusters | Light ignites instantly, decays over ~0.2 s when output is cut | `src/phase6/baymax.ts` |
 | Home / final | Orange-purple sunset → cool dusk sky, neutral water/fog, warm-neutral lamps | `src/phase6/home.ts` |
 | Skyline (opening + home) | Salmon haze/sun tint → neutral dusk | `src/environment/SanFransokyoSkyline.ts` |
-
-Verified: `npm run build`, `node scripts/later-refinement-check.mjs` (all pass), and visual checks of
-fight, fitting, Bay 6, telemetry, pursuit, portal site, opening portal and home in the dev server.
-
 | Exposure | `SceneQuality` takes a per-chapter exposure, eases in after the reveal and damps on set changes (walk/fitting/pursuit 1.0, telemetry 0.98, home 1.03) | `src/presentation/SceneQuality.tsx` + callers |
 | Contact (pursuit/home) | Soft footprint under Baymax on the shadowless sets, fading with height | `src/phase6/World.tsx` |
 | Recovery shadows | Depth bias -0.0005 → -0.0002 plus normalBias 0.02 for tighter contact | `src/recovery/district.ts` |
 | Home lawn | Sky fill 0.78 → 0.66, city-side fill trimmed | `src/phase6/home.ts` |
+
+Verified: `npm run build`, `node scripts/later-refinement-check.mjs` (all pass), and visual checks of
+fight, fitting, Bay 6, telemetry, pursuit, portal site, opening portal and home in the dev server.
 
 Shadow audit: opening key 2048 with small bias + normalBias (sound); Bay 6 moon 2048 (unchanged);
 recovery key tightened as above; pursuit/home have no shadow map by design (contact blob instead).
