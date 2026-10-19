@@ -346,6 +346,7 @@ function BayScene({
   return (
     <SceneQuality
       ready={!!bay}
+      exposure={1}
       manageDpr={false}
       onReady={onReady}
       onError={onError}
@@ -438,7 +439,12 @@ function FacilityScene({
     <>
       <color attach="background" args={['#081320']} />
       <fog attach="fog" args={['#14293b', 14, 150]} />
-      <SceneQuality manageDpr={false} onReady={onReady} onError={onError} />
+      <SceneQuality
+        exposure={0.98}
+        manageDpr={false}
+        onReady={onReady}
+        onError={onError}
+      />
     </>
   );
 }

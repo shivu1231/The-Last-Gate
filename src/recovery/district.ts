@@ -324,7 +324,9 @@ export function createDistrict() {
   key.shadow.camera.right = 10;
   key.shadow.camera.top = 10;
   key.shadow.camera.bottom = -10;
-  key.shadow.bias = -0.0005;
+  // Small depth bias plus a normal offset: tight contact under the reclined shell without acne.
+  key.shadow.bias = -0.0002;
+  key.shadow.normalBias = 0.02;
   group.add(key);
   // Warm practicals: workshop interior, the amber lamp, a vending unit.
   const shopLight = new THREE.PointLight('#ffb878', 4.6, 10, 1.8);

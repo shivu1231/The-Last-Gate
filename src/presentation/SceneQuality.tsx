@@ -1,18 +1,27 @@
 import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { ACESFilmicToneMapping, PMREMGenerator } from 'three';
+import { ACESFilmicToneMapping, MathUtils, PMREMGenerator } from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { useCanvasBudget } from '../performance/CanvasBudget';
 
-/** Shared Phase 1 material response; a small studio reflection, with amortized shadow work. */
+/** Exposure a chapter opens at, relative to its target, before its eyes adjust after the reveal. */
+const ADAPT_FROM = 0.88;
+
+/**
+ * Shared Phase 1 material response; a small studio reflection, with amortized shadow work.
+ * `exposure` is the chapter's own tone-mapping exposure: it eases in after the reveal and damps
+ * toward any new value (a set change), so light never jumps between locations.
+ */
 export function SceneQuality({
   ready = true,
   prepare,
   onReady,
   onError,
   manageDpr = true,
+  exposure = 1.02,
 }: {
   ready?: boolean;
+  exposure?: number;
   prepare?: () => Promise<void>;
   onReady?: () => void;
   onError?: () => void;
@@ -20,6 +29,8 @@ export function SceneQuality({
 }) {
   const { gl, scene, camera } = useThree();
   const sinceShadow = useRef(1);
+  const exposureTarget = useRef(exposure);
+  exposureTarget.current = exposure;
   const frameAudit = useRef({
     warm: 0,
     seconds: 0,
@@ -49,7 +60,7 @@ export function SceneQuality({
     scene.environment = environment.texture;
     scene.environmentIntensity = 0.55;
     gl.toneMapping = ACESFilmicToneMapping;
-    gl.toneMappingExposure = 1.02;
+    gl.toneMappingExposure = exposureTarget.current * ADAPT_FROM;
     gl.shadowMap.autoUpdate = false;
     gl.shadowMap.needsUpdate = true;
     room.dispose();
@@ -114,6 +125,13 @@ export function SceneQuality({
         }
       }
     }
+    if (ready)
+      gl.toneMappingExposure = MathUtils.damp(
+        gl.toneMappingExposure,
+        exposureTarget.current,
+        2.4,
+        Math.min(deltaSeconds, 0.1),
+      );
     sinceShadow.current += deltaSeconds;
     if (sinceShadow.current > 0.16) {
       gl.shadowMap.needsUpdate = true;

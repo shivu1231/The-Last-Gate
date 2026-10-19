@@ -716,6 +716,7 @@ export function Walk() {
           <AdaptiveDpr onChange={setDpr} />
           <WalkWorld state={state} onProgress={setProgress} />
           <SceneQuality
+            exposure={1}
             manageDpr={false}
             onReady={onReady}
             onError={onLoadError}

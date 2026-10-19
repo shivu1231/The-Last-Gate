@@ -514,6 +514,38 @@ export function World({
     sceneObject.renderOrder = 6;
     return sceneObject;
   }, []);
+  // Ground contact for Baymax on sets without a shadow map: a soft dark footprint on the floor under
+  // his live bounds that thins as he rises, so landings, the drop and the lying pose all sit down.
+  const contact = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 64;
+    const drawingContext = canvas.getContext('2d')!;
+    const gradient = drawingContext.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, 'rgba(0,0,0,1)');
+    gradient.addColorStop(0.55, 'rgba(0,0,0,.72)');
+    gradient.addColorStop(0.8, 'rgba(0,0,0,.25)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+    drawingContext.fillStyle = gradient;
+    drawingContext.fillRect(0, 0, 64, 64);
+    const map = new THREE.CanvasTexture(canvas);
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1),
+      new THREE.MeshBasicMaterial({
+        map,
+        color: '#05080b',
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      }),
+    );
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.renderOrder = 1;
+    mesh.visible = false;
+    return mesh;
+  }, []);
+  const contactBounds = useMemo(() => new THREE.Box3(), []),
+    contactCenter = useMemo(() => new THREE.Vector3(), []),
+    contactSize = useMemo(() => new THREE.Vector3(), []);
   // The reader's lock, made visible: a thin red trace from the gate's hub to whatever it has locked onto
   // (his combat chip). It reaches out when the gate powers, and beats with the chip while his bay is open.
   const lockBeam = useMemo(() => {
@@ -654,7 +686,15 @@ export function World({
         if (alive) onError();
       });
     gl.localClippingEnabled = true;
-    scene.add(camera, hiro.root, eyeLight, eyeLight.target, eyeGlow, lockBeam);
+    scene.add(
+      camera,
+      hiro.root,
+      eyeLight,
+      eyeLight.target,
+      eyeGlow,
+      lockBeam,
+      contact,
+    );
     camera.add(hands.root, cart.root);
     return () => {
       alive = false;
@@ -664,7 +704,10 @@ export function World({
       cart.dispose();
       home.dispose();
       target.dispose();
-      scene.remove(camera, eyeLight, eyeLight.target, eyeGlow, lockBeam);
+      scene.remove(camera, eyeLight, eyeLight.target, eyeGlow, lockBeam, contact);
+      contact.geometry.dispose();
+      contact.material.map?.dispose();
+      contact.material.dispose();
       eyeGlow.material.map?.dispose();
       eyeGlow.material.dispose();
       lockBeam.geometry.dispose();
@@ -682,6 +725,7 @@ export function World({
     eyeLight,
     eyeGlow,
     lockBeam,
+    contact,
     crossing,
     onError,
   ]);
@@ -2525,6 +2569,30 @@ export function World({
           ? (_x, zPosition) => homeFloor(zPosition)
           : undefined,
     );
+    if (set === 'street' || set === 'home') {
+      contactBounds.setFromObject(baymax.root);
+      contactBounds.getCenter(contactCenter);
+      contactBounds.getSize(contactSize);
+      const ground =
+        set === 'home'
+          ? state2.stage === 'home' && easedProgress < EMERGE + 0.4
+            ? homeFloor(contactCenter.z)
+            : 0.03
+          : rampY(contactCenter.z);
+      const lift = Math.max(0, contactBounds.min.y - ground);
+      const strength =
+        baymax.root.visible && !contactBounds.isEmpty()
+          ? 0.62 * clamp01(1 - lift / 2.4)
+          : 0;
+      contact.visible = strength > 0.01;
+      contact.material.opacity = strength;
+      contact.position.set(contactCenter.x, ground + 0.02, contactCenter.z);
+      contact.scale.set(
+        contactSize.x * (1.32 + lift * 0.3),
+        contactSize.z * (1.32 + lift * 0.3),
+        1,
+      );
+    } else contact.visible = false;
     hiro.update();
     if (grip > 0) {
       // Fit Hiro to the live boots, not the old white-shell foot-length estimate. A crouched,
@@ -2884,6 +2952,8 @@ export function World({
   return (
     <SceneQuality
       ready={compiled}
+      // Home is the relief: a touch more open than the corrupted street.
+      exposure={set === 'home' ? 1.03 : 1}
       manageDpr={false}
       onReady={onReady}
       onError={onError}

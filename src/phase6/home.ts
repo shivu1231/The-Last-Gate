@@ -250,12 +250,12 @@ export function createHome() {
   // Light: a low warm-neutral sun across the water rims the pair; a cool dusk sky fills them from
   // the city side and the lamps add small warm pools. The warmth reads against the corrupted world,
   // not from an orange grade.
-  const hemi = new THREE.HemisphereLight('#a7b6d2', '#3a3836', 0.78);
+  const hemi = new THREE.HemisphereLight('#a7b6d2', '#3a3836', 0.66);
   sceneKit.root.add(hemi);
   const sun = new THREE.DirectionalLight('#ffd9bd', 2.1);
   sun.position.set(-20, 12, -40);
   sceneKit.root.add(sun);
-  const back = new THREE.DirectionalLight('#c3cee3', 1.05);
+  const back = new THREE.DirectionalLight('#c3cee3', 0.98);
   back.position.set(10, 8, 20);
   sceneKit.root.add(back);
   for (const point of lamps) {
