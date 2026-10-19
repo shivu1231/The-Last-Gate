@@ -1004,18 +1004,23 @@ export class BaymaxController {
     pose.pos.y += 0.035 - 0.07 * bump(timeSeconds, 0, 0.45);
     pose.stand = span(timeSeconds, 0.25, 1.05);
     // Compress, ignite, then accelerate away. Hiro isn't knocked down by a nonexistent shot.
-    this.face(camera, pose, 0.45 * span(timeSeconds, 0, 0.6));
+    // He squares up to Hiro during the anticipation and keeps facing him as he rises (damped yaw,
+    // so no snap); the body only turns with the flight once the chase takes over.
+    this.face(camera, pose, span(timeSeconds, 0, 0.6));
     this.lookAt(camera, pose, 1);
     pose.pitch = 0.12 * span(timeSeconds, 0, 0.8);
     pose.arm =
       0.35 * span(timeSeconds, 0.2, 0.8) * (1 - span(timeSeconds, 1.25, 1.8));
     pose.aim.copy(camera);
     pose.thrust = span(timeSeconds, 0.9, 1.55);
-    const lift = Math.pow(span(timeSeconds, 1.35, 3.5), 1.6);
+    // Rise clear of the low street wall first, then drift back: moving back and up together
+    // dragged his legs and thrusters through it. Same end point as the chase's first pose.
+    const lift = Math.pow(span(timeSeconds, 1.35, 3.5), 1.6),
+      drift = Math.pow(span(timeSeconds, 1.9, 3.5), 1.4);
     pose.pos.set(
-      BAYMAX_POSITION[0] + lift * 1.6,
+      BAYMAX_POSITION[0] + drift * 1.6,
       BAYMAX_POSITION[1] + 0.035 + lift * 4.8,
-      BAYMAX_POSITION[2] - lift * 6,
+      BAYMAX_POSITION[2] - drift * 6,
     );
     pose.pitch -= lift * 0.25;
   }
