@@ -8,6 +8,13 @@ export function transitionChapter(go: () => void, waitUntilReady = true) {
   const cover = document.createElement('div');
   cover.className = `chapter-cover${waitUntilReady ? ' later-cover' : ''}`;
   cover.setAttribute('aria-hidden', 'true');
+  // Paint feedback before mounting the next renderer: synchronous geometry work can delay timers.
+  if (waitUntilReady) {
+    const note = document.createElement('div');
+    note.className = 'later-cover-note';
+    note.append(createBaymaxLoadingElement());
+    cover.append(note);
+  }
   document.body.append(cover);
   requestAnimationFrame(() =>
     requestAnimationFrame(() => cover.classList.add('covered')),
@@ -34,20 +41,7 @@ export function transitionChapter(go: () => void, waitUntilReady = true) {
   window.setTimeout(
     () => {
       window.addEventListener('lastgate:scene-ready', release, { once: true });
-      fallback = window.setTimeout(
-        () => {
-          if (!waitUntilReady) {
-            release();
-            return;
-          }
-          // Never expose an unfinished scene on a timer. A slow load remains covered.
-          const note = document.createElement('div');
-          note.className = 'later-cover-note';
-          note.append(createBaymaxLoadingElement());
-          cover.append(note);
-        },
-        waitUntilReady ? 750 : 6500,
-      );
+      if (!waitUntilReady) fallback = window.setTimeout(release, 6500);
       go();
     },
     matchMedia('(prefers-reduced-motion: reduce)').matches ? 20 : 300,

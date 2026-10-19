@@ -1,3 +1,4 @@
+import { takePreparedHome, takePreparedStreet, takePreparedRelay } from './preparedEnvironments';
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -465,7 +466,7 @@ export function World({
         scene,
       };
   }, [baymax, hiro, hands, fp, camera, gl, scene]);
-  const home = useMemo<Home>(createHome, []);
+  const home = useMemo<Home>(takePreparedHome, []);
   const env = useRef<{
     name: WorldSetName;
     relay?: ReturnType<typeof createRelay>;
@@ -700,14 +701,14 @@ export function World({
   useEffect(() => {
     const group: NonNullable<typeof env.current> = { name: set };
     if (set === 'relay') {
-      group.relay = createRelay();
+      group.relay = takePreparedRelay();
       scene.add(group.relay.root);
       scene.background = new THREE.Color('#081320');
       scene.fog = new THREE.Fog('#14293b', 14, 150);
-      if (!preStreet.current) preStreet.current = createStreet();
+      if (!preStreet.current) preStreet.current = takePreparedStreet();
     }
     if (set === 'street') {
-      group.street = preStreet.current ?? createStreet();
+      group.street = preStreet.current ?? takePreparedStreet();
       preStreet.current = null;
       scene.add(group.street.root);
       homeScene.add(home.root);

@@ -7,7 +7,7 @@ import { transitionChapter } from '../presentation/chapterTransition';
 registerPhaseFiveExit({
   label: 'GO AFTER THE SIGNAL',
   go: () => transitionChapter(enterPhaseSix, true),
-  prepare: () => import('./PhaseSix'),
+  prepare: () => Promise.all([import('./PhaseSix'), import('./preparedEnvironments').then(module => module.preparePhaseSixEnvironments())]),
 });
 
 export { PhaseSixHost } from './PhaseSixHost';

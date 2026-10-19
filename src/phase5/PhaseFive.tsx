@@ -970,9 +970,9 @@ export function PhaseFive({ initial: from }: { initial: PhaseFiveStep }) {
     },
     [],
   );
-  // Warm up whatever comes next once the trace is found.
+  // Prepare the next chapter during telemetry so following the signal needs less covered work.
   useEffect(() => {
-    if (state.stage === 'found')
+    if (state.stage === 'facility' || state.stage === 'found')
       void phaseFiveExit()
         ?.prepare?.()
         .catch(() => {});
