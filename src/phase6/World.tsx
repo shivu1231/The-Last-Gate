@@ -2583,17 +2583,33 @@ export function World({
     });
     // The chase is darker: the city light drops and the fog closes in.
     const chase = state2.stage === 'escape' ? 1 : 0;
+    // The old portal site is the darkest set: almost dead on arrival, and some light returns once
+    // Hiro restores the rings. The portal's own light carries the rest when it opens.
+    const site =
+      set === 'street' && atLeast(state2.stage, 'gate')
+        ? atLeast(state2.stage, 'powered')
+          ? 0.55
+          : 0.8
+        : 0;
     (lights.children[0] as THREE.HemisphereLight).intensity =
       THREE.MathUtils.damp(
         (lights.children[0] as THREE.HemisphereLight).intensity,
-        1.3 - chase * 0.95,
+        0.74 - chase * 0.46 - site * 0.4,
         2,
         deltaSeconds,
       );
     (lights.children[1] as THREE.DirectionalLight).intensity =
       THREE.MathUtils.damp(
         (lights.children[1] as THREE.DirectionalLight).intensity,
-        1.7 - chase * 1.4,
+        2.05 - chase * 1.7 - site,
+        2,
+        deltaSeconds,
+      );
+    // The back-rim stays partly on in the chase: Baymax moves through edge light, not flat fill.
+    (lights.children[2] as THREE.DirectionalLight).intensity =
+      THREE.MathUtils.damp(
+        (lights.children[2] as THREE.DirectionalLight).intensity,
+        1.15 - chase * 0.55,
         2,
         deltaSeconds,
       );

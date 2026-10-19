@@ -105,7 +105,7 @@ float edge=uOpen;if(r>edge)discard;
 float swirl=sin(a*5.+r*9.-uTime*1.6)*.5+.5;float ripple=sin(r*22.-uTime*4.)*.004*(1.-r);
 vec2 suv=gl_FragCoord.xy/uRes+vec2(cos(a),sin(a))*ripple;
 vec3 view=texture2D(uView,suv).rgb;
-vec3 dusk=vec3(.357,.294,.541);vec3 glow=vec3(.85,.78,1.);
+vec3 dusk=vec3(.27,.33,.49);vec3 glow=vec3(.78,.87,1.);
 float rim=smoothstep(edge-.32,edge,r);
 float clear=smoothstep(.95,.2,r/max(edge,.001))*smoothstep(.15,.8,uOpen);
 vec3 col=mix(dusk*(.7+swirl*.6),view,clear*.92);
@@ -1269,7 +1269,7 @@ export function createStreet() {
     frame,
   );
   portal.visible = false;
-  const portalLight = new THREE.PointLight('#9a86e0', 0, 26, 1.6);
+  const portalLight = new THREE.PointLight('#a3b6ec', 0, 26, 1.6);
   portalLight.position.set(0, 0, 2.5);
   frame.add(portalLight);
 

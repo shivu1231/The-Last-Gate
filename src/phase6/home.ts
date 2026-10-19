@@ -274,7 +274,7 @@ export function createHome() {
   // The gate on this side, closing behind them.
   const gateMat = sceneKit.ownMaterial(
     new THREE.MeshBasicMaterial({
-      color: '#b9a6ff',
+      color: '#b4c4ff',
       side: THREE.DoubleSide,
       transparent: true,
       opacity: 0,
@@ -288,7 +288,7 @@ export function createHome() {
     gateMat,
     { p: [HOME_GATE.x, HOME_GATE.y, HOME_GATE.z] },
   );
-  const gateLight = new THREE.PointLight('#9a86e0', 0, 18, 1.6);
+  const gateLight = new THREE.PointLight('#a3b6ec', 0, 18, 1.6);
   gateLight.position.copy(HOME_GATE).add(new THREE.Vector3(0, 0, -1.5));
   sceneKit.root.add(gateLight);
 
