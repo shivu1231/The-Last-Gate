@@ -19,10 +19,13 @@ import type { Phase } from '../state/SceneStateManager';
 import { useSceneState } from '../state/SceneStateManager';
 import type { SequenceDirector } from '../systems/SequenceDirector';
 import type { BaymaxController } from './BaymaxController';
-import { createRedChip } from './RedChip.js';
+import { CHIP_SEAT_Z, createRedChip } from './RedChip.js';
+import { LATER_BAYMAX_SCALE } from './LaterBaymax';
 
 const span = (inputValue: number, startValue: number, endValue: number) =>
   MathUtils.smoothstep(inputValue, startValue, endValue);
+/** The canonical dock-space seat, in world units at Baymax's scale. */
+const SEAT = CHIP_SEAT_Z * LATER_BAYMAX_SCALE;
 /** Ground rest: beside Baymax's open hand, catching the only warm light on the street. */
 const GROUND = new Vector3(4.02, -0.138, -10.48);
 /** Camera-space poses: inspection sits centred and close; the hand rests low right. */
@@ -67,6 +70,9 @@ export class ChipController {
     this.chip = chip;
     this.glow = glow;
     this.body = body;
+    // One canonical card: the same world size as the dock it seats in (Baymax's shell scale) and as
+    // the card Hiro later pulls and plays into the reader. At 1:1 it overran its own keyed frame.
+    chip.scale.setScalar(LATER_BAYMAX_SCALE);
     this.group.add(chip);
     this.group.name = 'Chip';
     this.groundQuat
@@ -213,13 +219,13 @@ export class ChipController {
       this.dockAxes(this.targetQuat);
       this.targetPos
         .copy(this.dockPos)
-        .addScaledVector(this.dockNormal, MathUtils.lerp(0.07, 0.001, press));
+        .addScaledVector(this.dockNormal, MathUtils.lerp(0.07, SEAT, press));
       lerp = timeSeconds < 0.5 ? 10 : 22;
       light = 1.2 - press * 0.6;
       glow = 1;
     } else if (baymax) {
       this.dockAxes(this.targetQuat);
-      this.targetPos.copy(this.dockPos).addScaledVector(this.dockNormal, 0.001);
+      this.targetPos.copy(this.dockPos).addScaledVector(this.dockNormal, SEAT);
       lerp = 30;
       light =
         phase === 'silence'

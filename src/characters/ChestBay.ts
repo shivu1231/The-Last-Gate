@@ -9,7 +9,7 @@ import {
   Vector3,
 } from 'three';
 import { createChestAccess } from './ChestAccess.js';
-import { createRedChip } from './RedChip.js';
+import { CHIP_SEAT_Z, createRedChip } from './RedChip.js';
 import {
   applySkinHole,
   createArmorMaterial,
@@ -73,7 +73,7 @@ export function mountChestBay(shell: Group) {
 
   // The combat chip, seated in the dock exactly where Hiro left it in Phase 1.
   const { chip, glow, body } = createRedChip();
-  chip.position.set(0, 0, 0.004);
+  chip.position.set(0, 0, CHIP_SEAT_Z);
   chest.dock.add(chip);
   const glowBase = new Color('#ff3a2c');
 

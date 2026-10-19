@@ -5,6 +5,11 @@ export const CHIP_W = 0.15,
   CHIP_H = 0.21,
   CHIP_KEY = 0.038;
 /**
+ * Canonical seat: the chip's centre sits this far out of the dock origin, in dock space. Its back
+ * bevel then clears the dock floor and contacts, and its face sits flush with the keyed frame.
+ */
+export const CHIP_SEAT_Z = 0.004;
+/**
  * Construct the keyed card outline shared by the combat and healthcare chips.
  */
 export function chipOutline(
