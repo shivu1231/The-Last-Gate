@@ -7,32 +7,57 @@ import { QUALITY_ORDER, useQuality } from './Quality';
 // frames, so a slow machine is corrected in ~2.5 s instead of after 240 slow frames.
 
 const WINDOW_SECONDS = 2.5;
-const BUDGET = 1 / 44;          // sustained average worse than ~44fps steps down a tier
-const GRACE_AFTER_CHANGE = 3;   // seconds
+const BUDGET = 1 / 44; // sustained average worse than ~44fps steps down a tier
+const GRACE_AFTER_CHANGE = 3; // seconds
 
+/**
+ * Owns rendering and resource policy state and its existing runtime lifecycle.
+ */
 class FrameGovernor {
   private elapsed = 0;
   private frames = 0;
   private grace = GRACE_AFTER_CHANGE;
   /** Smoothed frame time (s) for diagnostics. */
   frameTime = 1 / 60;
-  enabled = new URLSearchParams(location.search).get('quality') === null && !import.meta.env.VITE_QUALITY;
+  enabled =
+    new URLSearchParams(location.search).get('quality') === null &&
+    !import.meta.env.VITE_QUALITY;
 
   /** A chapter change or transition: restart the sampling window. */
-  settle(seconds = GRACE_AFTER_CHANGE) { this.grace = Math.max(this.grace, seconds); this.elapsed = 0; this.frames = 0; }
+  settle(seconds = GRACE_AFTER_CHANGE) {
+    this.grace = Math.max(this.grace, seconds);
+    this.elapsed = 0;
+    this.frames = 0;
+  }
 
-  sample(dt: number, busy: boolean) {
-    this.frameTime += (dt - this.frameTime) * .05;
-    if (!this.enabled || busy || document.visibilityState !== 'visible' || dt <= .001 || dt > .5) return;
-    if (this.grace > 0) { this.grace -= dt; return; }
-    this.elapsed += dt; this.frames++;
+  sample(deltaSeconds: number, busy: boolean) {
+    this.frameTime += (deltaSeconds - this.frameTime) * 0.05;
+    if (
+      !this.enabled ||
+      busy ||
+      document.visibilityState !== 'visible' ||
+      deltaSeconds <= 0.001 ||
+      deltaSeconds > 0.5
+    )
+      return;
+    if (this.grace > 0) {
+      this.grace -= deltaSeconds;
+      return;
+    }
+    this.elapsed += deltaSeconds;
+    this.frames++;
     if (this.elapsed < WINDOW_SECONDS) return;
     const average = this.elapsed / this.frames;
-    this.elapsed = 0; this.frames = 0;
-    const quality = useQuality.getState(), next = QUALITY_ORDER[QUALITY_ORDER.indexOf(quality.name) + 1];
+    this.elapsed = 0;
+    this.frames = 0;
+    const quality = useQuality.getState(),
+      next = QUALITY_ORDER[QUALITY_ORDER.indexOf(quality.name) + 1];
     if (average > BUDGET && next) {
       quality.set(next, true);
-      if (import.meta.env.DEV) console.info(`[lattice] sustained ${(1000 * average).toFixed(1)}ms frames → ${next}`);
+      if (import.meta.env.DEV)
+        console.info(
+          `[lattice] sustained ${(1000 * average).toFixed(1)}ms frames → ${next}`,
+        );
       this.settle(4);
     }
   }

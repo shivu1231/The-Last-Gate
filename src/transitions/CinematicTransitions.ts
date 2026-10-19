@@ -10,160 +10,379 @@ import type { TransitionBeat, TransitionPlayer } from '../core/ExperienceFlow';
 // Drawn on one half-resolution 2D canvas that only renders while a transition plays,
 // plus renderer/camera signals (exposure, instability, blur, FOV kick, shake).
 
-type Particle = { x: number; y: number; vx: number; vy: number; size: number; spin: number; delay: number; tone: number };
-type DrawContext = { ctx: CanvasRenderingContext2D; w: number; h: number; cover: number; time: number; beat: TransitionBeat; particles: Particle[] };
+/**
+ * Screen-space motion state for one cover-transition particle.
+ */
+type TransitionParticle = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  spin: number;
+  delay: number;
+  tone: number;
+};
+/**
+ * Canvas, timing and particle inputs supplied to a transition drawing function.
+ */
+type TransitionDrawContext = {
+  ctx: CanvasRenderingContext2D;
+  w: number;
+  h: number;
+  cover: number;
+  time: number;
+  beat: TransitionBeat;
+  particles: TransitionParticle[];
+};
 
-type Spec = {
+/**
+ * Timing, drawing and presentation policy for an authored cover effect.
+ */
+type TransitionSpec = {
   /** Seconds per beat. */
-  beats: [anticipation: number, action: number, followThrough: number, settle: number];
+  beats: [
+    anticipation: number,
+    action: number,
+    followThrough: number,
+    settle: number,
+  ];
   /** Cover reached at end of anticipation (it should only hint). */
   hint: number;
   particles?: number;
-  draw(c: DrawContext): void;
+  draw(context: TransitionDrawContext): void;
   signals?(cover: number, beat: TransitionBeat): void;
-  shake?: { source: ShakeSource; strength: number; at: 'action' | 'follow-through' };
+  shake?: {
+    source: ShakeSource;
+    strength: number;
+    at: 'action' | 'follow-through';
+  };
 };
 
 const INK = '2,5,6';
-const rand = (a: number, b: number) => a + Math.random() * (b - a);
+const randomBetween = (startValue: number, endValue: number) =>
+  startValue + Math.random() * (endValue - startValue);
 
-const SPECS: Record<Exclude<TransitionType, 'CUT'>, Spec> = {
+const SPECS: Record<Exclude<TransitionType, 'CUT'>, TransitionSpec> = {
   // Asymmetric eyelid: two quick half-closures, then the full blink.
   BLINK: {
-    beats: [.45, .32, .38, .5], hint: .18,
-    draw({ ctx, w, h, cover }) {
-      const lid = Math.pow(cover, 1.6), cy = h * .52;
-      ctx.fillStyle = `rgb(${INK})`;
-      ctx.beginPath();
-      ctx.moveTo(0, 0); ctx.lineTo(w, 0); ctx.lineTo(w, cy - (1 - lid) * h * .62);
-      ctx.bezierCurveTo(w * .7, cy - (1 - lid) * h * .78, w * .3, cy - (1 - lid) * h * .7, 0, cy - (1 - lid) * h * .58);
-      ctx.closePath(); ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(0, h); ctx.lineTo(w, h); ctx.lineTo(w, cy + (1 - lid) * h * .56);
-      ctx.bezierCurveTo(w * .68, cy + (1 - lid) * h * .7, w * .32, cy + (1 - lid) * h * .66, 0, cy + (1 - lid) * h * .52);
-      ctx.closePath(); ctx.fill();
+    beats: [0.45, 0.32, 0.38, 0.5],
+    hint: 0.18,
+    draw({ ctx: drawingContext, w: width, h: height, cover }) {
+      const lid = Math.pow(cover, 1.6),
+        cy = height * 0.52;
+      drawingContext.fillStyle = `rgb(${INK})`;
+      drawingContext.beginPath();
+      drawingContext.moveTo(0, 0);
+      drawingContext.lineTo(width, 0);
+      drawingContext.lineTo(width, cy - (1 - lid) * height * 0.62);
+      drawingContext.bezierCurveTo(
+        width * 0.7,
+        cy - (1 - lid) * height * 0.78,
+        width * 0.3,
+        cy - (1 - lid) * height * 0.7,
+        0,
+        cy - (1 - lid) * height * 0.58,
+      );
+      drawingContext.closePath();
+      drawingContext.fill();
+      drawingContext.beginPath();
+      drawingContext.moveTo(0, height);
+      drawingContext.lineTo(width, height);
+      drawingContext.lineTo(width, cy + (1 - lid) * height * 0.56);
+      drawingContext.bezierCurveTo(
+        width * 0.68,
+        cy + (1 - lid) * height * 0.7,
+        width * 0.32,
+        cy + (1 - lid) * height * 0.66,
+        0,
+        cy + (1 - lid) * height * 0.52,
+      );
+      drawingContext.closePath();
+      drawingContext.fill();
     },
   },
   // Red system sweep: edge flicker, a scan line drops and drags a red-black field behind it.
   RED_SCAN: {
-    beats: [.5, .55, .5, .7], hint: .08,
-    draw({ ctx, w, h, cover, beat }) {
-      const y = cover * h * 1.04;
-      const field = ctx.createLinearGradient(0, y - h * .35, 0, y);
-      field.addColorStop(0, 'rgba(18,2,3,.97)'); field.addColorStop(1, 'rgba(70,6,8,.88)');
-      ctx.fillStyle = field; ctx.fillRect(0, 0, w, y);
-      const glow = ctx.createLinearGradient(0, y - 18, 0, y + 6);
-      glow.addColorStop(0, 'rgba(212,43,43,0)'); glow.addColorStop(.8, 'rgba(212,43,43,.55)'); glow.addColorStop(1, 'rgba(255,120,110,.0)');
-      ctx.fillStyle = glow; ctx.fillRect(0, y - 18, w, 24);
-      if (beat === 'anticipation') { ctx.fillStyle = `rgba(212,43,43,${.06 + Math.random() * .05})`; ctx.fillRect(0, 0, w, h * .04); ctx.fillRect(0, h * .96, w, h * .04); }
+    beats: [0.5, 0.55, 0.5, 0.7],
+    hint: 0.08,
+    draw({ ctx: drawingContext, w: width, h: height, cover, beat }) {
+      const yPosition = cover * height * 1.04;
+      const field = drawingContext.createLinearGradient(
+        0,
+        yPosition - height * 0.35,
+        0,
+        yPosition,
+      );
+      field.addColorStop(0, 'rgba(18,2,3,.97)');
+      field.addColorStop(1, 'rgba(70,6,8,.88)');
+      drawingContext.fillStyle = field;
+      drawingContext.fillRect(0, 0, width, yPosition);
+      const glow = drawingContext.createLinearGradient(
+        0,
+        yPosition - 18,
+        0,
+        yPosition + 6,
+      );
+      glow.addColorStop(0, 'rgba(212,43,43,0)');
+      glow.addColorStop(0.8, 'rgba(212,43,43,.55)');
+      glow.addColorStop(1, 'rgba(255,120,110,.0)');
+      drawingContext.fillStyle = glow;
+      drawingContext.fillRect(0, yPosition - 18, width, 24);
+      if (beat === 'anticipation') {
+        drawingContext.fillStyle = `rgba(212,43,43,${0.06 + Math.random() * 0.05})`;
+        drawingContext.fillRect(0, 0, width, height * 0.04);
+        drawingContext.fillRect(0, height * 0.96, width, height * 0.04);
+      }
     },
-    signals(cover) { cinematicSignals.instability = cover * .004; },
+    signals(cover) {
+      cinematicSignals.instability = cover * 0.004;
+    },
   },
   // Concrete shards cross the lens and hide the cut, then tumble out.
   DEBRIS_OCCLUSION: {
-    beats: [.35, .5, .55, .5], hint: .05, particles: 26,
-    draw({ ctx, w, h, cover, particles }) {
-      for (const p of particles) {
-        const k = Math.max(0, Math.min(1, cover * 1.25 - p.delay * .25));
-        if (k <= 0) continue;
-        const x = (p.x + p.vx * (1 - k)) * w, y = (p.y + p.vy * (1 - k)) * h, s = p.size * 9 * Math.max(w, h) * (.4 + k * .9);
-        ctx.save(); ctx.translate(x, y); ctx.rotate(p.spin * (1 - k) * 3);
-        ctx.fillStyle = `rgba(${12 + p.tone * 18},${14 + p.tone * 18},${18 + p.tone * 20},${.92 * k + .08})`;
-        ctx.beginPath(); ctx.moveTo(-s * .5, -s * .3); ctx.lineTo(s * .42, -s * .48); ctx.lineTo(s * .55, s * .2); ctx.lineTo(-s * .1, s * .52); ctx.closePath(); ctx.fill();
-        ctx.restore();
+    beats: [0.35, 0.5, 0.55, 0.5],
+    hint: 0.05,
+    particles: 26,
+    draw({ ctx: drawingContext, w: width, h: height, cover, particles }) {
+      for (const voice of particles) {
+        const blendFactor = Math.max(
+          0,
+          Math.min(1, cover * 1.25 - voice.delay * 0.25),
+        );
+        if (blendFactor <= 0) continue;
+        const xPosition = (voice.x + voice.vx * (1 - blendFactor)) * width,
+          yPosition = (voice.y + voice.vy * (1 - blendFactor)) * height,
+          scaleFactor =
+            voice.size *
+            9 *
+            Math.max(width, height) *
+            (0.4 + blendFactor * 0.9);
+        drawingContext.save();
+        drawingContext.translate(xPosition, yPosition);
+        drawingContext.rotate(voice.spin * (1 - blendFactor) * 3);
+        drawingContext.fillStyle = `rgba(${12 + voice.tone * 18},${14 + voice.tone * 18},${18 + voice.tone * 20},${0.92 * blendFactor + 0.08})`;
+        drawingContext.beginPath();
+        drawingContext.moveTo(-scaleFactor * 0.5, -scaleFactor * 0.3);
+        drawingContext.lineTo(scaleFactor * 0.42, -scaleFactor * 0.48);
+        drawingContext.lineTo(scaleFactor * 0.55, scaleFactor * 0.2);
+        drawingContext.lineTo(-scaleFactor * 0.1, scaleFactor * 0.52);
+        drawingContext.closePath();
+        drawingContext.fill();
+        drawingContext.restore();
       }
-      if (cover > .82) { ctx.fillStyle = `rgba(${INK},${(cover - .82) / .18})`; ctx.fillRect(0, 0, w, h); }
+      if (cover > 0.82) {
+        drawingContext.fillStyle = `rgba(${INK},${(cover - 0.82) / 0.18})`;
+        drawingContext.fillRect(0, 0, width, height);
+      }
     },
-    shake: { source: 'impact', strength: .55, at: 'action' },
+    shake: { source: 'impact', strength: 0.55, at: 'action' },
   },
   // Microbots gather at the frame edge, accelerate into the lens, then disperse.
   MICROBOT_SWARM: {
-    beats: [.6, .55, .6, .55], hint: .12, particles: 420,
-    draw({ ctx, w, h, cover, particles, beat }) {
-      const cx = w * .5, cy = h * .5, reach = Math.hypot(cx, cy);
-      ctx.fillStyle = '#05080a';
+    beats: [0.6, 0.55, 0.6, 0.55],
+    hint: 0.12,
+    particles: 420,
+    draw({ ctx: drawingContext, w: width, h: height, cover, particles, beat }) {
+      const cx = width * 0.5,
+        cy = height * 0.5,
+        reach = Math.hypot(cx, cy);
+      drawingContext.fillStyle = '#05080a';
       const dispersing = beat === 'follow-through' || beat === 'settle';
-      for (const p of particles) {
-        const angle = Math.atan2(p.vy, p.vx), base = (1.15 - p.delay * .7) * reach;
-        let r: number, size: number;
-        if (dispersing) { r = reach * (.15 + (1 - cover) * 1.3) * (p.size * 18 + .4); size = p.size * w * (.4 + cover * 1.2); }
-        else { r = base * (1 - Math.pow(cover, 1.7) * .92); size = p.size * w * (.25 + Math.pow(cover, 2.4) * 2.6); }
-        const x = cx + Math.cos(angle + p.spin * (1 - cover)) * r, y = cy + Math.sin(angle + p.spin * (1 - cover)) * r * .62;
-        ctx.fillRect(x - size * .5, y - size * .5, size, size * .62);
+      for (const point of particles) {
+        const angle = Math.atan2(point.vy, point.vx),
+          base = (1.15 - point.delay * 0.7) * reach;
+        let radius: number, size: number;
+        if (dispersing) {
+          radius = reach * (0.15 + (1 - cover) * 1.3) * (point.size * 18 + 0.4);
+          size = point.size * width * (0.4 + cover * 1.2);
+        } else {
+          radius = base * (1 - Math.pow(cover, 1.7) * 0.92);
+          size = point.size * width * (0.25 + Math.pow(cover, 2.4) * 2.6);
+        }
+        const xPosition =
+            cx + Math.cos(angle + point.spin * (1 - cover)) * radius,
+          yPosition =
+            cy + Math.sin(angle + point.spin * (1 - cover)) * radius * 0.62;
+        drawingContext.fillRect(
+          xPosition - size * 0.5,
+          yPosition - size * 0.5,
+          size,
+          size * 0.62,
+        );
       }
-      if (cover > .86) { ctx.fillStyle = `rgba(5,8,10,${(cover - .86) / .14})`; ctx.fillRect(0, 0, w, h); }
+      if (cover > 0.86) {
+        drawingContext.fillStyle = `rgba(5,8,10,${(cover - 0.86) / 0.14})`;
+        drawingContext.fillRect(0, 0, width, height);
+      }
     },
   },
   // Space folds along horizontal seams; bands slip past one another.
   DIMENSION_FOLD: {
-    beats: [.5, .6, .55, .6], hint: .1,
-    draw({ ctx, w, h, cover }) {
+    beats: [0.5, 0.6, 0.55, 0.6],
+    hint: 0.1,
+    draw({ ctx: drawingContext, w: width2, h: height, cover }) {
       const bands = 9;
-      for (let i = 0; i < bands; i++) {
-        const y = (i / bands) * h, bh = h / bands + 1, dir = i % 2 ? 1 : -1;
-        const k = Math.min(1, Math.max(0, cover * 1.4 - Math.abs(i - bands / 2) / bands * .4));
-        const width = w * k, x = dir > 0 ? 0 : w - width;
-        ctx.fillStyle = `rgba(${INK},${.4 + k * .6})`; ctx.fillRect(x, y, width, bh);
-        ctx.fillStyle = `rgba(150,190,220,${k * (1 - k) * .5})`; ctx.fillRect(dir > 0 ? width - 2 : x, y, 2, bh);
+      for (let index = 0; index < bands; index++) {
+        const yPosition = (index / bands) * height,
+          bh = height / bands + 1,
+          dir = index % 2 ? 1 : -1;
+        const blendFactor = Math.min(
+          1,
+          Math.max(
+            0,
+            cover * 1.4 - (Math.abs(index - bands / 2) / bands) * 0.4,
+          ),
+        );
+        const width = width2 * blendFactor,
+          xPosition = dir > 0 ? 0 : width2 - width;
+        drawingContext.fillStyle = `rgba(${INK},${0.4 + blendFactor * 0.6})`;
+        drawingContext.fillRect(xPosition, yPosition, width, bh);
+        drawingContext.fillStyle = `rgba(150,190,220,${blendFactor * (1 - blendFactor) * 0.5})`;
+        drawingContext.fillRect(
+          dir > 0 ? width - 2 : xPosition,
+          yPosition,
+          2,
+          bh,
+        );
       }
     },
-    signals(cover) { cinematicSignals.instability = cover * .006; cinematicSignals.fov = -cover * 3; },
+    signals(cover) {
+      cinematicSignals.instability = cover * 0.006;
+      cinematicSignals.fov = -cover * 3;
+    },
   },
   // The portal floods the sensor; the next world resolves out of white.
   PORTAL_OVEREXPOSURE: {
-    beats: [.7, .5, .9, 1.1], hint: .15,
-    draw({ ctx, w, h, cover }) {
-      const g = ctx.createRadialGradient(w * .5, h * .48, 0, w * .5, h * .48, Math.hypot(w, h) * (.25 + cover * .6));
-      g.addColorStop(0, `rgba(250,252,255,${Math.min(1, cover * 1.25)})`);
-      g.addColorStop(1, `rgba(214,236,255,${cover * cover})`);
-      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    beats: [0.7, 0.5, 0.9, 1.1],
+    hint: 0.15,
+    draw({ ctx: drawingContext, w: width, h: height, cover }) {
+      const group = drawingContext.createRadialGradient(
+        width * 0.5,
+        height * 0.48,
+        0,
+        width * 0.5,
+        height * 0.48,
+        Math.hypot(width, height) * (0.25 + cover * 0.6),
+      );
+      group.addColorStop(0, `rgba(250,252,255,${Math.min(1, cover * 1.25)})`);
+      group.addColorStop(1, `rgba(214,236,255,${cover * cover})`);
+      drawingContext.fillStyle = group;
+      drawingContext.fillRect(0, 0, width, height);
     },
-    signals(cover) { cinematicSignals.exposure = cover * 1.6; cinematicSignals.blur = cover * .6; },
-    shake: { source: 'portal', strength: .35, at: 'action' },
+    signals(cover) {
+      cinematicSignals.exposure = cover * 1.6;
+      cinematicSignals.blur = cover * 0.6;
+    },
+    shake: { source: 'portal', strength: 0.35, at: 'action' },
   },
   // Dense fog drifts across the lens; distance is lost, then returns.
   FOG_PASS: {
-    beats: [.7, .7, .7, .8], hint: .2, particles: 24,
-    draw({ ctx, w, h, cover, particles, time }) {
-      for (const p of particles) {
-        const x = ((p.x + 1.2 + time * p.vx * .08) % 1.4 - .2) * w, y = p.y * h, r = (.12 + p.size * 10) * w;
-        const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-        g.addColorStop(0, `rgba(${92 + p.tone * 40},${112 + p.tone * 40},${128 + p.tone * 40},${Math.min(1, cover * 1.1)})`); g.addColorStop(1, 'rgba(60,80,96,0)');
-        ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    beats: [0.7, 0.7, 0.7, 0.8],
+    hint: 0.2,
+    particles: 24,
+    draw({ ctx: drawingContext, w: width, h: height, cover, particles, time }) {
+      for (const voice of particles) {
+        const xPosition =
+            (((voice.x + 1.2 + time * voice.vx * 0.08) % 1.4) - 0.2) * width,
+          yPosition = voice.y * height,
+          radius = (0.12 + voice.size * 10) * width;
+        const group = drawingContext.createRadialGradient(
+          xPosition,
+          yPosition,
+          0,
+          xPosition,
+          yPosition,
+          radius,
+        );
+        group.addColorStop(
+          0,
+          `rgba(${92 + voice.tone * 40},${112 + voice.tone * 40},${128 + voice.tone * 40},${Math.min(1, cover * 1.1)})`,
+        );
+        group.addColorStop(1, 'rgba(60,80,96,0)');
+        drawingContext.fillStyle = group;
+        drawingContext.fillRect(
+          xPosition - radius,
+          yPosition - radius,
+          radius * 2,
+          radius * 2,
+        );
       }
-      if (cover > .7) { ctx.fillStyle = `rgba(70,88,102,${(cover - .7) / .3})`; ctx.fillRect(0, 0, w, h); }
+      if (cover > 0.7) {
+        drawingContext.fillStyle = `rgba(70,88,102,${(cover - 0.7) / 0.3})`;
+        drawingContext.fillRect(0, 0, width, height);
+      }
     },
-    signals(cover) { cinematicSignals.blur = cover * .8; },
+    signals(cover) {
+      cinematicSignals.blur = cover * 0.8;
+    },
   },
   // Space collapses to a point with a forward pull, then re-expands.
   DEPTH_COLLAPSE: {
-    beats: [.55, .45, .5, .6], hint: .1,
-    draw({ ctx, w, h, cover }) {
-      const r = Math.hypot(w, h) * .6 * (1 - Math.pow(cover, .8));
-      const g = ctx.createRadialGradient(w * .5, h * .5, Math.max(0, r * .55), w * .5, h * .5, Math.max(1, r));
-      g.addColorStop(0, `rgba(${INK},0)`); g.addColorStop(1, `rgba(${INK},1)`);
-      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-      if (r < 2) { ctx.fillStyle = `rgb(${INK})`; ctx.fillRect(0, 0, w, h); }
+    beats: [0.55, 0.45, 0.5, 0.6],
+    hint: 0.1,
+    draw({ ctx: drawingContext, w: width, h: height, cover }) {
+      const radius =
+        Math.hypot(width, height) * 0.6 * (1 - Math.pow(cover, 0.8));
+      const group = drawingContext.createRadialGradient(
+        width * 0.5,
+        height * 0.5,
+        Math.max(0, radius * 0.55),
+        width * 0.5,
+        height * 0.5,
+        Math.max(1, radius),
+      );
+      group.addColorStop(0, `rgba(${INK},0)`);
+      group.addColorStop(1, `rgba(${INK},1)`);
+      drawingContext.fillStyle = group;
+      drawingContext.fillRect(0, 0, width, height);
+      if (radius < 2) {
+        drawingContext.fillStyle = `rgb(${INK})`;
+        drawingContext.fillRect(0, 0, width, height);
+      }
     },
-    signals(cover, beat) { cinematicSignals.fov = (beat === 'anticipation' ? 2 : -9) * cover; cinematicSignals.blur = cover * .5; },
-    shake: { source: 'structure', strength: .4, at: 'action' },
+    signals(cover, beat) {
+      cinematicSignals.fov = (beat === 'anticipation' ? 2 : -9) * cover;
+      cinematicSignals.blur = cover * 0.5;
+    },
+    shake: { source: 'structure', strength: 0.4, at: 'action' },
   },
   // Something passes right in front of the lens (pillar, Baymax's body, a wall).
   CAMERA_OCCLUSION: {
-    beats: [.3, .42, .42, .4], hint: .04,
-    draw({ ctx, w, h, cover, beat }) {
-      const travel = beat === 'follow-through' || beat === 'settle' ? 1 + (1 - cover) : cover;
-      const center = (-0.4 + travel * .95) * w, width = w * .9;
-      const g = ctx.createLinearGradient(center - width / 2, 0, center + width / 2, 0);
-      g.addColorStop(0, `rgba(${INK},0)`); g.addColorStop(.25, `rgba(${INK},1)`); g.addColorStop(.75, `rgba(${INK},1)`); g.addColorStop(1, `rgba(${INK},0)`);
-      ctx.fillStyle = g; ctx.fillRect(center - width / 2, 0, width, h);
+    beats: [0.3, 0.42, 0.42, 0.4],
+    hint: 0.04,
+    draw({ ctx: drawingContext, w: width2, h: height, cover, beat }) {
+      const travel =
+        beat === 'follow-through' || beat === 'settle'
+          ? 1 + (1 - cover)
+          : cover;
+      const center = (-0.4 + travel * 0.95) * width2,
+        width = width2 * 0.9;
+      const group = drawingContext.createLinearGradient(
+        center - width / 2,
+        0,
+        center + width / 2,
+        0,
+      );
+      group.addColorStop(0, `rgba(${INK},0)`);
+      group.addColorStop(0.25, `rgba(${INK},1)`);
+      group.addColorStop(0.75, `rgba(${INK},1)`);
+      group.addColorStop(1, `rgba(${INK},0)`);
+      drawingContext.fillStyle = group;
+      drawingContext.fillRect(center - width / 2, 0, width, height);
     },
-    shake: { source: 'structure', strength: .2, at: 'follow-through' },
+    shake: { source: 'structure', strength: 0.2, at: 'follow-through' },
   },
 };
 
-export const TRANSITION_TYPES = Object.keys(SPECS) as Exclude<TransitionType, 'CUT'>[];
+export const TRANSITION_TYPES = Object.keys(SPECS) as Exclude<
+  TransitionType,
+  'CUT'
+>[];
 
+/**
+ * Owns covered scene transitions state and its existing runtime lifecycle.
+ */
 export class CinematicTransitions implements TransitionPlayer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -180,84 +399,189 @@ export class CinematicTransitions implements TransitionPlayer {
   }
 
   /** Same transition twice in a row reads as a loop; dev builds warn about it. */
-  play(type: TransitionType, hooks: { covered: () => Promise<void> | void; beat: (beat: TransitionBeat) => void }): Promise<void> {
+  play(
+    type: TransitionType,
+    hooks: {
+      covered: () => Promise<void> | void;
+      beat: (beat: TransitionBeat) => void;
+    },
+  ): Promise<void> {
     this.cancel();
-    if (type === 'CUT') return Promise.resolve(hooks.covered()).then(() => undefined);
-    if (import.meta.env.DEV && type === this.last) console.info(`[lattice] ${type} used twice in a row`);
+    if (type === 'CUT')
+      return Promise.resolve(hooks.covered()).then(() => undefined);
+    if (import.meta.env.DEV && type === this.last)
+      console.info(`[lattice] ${type} used twice in a row`);
     this.last = type;
     const spec = SPECS[type];
-    const scale = reducedMotion ? .55 : 1;
-    const [a, b, c, d] = spec.beats.map(x => x * scale);
+    const scale = reducedMotion ? 0.55 : 1;
+    const [firstValue, secondValue, componentValue, depth] = spec.beats.map(
+      (xPosition) => xPosition * scale,
+    );
     const particles = makeParticles(spec.particles ?? 0);
     const state = { cover: 0, time: 0 };
     let beat: TransitionBeat = 'anticipation';
     this.resize();
     this.canvas.style.visibility = 'visible';
     const render = () => {
-      const { width: w, height: h } = this.canvas;
-      this.ctx.clearRect(0, 0, w, h);
-      if (state.cover > .001) spec.draw({ ctx: this.ctx, w, h, cover: state.cover, time: state.time, beat, particles });
+      const { width: width, height: height } = this.canvas;
+      this.ctx.clearRect(0, 0, width, height);
+      if (state.cover > 0.001)
+        spec.draw({
+          ctx: this.ctx,
+          w: width,
+          h: height,
+          cover: state.cover,
+          time: state.time,
+          beat,
+          particles,
+        });
       spec.signals?.(state.cover, beat);
     };
     const setBeat = (next: TransitionBeat) => {
-      beat = next; hooks.beat(next);
-      if (spec.shake && spec.shake.at === next) cameraRig.shake(spec.shake.source, spec.shake.strength);
+      beat = next;
+      hooks.beat(next);
+      if (spec.shake && spec.shake.at === next)
+        cameraRig.shake(spec.shake.source, spec.shake.strength);
     };
-    return new Promise<void>(resolve => {
-      const done = () => { this.pending = null; this.clear(); resolve(); };
+    return new Promise<void>((resolve) => {
+      const done = () => {
+        this.pending = null;
+        this.clear();
+        resolve();
+      };
       this.pending = done;
       const tl = gsap.timeline({ onUpdate: render, onComplete: done });
-      tl.to(state, { time: a + b + c + d, duration: a + b + c + d, ease: 'none' }, 0)
-        .to(state, { cover: spec.hint, duration: a, ease: 'sine.inOut' }, 0)
-        .call(() => setBeat('action'), [], a)
-        .to(state, { cover: 1, duration: b, ease: 'power3.in' }, a)
-        .call(() => {
-          // Hold the covered frame until the swap finishes (it may build a scene).
-          tl.pause();
-          Promise.resolve().then(hooks.covered).catch(error => { if (import.meta.env.DEV) console.warn('[lattice] scene swap failed', error); })
-            .finally(() => { if (this.timeline === tl) { setBeat('follow-through'); tl.resume(); } });
-        }, [], a + b)
-        .to(state, { cover: .25, duration: c, ease: 'power2.out' }, a + b + .001)
-        .call(() => setBeat('settle'), [], a + b + c)
-        .to(state, { cover: 0, duration: d, ease: 'sine.out' }, a + b + c);
+      tl.to(
+        state,
+        {
+          time: firstValue + secondValue + componentValue + depth,
+          duration: firstValue + secondValue + componentValue + depth,
+          ease: 'none',
+        },
+        0,
+      )
+        .to(
+          state,
+          { cover: spec.hint, duration: firstValue, ease: 'sine.inOut' },
+          0,
+        )
+        .call(() => setBeat('action'), [], firstValue)
+        .to(
+          state,
+          { cover: 1, duration: secondValue, ease: 'power3.in' },
+          firstValue,
+        )
+        .call(
+          () => {
+            // Hold the covered frame until the swap finishes (it may build a scene).
+            tl.pause();
+            Promise.resolve()
+              .then(hooks.covered)
+              .catch((error) => {
+                if (import.meta.env.DEV)
+                  console.warn('[lattice] scene swap failed', error);
+              })
+              .finally(() => {
+                if (this.timeline === tl) {
+                  setBeat('follow-through');
+                  tl.resume();
+                }
+              });
+          },
+          [],
+          firstValue + secondValue,
+        )
+        .to(
+          state,
+          { cover: 0.25, duration: componentValue, ease: 'power2.out' },
+          firstValue + secondValue + 0.001,
+        )
+        .call(
+          () => setBeat('settle'),
+          [],
+          firstValue + secondValue + componentValue,
+        )
+        .to(
+          state,
+          { cover: 0, duration: depth, ease: 'sine.out' },
+          firstValue + secondValue + componentValue,
+        );
       this.timeline = tl;
     });
   }
 
   cancel() {
-    this.timeline?.kill(); this.timeline = null;
-    const pending = this.pending; this.pending = null;
+    this.timeline?.kill();
+    this.timeline = null;
+    const pending = this.pending;
+    this.pending = null;
     this.clear();
     pending?.();
   }
 
   /** Dev: draw one frozen frame of a transition (cover 0..1) for look-dev. */
-  still(type: Exclude<TransitionType, 'CUT'>, cover: number, beat: TransitionBeat = 'action') {
-    this.cancel(); this.resize();
-    const spec = SPECS[type], { width: w, height: h } = this.canvas;
+  still(
+    type: Exclude<TransitionType, 'CUT'>,
+    cover: number,
+    beat: TransitionBeat = 'action',
+  ) {
+    this.cancel();
+    this.resize();
+    const spec = SPECS[type],
+      { width: width, height: height } = this.canvas;
     this.canvas.style.visibility = 'visible';
-    spec.draw({ ctx: this.ctx, w, h, cover, time: 1, beat, particles: makeParticles(spec.particles ?? 0) });
+    spec.draw({
+      ctx: this.ctx,
+      w: width,
+      h: height,
+      cover,
+      time: 1,
+      beat,
+      particles: makeParticles(spec.particles ?? 0),
+    });
   }
 
-  dispose() { this.cancel(); this.canvas.remove(); }
+  dispose() {
+    this.cancel();
+    this.canvas.remove();
+  }
 
   private clear() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.canvas.style.visibility = 'hidden';
-    cinematicSignals.exposure = 0; cinematicSignals.instability = 0; cinematicSignals.blur = 0; cinematicSignals.fov = 0;
+    cinematicSignals.exposure = 0;
+    cinematicSignals.instability = 0;
+    cinematicSignals.blur = 0;
+    cinematicSignals.fov = 0;
   }
   private resize() {
     // Half resolution: every effect here is soft or dark, the saving is free.
-    const w = Math.ceil(innerWidth * .5), h = Math.ceil(innerHeight * .5);
-    if (this.canvas.width !== w || this.canvas.height !== h) { this.canvas.width = w; this.canvas.height = h; }
+    const width = Math.ceil(innerWidth * 0.5),
+      height = Math.ceil(innerHeight * 0.5);
+    if (this.canvas.width !== width || this.canvas.height !== height) {
+      this.canvas.width = width;
+      this.canvas.height = height;
+    }
   }
 }
 
-function makeParticles(count: number): Particle[] {
-  const list: Particle[] = [];
-  for (let i = 0; i < count; i++) {
-    const angle = rand(0, Math.PI * 2);
-    list.push({ x: rand(-.1, 1.1), y: rand(-.1, 1.1), vx: Math.cos(angle) * rand(.6, 1.4), vy: Math.sin(angle) * rand(.6, 1.4), size: rand(.004, .03), spin: rand(-1, 1), delay: Math.random(), tone: Math.random() });
+/**
+ * Compute the existing make particles result for covered scene transitions.
+ */
+function makeParticles(count: number): TransitionParticle[] {
+  const list: TransitionParticle[] = [];
+  for (let index = 0; index < count; index++) {
+    const angle = randomBetween(0, Math.PI * 2);
+    list.push({
+      x: randomBetween(-0.1, 1.1),
+      y: randomBetween(-0.1, 1.1),
+      vx: Math.cos(angle) * randomBetween(0.6, 1.4),
+      vy: Math.sin(angle) * randomBetween(0.6, 1.4),
+      size: randomBetween(0.004, 0.03),
+      spin: randomBetween(-1, 1),
+      delay: Math.random(),
+      tone: Math.random(),
+    });
   }
   return list;
 }

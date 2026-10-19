@@ -1,1 +1,1 @@
-export {TransitionDirector} from './OrganicBlink';
+export { TransitionDirector } from './OrganicBlink';

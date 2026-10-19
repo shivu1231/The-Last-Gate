@@ -3,4 +3,9 @@
  * walk, kneel, reach, hold, haul and fist-bump poses). Re-exported here so the phase keeps one
  * import path.
  */
-export { createHiro, hiroRest, type Hiro, type HiroPose } from '../characters/HiroModel';
+export {
+  createHiro,
+  hiroRest,
+  type Hiro,
+  type HiroPose,
+} from '../characters/HiroModel';

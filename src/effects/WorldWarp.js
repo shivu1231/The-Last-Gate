@@ -6,15 +6,17 @@ import * as THREE from 'three';
  * Materials are patched once, before the first frame, so nothing recompiles mid-sequence.
  * Shadows and AO keep the undeformed shape; every deformation is brief or small.
  */
-export const warpUniforms={
-  uWarpTime:{value:0},
-  uImpacts:{value:[0,1,2,3].map(()=>new THREE.Vector4(0,-999,0,-99))},
-  uImpactPower:{value:new THREE.Vector4(0,0,0,0)},
-  uShear:{value:0},
-  uFold:{value:new THREE.Vector4(0,0,0,0)},
-  uPull:{value:new THREE.Vector4(0,0,0,0)}
+export const warpUniforms = {
+  uWarpTime: { value: 0 },
+  uImpacts: {
+    value: [0, 1, 2, 3].map(() => new THREE.Vector4(0, -999, 0, -99)),
+  },
+  uImpactPower: { value: new THREE.Vector4(0, 0, 0, 0) },
+  uShear: { value: 0 },
+  uFold: { value: new THREE.Vector4(0, 0, 0, 0) },
+  uPull: { value: new THREE.Vector4(0, 0, 0, 0) },
 };
-const header=`
+const header = `
 uniform float uWarpTime;uniform vec4 uImpacts[4];uniform vec4 uImpactPower;uniform float uShear;uniform vec4 uFold;uniform vec4 uPull;
 float warpHash(float n){return fract(sin(n)*43758.5453);}
 vec3 lattiseWarp(vec3 w){
@@ -37,7 +39,7 @@ vec3 lattiseWarp(vec3 w){
   o+=normalize(pd+vec3(0.,.001,0.))*uPull.w*smoothstep(28.,4.,pr)*min(pr*.45,4.);
   return o;
 }`;
-const project=`
+const project = `
 vec4 lattiseLocal=vec4(transformed,1.);
 #ifdef USE_BATCHING
 lattiseLocal=batchingMatrix*lattiseLocal;
@@ -49,15 +51,35 @@ vec4 lattiseWorld=modelMatrix*lattiseLocal;lattiseWorld.xyz+=lattiseWarp(lattise
 vec4 mvPosition=viewMatrix*lattiseWorld;
 gl_Position=projectionMatrix*mvPosition;`;
 
-export function patchWarp(material){
-  if(material.userData.lattiseWarp||!(material.isMeshStandardMaterial||material.isMeshBasicMaterial))return;
-  material.userData.lattiseWarp=true;
-  const previous=material.onBeforeCompile;
-  material.onBeforeCompile=(shader,renderer)=>{
-    previous?.call(material,shader,renderer);
-    Object.assign(shader.uniforms,warpUniforms);
-    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+header).replace('#include <project_vertex>',project);
+/**
+ * Extend a material shader with the shared world-distortion uniforms.
+ */
+export function patchWarp(material) {
+  if (
+    material.userData.lattiseWarp ||
+    !(material.isMeshStandardMaterial || material.isMeshBasicMaterial)
+  )
+    return;
+  material.userData.lattiseWarp = true;
+  const previous = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer) => {
+    previous?.call(material, shader, renderer);
+    Object.assign(shader.uniforms, warpUniforms);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\n' + header)
+      .replace('#include <project_vertex>', project);
   };
-  material.customProgramCacheKey=()=>'lattise-warp';
+  material.customProgramCacheKey = () => 'lattise-warp';
 }
-export function patchWarpTree(root){root.traverse(o=>{if(!o.material)return;for(const m of Array.isArray(o.material)?o.material:[o.material])patchWarp(m);});}
+/**
+ * Apply the shared world-distortion patch throughout a scene hierarchy.
+ */
+export function patchWarpTree(root) {
+  root.traverse((options) => {
+    if (!options.material) return;
+    for (const mesh of Array.isArray(options.material)
+      ? options.material
+      : [options.material])
+      patchWarp(mesh);
+  });
+}

@@ -1,4 +1,4 @@
-import * as T from 'three';
+import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { SceneKit } from '../phase2/SceneKit';
 import { concreteTexture } from '../presentation/Surfaces';
@@ -11,12 +11,24 @@ import { concreteTexture } from '../presentation/Surfaces';
  * Nothing in this file is used by Phases 1 to 3.
  */
 
-type V3 = [number, number, number];
-export type Rand = () => number;
-type Face = '+x' | '-x' | '+z' | '-z';
+type Vector3Tuple = [number, number, number];
+/**
+ * Seeded random-number source used by procedural construction.
+ */
+export type RandomSource = () => number;
+/**
+ * Building face selected for procedural facade dressing.
+ */
+type FacadeFace = '+x' | '-x' | '+z' | '-z';
 
 const STOREY = 3.2;
-const scratch = { p: new T.Vector3(), q: new T.Quaternion(), s: new T.Vector3(), e: new T.Euler(), m: new T.Matrix4() };
+const scratch = {
+  p: new THREE.Vector3(),
+  q: new THREE.Quaternion(),
+  s: new THREE.Vector3(),
+  e: new THREE.Euler(),
+  m: new THREE.Matrix4(),
+};
 
 /**
  * Every mesh this kit builds is named 'city-dressing' and casts no shadow, so an adaptive-quality
@@ -25,203 +37,661 @@ const scratch = { p: new T.Vector3(), q: new T.Quaternion(), s: new T.Vector3(),
 
 /** Collects static instances and builds them as one InstancedMesh per geometry and material. */
 export class Dressing {
-  private sets = new Map<T.BufferGeometry, Map<T.Material, T.Matrix4[]>>();
-  readonly cyl: T.BufferGeometry;
-  readonly cone4: T.BufferGeometry;
-  readonly disc: T.BufferGeometry;
+  private sets = new Map<
+    THREE.BufferGeometry,
+    Map<THREE.Material, THREE.Matrix4[]>
+  >();
+  readonly cyl: THREE.BufferGeometry;
+  readonly cone4: THREE.BufferGeometry;
+  readonly disc: THREE.BufferGeometry;
   /** Panes are single quads (2 triangles instead of a box's 12); windows are the bulk of the count. */
-  readonly pane: T.BufferGeometry;
+  readonly pane: THREE.BufferGeometry;
   constructor(readonly k: SceneKit) {
-    this.cyl = k.ownGeometry(new T.CylinderGeometry(.5, .5, 1, 10));
+    this.cyl = k.ownGeometry(new THREE.CylinderGeometry(0.5, 0.5, 1, 10));
     // A four-sided cap turned square to the walls: the tiered tower roofs of San Fransokyo.
-    this.cone4 = k.ownGeometry(new T.CylinderGeometry(0, .5 * Math.SQRT2, 1, 4).rotateY(Math.PI / 4));
-    this.disc = k.ownGeometry(new T.CylinderGeometry(.5, .5, 1, 20));
-    this.pane = k.ownGeometry(new T.PlaneGeometry(1, 1));
+    this.cone4 = k.ownGeometry(
+      new THREE.CylinderGeometry(0, 0.5 * Math.SQRT2, 1, 4).rotateY(
+        Math.PI / 4,
+      ),
+    );
+    this.disc = k.ownGeometry(new THREE.CylinderGeometry(0.5, 0.5, 1, 20));
+    this.pane = k.ownGeometry(new THREE.PlaneGeometry(1, 1));
   }
-  put(geometry: T.BufferGeometry, material: T.Material, matrix: T.Matrix4) {
-    let byMat = this.sets.get(geometry); if (!byMat) this.sets.set(geometry, byMat = new Map());
-    let list = byMat.get(material); if (!list) byMat.set(material, list = []);
+  put(
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    matrix: THREE.Matrix4,
+  ) {
+    let byMat = this.sets.get(geometry);
+    if (!byMat) this.sets.set(geometry, (byMat = new Map()));
+    let list = byMat.get(material);
+    if (!list) byMat.set(material, (list = []));
     list.push(matrix);
   }
   /** A piece in `frame` (a building's or the world's matrix): position, size, optional rotation. */
-  add(geometry: T.BufferGeometry, material: T.Material, frame: T.Matrix4 | null, p: V3, s: V3, r?: V3) {
-    scratch.p.set(...p); scratch.s.set(...s); scratch.q.setFromEuler(scratch.e.set(...(r ?? [0, 0, 0])));
-    const m = new T.Matrix4().compose(scratch.p, scratch.q, scratch.s);
-    if (frame) m.premultiply(frame);
-    this.put(geometry, material, m);
+  add(
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    frame: THREE.Matrix4 | null,
+    point: Vector3Tuple,
+    scaleVector: Vector3Tuple,
+    vector?: Vector3Tuple,
+  ) {
+    scratch.p.set(...point);
+    scratch.s.set(...scaleVector);
+    scratch.q.setFromEuler(scratch.e.set(...(vector ?? [0, 0, 0])));
+    const transformMatrix = new THREE.Matrix4().compose(
+      scratch.p,
+      scratch.q,
+      scratch.s,
+    );
+    if (frame) transformMatrix.premultiply(frame);
+    this.put(geometry, material, transformMatrix);
   }
-  box(material: T.Material, frame: T.Matrix4 | null, p: V3, s: V3, r?: V3) { this.add(this.k.boxGeo, material, frame, p, s, r); }
-  build(parent: T.Object3D = this.k.root) {
-    const meshes: T.InstancedMesh[] = [];
-    for (const [geometry, byMat] of this.sets) for (const [material, list] of byMat) {
-      const mesh = new T.InstancedMesh(geometry, material, list.length); mesh.name = 'city-dressing'; mesh.castShadow = false;
-      list.forEach((m, i) => mesh.setMatrixAt(i, m));
-      mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere(); mesh.computeBoundingBox();
-      mesh.receiveShadow = true; mesh.matrixAutoUpdate = false; mesh.updateMatrix();
-      parent.add(mesh); meshes.push(mesh);
-    }
+  box(
+    material: THREE.Material,
+    frame: THREE.Matrix4 | null,
+    point: Vector3Tuple,
+    scaleVector: Vector3Tuple,
+    vector?: Vector3Tuple,
+  ) {
+    this.add(this.k.boxGeo, material, frame, point, scaleVector, vector);
+  }
+  build(parent: THREE.Object3D = this.k.root) {
+    const meshes: THREE.InstancedMesh[] = [];
+    for (const [geometry, byMat] of this.sets)
+      for (const [material, list] of byMat) {
+        const mesh = new THREE.InstancedMesh(geometry, material, list.length);
+        mesh.name = 'city-dressing';
+        mesh.castShadow = false;
+        list.forEach((transformMatrix, index) =>
+          mesh.setMatrixAt(index, transformMatrix),
+        );
+        mesh.instanceMatrix.needsUpdate = true;
+        mesh.computeBoundingSphere();
+        mesh.computeBoundingBox();
+        mesh.receiveShadow = true;
+        mesh.matrixAutoUpdate = false;
+        mesh.updateMatrix();
+        parent.add(mesh);
+        meshes.push(mesh);
+      }
     this.sets.clear();
     const dispose = this.k.dispose.bind(this.k);
-    this.k.dispose = () => { meshes.forEach(m => m.dispose()); dispose(); };
+    this.k.dispose = () => {
+      meshes.forEach((material2) => material2.dispose());
+      dispose();
+    };
     return meshes;
   }
 }
 
 /** One shared set of city materials per scene kit. */
-export function cityMaterials(k: SceneKit) {
-  const asphaltMap = concreteTexture(); asphaltMap.repeat.set(3, 20);
-  const asphalt = k.standard('#3b464c', .93, .04); asphalt.map = asphaltMap; asphalt.bumpMap = asphaltMap; asphalt.bumpScale = .02;
-  const dispose = k.dispose.bind(k); k.dispose = () => { dispose(); asphaltMap.dispose(); };
+export function cityMaterials(sceneKit: SceneKit) {
+  const asphaltMap = concreteTexture();
+  asphaltMap.repeat.set(3, 20);
+  const asphalt = sceneKit.standard('#3b464c', 0.93, 0.04);
+  asphalt.map = asphaltMap;
+  asphalt.bumpMap = asphaltMap;
+  asphalt.bumpScale = 0.02;
+  const dispose = sceneKit.dispose.bind(sceneKit);
+  sceneKit.dispose = () => {
+    dispose();
+    asphaltMap.dispose();
+  };
   return {
     asphalt,
-    glass: k.standard('#1b2a33', .2, .75),
-    frame: k.standard('#141b20', .7, .35),
-    sill: k.standard('#66716f', .75, .3),
-    trim: k.standard('#2a363d', .8, .3),
-    unit: k.standard('#8a9190', .55, .45),
-    rust: k.standard('#6d4b39', .85, .3),
-    steel: k.standard('#4d595e', .5, .65),
-    patch: k.standard('#2b3439', .97, .02),
-    puddle: k.standard('#34434b', .14, .35),
-    crack: k.standard('#1a2126', 1, 0),
-    cable: k.standard('#121619', .8, .2),
-    warm: k.basic('#ffc47a', 1.05),
-    curtain: k.basic('#c98e52', .55),
-    cool: k.basic('#a9dbe6', .7),
-    aviation: k.basic('#ff4632', 1.6),
-    neon: [k.basic('#ff5a8a', 1.4), k.basic('#7fe6ff', 1.2), k.basic('#ffb15e', 1.35)],
+    glass: sceneKit.standard('#1b2a33', 0.2, 0.75),
+    frame: sceneKit.standard('#141b20', 0.7, 0.35),
+    sill: sceneKit.standard('#66716f', 0.75, 0.3),
+    trim: sceneKit.standard('#2a363d', 0.8, 0.3),
+    unit: sceneKit.standard('#8a9190', 0.55, 0.45),
+    rust: sceneKit.standard('#6d4b39', 0.85, 0.3),
+    steel: sceneKit.standard('#4d595e', 0.5, 0.65),
+    patch: sceneKit.standard('#2b3439', 0.97, 0.02),
+    puddle: sceneKit.standard('#34434b', 0.14, 0.35),
+    crack: sceneKit.standard('#1a2126', 1, 0),
+    cable: sceneKit.standard('#121619', 0.8, 0.2),
+    warm: sceneKit.basic('#ffc47a', 1.05),
+    curtain: sceneKit.basic('#c98e52', 0.55),
+    cool: sceneKit.basic('#a9dbe6', 0.7),
+    aviation: sceneKit.basic('#ff4632', 1.6),
+    neon: [
+      sceneKit.basic('#ff5a8a', 1.4),
+      sceneKit.basic('#7fe6ff', 1.2),
+      sceneKit.basic('#ffb15e', 1.35),
+    ],
   };
 }
+/**
+ * Data contract used by environment construction.
+ */
 export type CityMaterials = ReturnType<typeof cityMaterials>;
 
 /** A building's local frame: centred on its footprint, base at y = 0. */
-export function buildingFrame(x: number, z: number, ry = 0, tilt = 0, y = 0) {
-  const o = new T.Object3D(); o.position.set(x, y, z); o.rotation.set(0, ry, tilt); o.updateMatrix(); return o.matrix.clone();
+export function buildingFrame(
+  xPosition: number,
+  zPosition: number,
+  rotationY = 0,
+  tilt = 0,
+  yPosition = 0,
+) {
+  const sceneObject = new THREE.Object3D();
+  sceneObject.position.set(xPosition, yPosition, zPosition);
+  sceneObject.rotation.set(0, rotationY, tilt);
+  sceneObject.updateMatrix();
+  return sceneObject.matrix.clone();
 }
 
 /**
  * Upper-storey facade detail on the chosen faces of a w×h×d block in `frame`. Storey-height
  * windows (frame, glass, sill), floor bands, AC units, balconies, a drain pipe, broken panes.
  */
-export function dressFacade(d: Dressing, m: CityMaterials, frame: T.Matrix4, w: number, h: number, depth: number, faces: Face[], random: Rand, opts: { from?: number; style?: 'apartment' | 'office' | 'works'; lit?: number; storey?: number } = {}) {
-  const storey = opts.storey ?? STOREY, k = storey / STOREY, from = opts.from ?? 4.2, style = opts.style ?? (['apartment', 'office', 'works'] as const)[Math.floor(random() * 3)], lit = opts.lit ?? .1;
+export function dressFacade(
+  depth2: Dressing,
+  material2: CityMaterials,
+  frame: THREE.Matrix4,
+  width: number,
+  height: number,
+  depth: number,
+  faces: FacadeFace[],
+  random: RandomSource,
+  options: {
+    from?: number;
+    style?: 'apartment' | 'office' | 'works';
+    lit?: number;
+    storey?: number;
+  } = {},
+) {
+  const storey = options.storey ?? STOREY,
+    blendFactor = storey / STOREY,
+    from = options.from ?? 4.2,
+    style =
+      options.style ??
+      (['apartment', 'office', 'works'] as const)[Math.floor(random() * 3)],
+    lit = options.lit ?? 0.1;
   for (const face of faces) {
     const alongX = face === '+z' || face === '-z';
-    const sign = face[0] === '+' ? 1 : -1, half = alongX ? depth / 2 : w / 2, span = alongX ? w : depth;
+    const sign = face[0] === '+' ? 1 : -1,
+      half = alongX ? depth / 2 : width / 2,
+      span = alongX ? width : depth;
     // Face coordinates: u along the wall, y up, n out of it.
-    const at = (u: number, y: number, n: number): V3 => alongX ? [u, y, sign * (half + n)] : [sign * (half + n), y, u];
-    const size = (su: number, sy: number, sn: number): V3 => alongX ? [su, sy, sn] : [sn, sy, su];
-    const facing: V3 = [0, alongX ? (sign > 0 ? 0 : Math.PI) : sign * Math.PI / 2, 0];
-    const pane = (material: T.Material, u: number, y: number, n: number, su: number, sy: number) => d.add(d.pane, material, frame, at(u, y, n), [su, sy, 1], facing);
+    const at = (
+      progress: number,
+      yPosition: number,
+      count: number,
+    ): Vector3Tuple =>
+      alongX
+        ? [progress, yPosition, sign * (half + count)]
+        : [sign * (half + count), yPosition, progress];
+    const size = (su: number, scaleY: number, sn: number): Vector3Tuple =>
+      alongX ? [su, scaleY, sn] : [sn, scaleY, su];
+    const facing: Vector3Tuple = [
+      0,
+      alongX ? (sign > 0 ? 0 : Math.PI) : (sign * Math.PI) / 2,
+      0,
+    ];
+    const pane = (
+      material: THREE.Material,
+      progress: number,
+      yPosition: number,
+      count: number,
+      su: number,
+      scaleY: number,
+    ) =>
+      depth2.add(
+        depth2.pane,
+        material,
+        frame,
+        at(progress, yPosition, count),
+        [su, scaleY, 1],
+        facing,
+      );
     const bay = style === 'works' ? 3 : style === 'office' ? 1.6 : 2.3;
-    const cols = Math.max(1, Math.floor((span - .8) / bay)), u0 = -(cols - 1) * bay / 2;
+    const cols = Math.max(1, Math.floor((span - 0.8) / bay)),
+      scalarValue = (-(cols - 1) * bay) / 2;
     let row = 0;
-    for (let y = from; y + 2 * k < h; y += storey, row++) {
-      const cy = y + 1.35 * k;
-      d.box(m.trim, frame, at(0, y - .1, .06), size(span + .04, .16, .12));
+    for (
+      let yPosition2 = from;
+      yPosition2 + 2 * blendFactor < height;
+      yPosition2 += storey, row++
+    ) {
+      const cy = yPosition2 + 1.35 * blendFactor;
+      depth2.box(
+        material2.trim,
+        frame,
+        at(0, yPosition2 - 0.1, 0.06),
+        size(span + 0.04, 0.16, 0.12),
+      );
       if (style === 'office') {
-        pane(m.glass, 0, cy, .05, span - .7, 1.7 * k);
-        for (let c = 0; c <= cols; c++) pane(m.frame, u0 - bay / 2 + c * bay, cy, .07, .08, 1.75 * k);
-        for (let c = 0; c < cols; c++) { const r = random(); if (r < lit) pane(r < lit * .7 ? m.warm : m.cool, u0 + c * bay, cy, .06, bay - .14, 1.6 * k); }
+        pane(material2.glass, 0, cy, 0.05, span - 0.7, 1.7 * blendFactor);
+        for (let componentValue = 0; componentValue <= cols; componentValue++)
+          pane(
+            material2.frame,
+            scalarValue - bay / 2 + componentValue * bay,
+            cy,
+            0.07,
+            0.08,
+            1.75 * blendFactor,
+          );
+        for (
+          let componentValue2 = 0;
+          componentValue2 < cols;
+          componentValue2++
+        ) {
+          const radius = random();
+          if (radius < lit)
+            pane(
+              radius < lit * 0.7 ? material2.warm : material2.cool,
+              scalarValue + componentValue2 * bay,
+              cy,
+              0.06,
+              bay - 0.14,
+              1.6 * blendFactor,
+            );
+        }
         continue;
       }
-      const ww = style === 'works' ? 2.4 : 1.25, wh = (style === 'works' ? 2.1 : 1.6) * k;
-      for (let c = 0; c < cols; c++) {
-        const u = u0 + c * bay, r = random();
-        pane(m.frame, u, cy, .035, ww + .18, wh + .18);
-        const glass = r < lit * .7 ? m.warm : r < lit ? m.curtain : r > .96 ? m.frame : m.glass;
-        pane(glass, u, cy, .065, ww, wh);
-        if (style === 'works') { pane(m.frame, u, cy, .075, .05, wh); pane(m.frame, u, cy + .3, .075, ww, .05); }
-        d.box(m.sill, frame, at(u, cy - wh / 2 - .1, .12), size(ww + .3, .08, .22));
-        if (style === 'apartment' && random() < .28) d.box(m.unit, frame, at(u + ww * .3, cy - wh / 2 - .45, .3), size(.75, .48, .5));
+      const ww = style === 'works' ? 2.4 : 1.25,
+        wh = (style === 'works' ? 2.1 : 1.6) * blendFactor;
+      for (let componentValue3 = 0; componentValue3 < cols; componentValue3++) {
+        const progress2 = scalarValue + componentValue3 * bay,
+          radius2 = random();
+        pane(material2.frame, progress2, cy, 0.035, ww + 0.18, wh + 0.18);
+        const glass =
+          radius2 < lit * 0.7
+            ? material2.warm
+            : radius2 < lit
+              ? material2.curtain
+              : radius2 > 0.96
+                ? material2.frame
+                : material2.glass;
+        pane(glass, progress2, cy, 0.065, ww, wh);
+        if (style === 'works') {
+          pane(material2.frame, progress2, cy, 0.075, 0.05, wh);
+          pane(material2.frame, progress2, cy + 0.3, 0.075, ww, 0.05);
+        }
+        depth2.box(
+          material2.sill,
+          frame,
+          at(progress2, cy - wh / 2 - 0.1, 0.12),
+          size(ww + 0.3, 0.08, 0.22),
+        );
+        if (style === 'apartment' && random() < 0.28)
+          depth2.box(
+            material2.unit,
+            frame,
+            at(progress2 + ww * 0.3, cy - wh / 2 - 0.45, 0.3),
+            size(0.75, 0.48, 0.5),
+          );
       }
       // Every other storey of an apartment block carries a balcony run on one bay.
       if (style === 'apartment' && row % 2 === 1 && cols > 1) {
-        const u = u0 + Math.floor(random() * cols) * bay;
-        d.box(m.sill, frame, at(u, y + .02, .55), size(bay - .2, .12, 1.1));
-        d.box(m.steel, frame, at(u, y + .55, 1.08), size(bay - .2, .05, .04));
-        d.box(m.steel, frame, at(u, y + .3, 1.08), size(bay - .2, .5, .015));
+        const progress3 = scalarValue + Math.floor(random() * cols) * bay;
+        depth2.box(
+          material2.sill,
+          frame,
+          at(progress3, yPosition2 + 0.02, 0.55),
+          size(bay - 0.2, 0.12, 1.1),
+        );
+        depth2.box(
+          material2.steel,
+          frame,
+          at(progress3, yPosition2 + 0.55, 1.08),
+          size(bay - 0.2, 0.05, 0.04),
+        );
+        depth2.box(
+          material2.steel,
+          frame,
+          at(progress3, yPosition2 + 0.3, 1.08),
+          size(bay - 0.2, 0.5, 0.015),
+        );
       }
     }
     // A drain pipe on the wall's edge, and a vent stack near the top.
-    d.add(d.cyl, m.steel, frame, at(span / 2 - .35, h / 2, .14), [.14, h, .14]);
-    if (random() > .5) d.box(m.unit, frame, at(-span / 2 + 1, h - 1.3, .2), size(.9, .6, .35));
+    depth2.add(
+      depth2.cyl,
+      material2.steel,
+      frame,
+      at(span / 2 - 0.35, height / 2, 0.14),
+      [0.14, height, 0.14],
+    );
+    if (random() > 0.5)
+      depth2.box(
+        material2.unit,
+        frame,
+        at(-span / 2 + 1, height - 1.3, 0.2),
+        size(0.9, 0.6, 0.35),
+      );
   }
 }
 
 /** Parapet and roof clutter: tanks on legs, plant, a mast with its warning lamp, a sign frame. */
-export function dressRoof(d: Dressing, m: CityMaterials, frame: T.Matrix4, w: number, h: number, depth: number, random: Rand, opts: { tower?: boolean; sign?: boolean; parapet?: boolean } = {}) {
-  if (opts.parapet !== false) for (const [p, s] of [[[0, h + .35, depth / 2 - .1], [w + .1, .7, .2]], [[0, h + .35, -depth / 2 + .1], [w + .1, .7, .2]], [[w / 2 - .1, h + .35, 0], [.2, .7, depth]], [[-w / 2 + .1, h + .35, 0], [.2, .7, depth]]] as [V3, V3][]) d.box(m.trim, frame, p, s);
-  if (random() > .45) {
-    const x = (random() - .5) * w * .5, z = (random() - .5) * depth * .4;
-    d.add(d.cyl, m.rust, frame, [x, h + 2.3, z], [1.6, 1.8, 1.6]);
-    d.add(d.cone4, m.trim, frame, [x, h + 3.45, z], [1.55, .5, 1.55]);
-    for (const [dx, dz] of [[-.55, -.55], [.55, -.55], [-.55, .55], [.55, .55]]) d.box(m.steel, frame, [x + dx, h + .7, z + dz], [.08, 1.4, .08]);
+export function dressRoof(
+  depth2: Dressing,
+  material: CityMaterials,
+  frame: THREE.Matrix4,
+  width: number,
+  height: number,
+  depth: number,
+  random: RandomSource,
+  options: { tower?: boolean; sign?: boolean; parapet?: boolean } = {},
+) {
+  if (options.parapet !== false)
+    for (const [point, scaleVector] of [
+      [
+        [0, height + 0.35, depth / 2 - 0.1],
+        [width + 0.1, 0.7, 0.2],
+      ],
+      [
+        [0, height + 0.35, -depth / 2 + 0.1],
+        [width + 0.1, 0.7, 0.2],
+      ],
+      [
+        [width / 2 - 0.1, height + 0.35, 0],
+        [0.2, 0.7, depth],
+      ],
+      [
+        [-width / 2 + 0.1, height + 0.35, 0],
+        [0.2, 0.7, depth],
+      ],
+    ] as [Vector3Tuple, Vector3Tuple][])
+      depth2.box(material.trim, frame, point, scaleVector);
+  if (random() > 0.45) {
+    const xPosition = (random() - 0.5) * width * 0.5,
+      zPosition = (random() - 0.5) * depth * 0.4;
+    depth2.add(
+      depth2.cyl,
+      material.rust,
+      frame,
+      [xPosition, height + 2.3, zPosition],
+      [1.6, 1.8, 1.6],
+    );
+    depth2.add(
+      depth2.cone4,
+      material.trim,
+      frame,
+      [xPosition, height + 3.45, zPosition],
+      [1.55, 0.5, 1.55],
+    );
+    for (const [deltaX, deltaZ] of [
+      [-0.55, -0.55],
+      [0.55, -0.55],
+      [-0.55, 0.55],
+      [0.55, 0.55],
+    ])
+      depth2.box(
+        material.steel,
+        frame,
+        [xPosition + deltaX, height + 0.7, zPosition + deltaZ],
+        [0.08, 1.4, 0.08],
+      );
   }
-  for (let i = 0, n = 1 + Math.floor(random() * 3); i < n; i++) d.box(m.unit, frame, [(random() - .5) * w * .6, h + .45, (random() - .5) * depth * .6], [1 + random(), .9, .8 + random() * .6]);
-  if (random() > .55) {
-    const x = (random() - .5) * w * .5, mast = 3 + random() * 4;
-    d.box(m.steel, frame, [x, h + mast / 2, 0], [.07, mast, .07]);
-    d.add(d.cyl, m.aviation, frame, [x, h + mast + .08, 0], [.16, .16, .16]);
+  for (
+    let index = 0, count = 1 + Math.floor(random() * 3);
+    index < count;
+    index++
+  )
+    depth2.box(
+      material.unit,
+      frame,
+      [
+        (random() - 0.5) * width * 0.6,
+        height + 0.45,
+        (random() - 0.5) * depth * 0.6,
+      ],
+      [1 + random(), 0.9, 0.8 + random() * 0.6],
+    );
+  if (random() > 0.55) {
+    const xPosition2 = (random() - 0.5) * width * 0.5,
+      mast = 3 + random() * 4;
+    depth2.box(
+      material.steel,
+      frame,
+      [xPosition2, height + mast / 2, 0],
+      [0.07, mast, 0.07],
+    );
+    depth2.add(
+      depth2.cyl,
+      material.aviation,
+      frame,
+      [xPosition2, height + mast + 0.08, 0],
+      [0.16, 0.16, 0.16],
+    );
   }
-  if (opts.sign) {
-    const n = m.neon[Math.floor(random() * m.neon.length)], sw = Math.min(w * .8, 4.5);
-    for (const dx of [-sw / 3, sw / 3]) d.box(m.steel, frame, [dx, h + 1.1, depth / 2 - .6], [.09, 2.2, .09]);
-    d.box(m.frame, frame, [0, h + 2.4, depth / 2 - .6], [sw, 1.2, .12]);
-    d.box(n, frame, [0, h + 2.4, depth / 2 - .52], [sw * .9, .18, .02]);
-    d.box(n, frame, [0, h + 2.05, depth / 2 - .52], [sw * .6, .1, .02]);
+  if (options.sign) {
+    const material2 =
+        material.neon[Math.floor(random() * material.neon.length)],
+      sw = Math.min(width * 0.8, 4.5);
+    for (const deltaX2 of [-sw / 3, sw / 3])
+      depth2.box(
+        material.steel,
+        frame,
+        [deltaX2, height + 1.1, depth / 2 - 0.6],
+        [0.09, 2.2, 0.09],
+      );
+    depth2.box(
+      material.frame,
+      frame,
+      [0, height + 2.4, depth / 2 - 0.6],
+      [sw, 1.2, 0.12],
+    );
+    depth2.box(
+      material2,
+      frame,
+      [0, height + 2.4, depth / 2 - 0.52],
+      [sw * 0.9, 0.18, 0.02],
+    );
+    depth2.box(
+      material2,
+      frame,
+      [0, height + 2.05, depth / 2 - 0.52],
+      [sw * 0.6, 0.1, 0.02],
+    );
   }
-  if (opts.tower) towerCap(d, m, frame, w, h, depth);
+  if (options.tower) towerCap(depth2, material, frame, width, height, depth);
 }
 
 /** San Fransokyo's tiered caps: two flared eaves and a pointed crown. */
-export function towerCap(d: Dressing, m: CityMaterials, frame: T.Matrix4, w: number, h: number, depth: number, material: T.Material = m.trim) {
-  d.box(material, frame, [0, h + .12, 0], [w + 1.4, .24, depth + 1.4]);
-  d.add(d.cone4, material, frame, [0, h + .7, 0], [w + 1.1, .9, depth + 1.1]);
-  d.box(material, frame, [0, h + 1.6, 0], [w * .55, 1.4, depth * .55]);
-  d.box(material, frame, [0, h + 2.4, 0], [w * .55 + 1, .18, depth * .55 + 1]);
-  d.add(d.cone4, material, frame, [0, h + 3, 0], [w * .55 + .8, 1.1, depth * .55 + .8]);
+export function towerCap(
+  depth2: Dressing,
+  material2: CityMaterials,
+  frame: THREE.Matrix4,
+  width: number,
+  height: number,
+  depth: number,
+  material: THREE.Material = material2.trim,
+) {
+  depth2.box(
+    material,
+    frame,
+    [0, height + 0.12, 0],
+    [width + 1.4, 0.24, depth + 1.4],
+  );
+  depth2.add(
+    depth2.cone4,
+    material,
+    frame,
+    [0, height + 0.7, 0],
+    [width + 1.1, 0.9, depth + 1.1],
+  );
+  depth2.box(
+    material,
+    frame,
+    [0, height + 1.6, 0],
+    [width * 0.55, 1.4, depth * 0.55],
+  );
+  depth2.box(
+    material,
+    frame,
+    [0, height + 2.4, 0],
+    [width * 0.55 + 1, 0.18, depth * 0.55 + 1],
+  );
+  depth2.add(
+    depth2.cone4,
+    material,
+    frame,
+    [0, height + 3, 0],
+    [width * 0.55 + 0.8, 1.1, depth * 0.55 + 0.8],
+  );
 }
 
 /**
  * Far skyline: towers in two or three depth bands beyond a street's end, lit window strips facing
  * the street, tiered caps on some, and a few with an upper section sheared off and hanging.
  */
-export function skyline(d: Dressing, m: CityMaterials, random: Rand, o: { x: [number, number]; z: [number, number]; count: number; h: [number, number]; facing?: number; tones: T.Material[] }) {
-  const lerp = (r: [number, number]) => r[0] + random() * (r[1] - r[0]);
-  for (let i = 0; i < o.count; i++) {
-    const x = lerp(o.x), z = lerp(o.z), w = 6 + random() * 9, dd = 6 + random() * 8, h = lerp(o.h);
-    const tilt = random() > .8 ? (random() - .5) * .12 : 0;
-    const frame = buildingFrame(x, z, (random() - .5) * .3, tilt, -1);
-    const tone = o.tones[Math.floor(random() * o.tones.length)];
-    d.box(tone, frame, [0, h / 2, 0], [w, h, dd]);
+export function skyline(
+  depth: Dressing,
+  material: CityMaterials,
+  random: RandomSource,
+  material2: {
+    x: [number, number];
+    z: [number, number];
+    count: number;
+    h: [number, number];
+    facing?: number;
+    tones: THREE.Material[];
+  },
+) {
+  const lerp = (entries: [number, number]) =>
+    entries[0] + random() * (entries[1] - entries[0]);
+  for (let index = 0; index < material2.count; index++) {
+    const xPosition = lerp(material2.x),
+      zPosition = lerp(material2.z),
+      width = 6 + random() * 9,
+      dd = 6 + random() * 8,
+      height = lerp(material2.h);
+    const tilt = random() > 0.8 ? (random() - 0.5) * 0.12 : 0;
+    const frame = buildingFrame(
+      xPosition,
+      zPosition,
+      (random() - 0.5) * 0.3,
+      tilt,
+      -1,
+    );
+    const tone = material2.tones[Math.floor(random() * material2.tones.length)];
+    depth.box(tone, frame, [0, height / 2, 0], [width, height, dd]);
     // Window strips on the street-facing face, a few of them lit.
-    const face = o.facing ?? 1, fz = face * (dd / 2 + .05);
-    for (let y = 4; y < h - 2; y += STOREY) {
-      const r = random();
-      d.add(d.pane, r < .12 ? m.warm : r < .16 ? m.cool : m.glass, frame, [0, y, fz], [w - 1, 1.2, 1], [0, face > 0 ? 0 : Math.PI, 0]);
+    const face = material2.facing ?? 1,
+      fz = face * (dd / 2 + 0.05);
+    for (let yPosition = 4; yPosition < height - 2; yPosition += STOREY) {
+      const radius = random();
+      depth.add(
+        depth.pane,
+        radius < 0.12
+          ? material.warm
+          : radius < 0.16
+            ? material.cool
+            : material.glass,
+        frame,
+        [0, yPosition, fz],
+        [width - 1, 1.2, 1],
+        [0, face > 0 ? 0 : Math.PI, 0],
+      );
     }
-    if (random() < .35) towerCap(d, m, frame, w, h, dd);
-    else if (random() < .4) {
+    if (random() < 0.35) towerCap(depth, material, frame, width, height, dd);
+    else if (random() < 0.4) {
       // Sheared off by the rupture: the top storeys hang offset, turned, with a gap below them.
       const top = 4 + random() * 6;
-      d.box(tone, frame, [(random() - .5) * 3, h + 1.5 + top / 2, (random() - .5) * 2], [w * .9, top, dd * .9], [(random() - .5) * .25, (random() - .5) * .5, (random() - .5) * .3]);
-    } else if (random() < .6) {
-      d.box(m.steel, frame, [w * .2, h + 3, 0], [.12, 6, .12]);
-      d.add(d.cyl, m.aviation, frame, [w * .2, h + 6.1, 0], [.3, .3, .3]);
+      depth.box(
+        tone,
+        frame,
+        [(random() - 0.5) * 3, height + 1.5 + top / 2, (random() - 0.5) * 2],
+        [width * 0.9, top, dd * 0.9],
+        [
+          (random() - 0.5) * 0.25,
+          (random() - 0.5) * 0.5,
+          (random() - 0.5) * 0.3,
+        ],
+      );
+    } else if (random() < 0.6) {
+      depth.box(
+        material.steel,
+        frame,
+        [width * 0.2, height + 3, 0],
+        [0.12, 6, 0.12],
+      );
+      depth.add(
+        depth.cyl,
+        material.aviation,
+        frame,
+        [width * 0.2, height + 6.1, 0],
+        [0.3, 0.3, 0.3],
+      );
     }
   }
 }
 
 /** Patched asphalt, manholes, cracks and standing water across a stretch of road (y = surface). */
-export function roadBreakup(d: Dressing, m: CityMaterials, random: Rand, o: { x: [number, number]; z: [number, number]; y: number; count: number; cracks?: boolean; patch?: T.Material }) {
-  const lerp = (r: [number, number]) => r[0] + random() * (r[1] - r[0]);
-  for (let i = 0; i < o.count; i++) {
-    const x = lerp(o.x), z = lerp(o.z), kind = random();
-    if (kind < .35) d.box(o.patch ?? m.patch, null, [x, o.y + .004, z], [1 + random() * 1.8, .008, 1 + random() * 2.2], [0, (random() - .5) * .3, 0]);
-    else if (kind < .5) d.add(d.disc, m.puddle, null, [x, o.y + .007, z], [.8 + random() * 1.4, .006, .5 + random() * 1], [0, random() * 3, 0]);
-    else if (kind < .65) { d.add(d.disc, m.steel, null, [x, o.y + .01, z], [.8, .02, .8]); d.add(d.disc, m.crack, null, [x, o.y + .012, z], [.6, .02, .6]); }
-    else if (o.cracks !== false) { let a = random() * Math.PI, cx = x, cz = z; for (let j = 0; j < 4; j++) { const len = .3 + random() * .7; d.box(m.crack, null, [cx, o.y + .009, cz], [.016, .006, len], [0, a, 0]); cx += Math.sin(a) * len * .5; cz += Math.cos(a) * len * .5; a += (random() - .5) * 1.2; } }
+export function roadBreakup(
+  depth: Dressing,
+  material: CityMaterials,
+  random: RandomSource,
+  material2: {
+    x: [number, number];
+    z: [number, number];
+    y: number;
+    count: number;
+    cracks?: boolean;
+    patch?: THREE.Material;
+  },
+) {
+  const lerp = (entries: [number, number]) =>
+    entries[0] + random() * (entries[1] - entries[0]);
+  for (let index = 0; index < material2.count; index++) {
+    const xPosition = lerp(material2.x),
+      zPosition = lerp(material2.z),
+      kind = random();
+    if (kind < 0.35)
+      depth.box(
+        material2.patch ?? material.patch,
+        null,
+        [xPosition, material2.y + 0.004, zPosition],
+        [1 + random() * 1.8, 0.008, 1 + random() * 2.2],
+        [0, (random() - 0.5) * 0.3, 0],
+      );
+    else if (kind < 0.5)
+      depth.add(
+        depth.disc,
+        material.puddle,
+        null,
+        [xPosition, material2.y + 0.007, zPosition],
+        [0.8 + random() * 1.4, 0.006, 0.5 + random() * 1],
+        [0, random() * 3, 0],
+      );
+    else if (kind < 0.65) {
+      depth.add(
+        depth.disc,
+        material.steel,
+        null,
+        [xPosition, material2.y + 0.01, zPosition],
+        [0.8, 0.02, 0.8],
+      );
+      depth.add(
+        depth.disc,
+        material.crack,
+        null,
+        [xPosition, material2.y + 0.012, zPosition],
+        [0.6, 0.02, 0.6],
+      );
+    } else if (material2.cracks !== false) {
+      let firstValue = random() * Math.PI,
+        cx = xPosition,
+        cz = zPosition;
+      for (let segmentIndex = 0; segmentIndex < 4; segmentIndex++) {
+        const len = 0.3 + random() * 0.7;
+        depth.box(
+          material.crack,
+          null,
+          [cx, material2.y + 0.009, cz],
+          [0.016, 0.006, len],
+          [0, firstValue, 0],
+        );
+        cx += Math.sin(firstValue) * len * 0.5;
+        cz += Math.cos(firstValue) * len * 0.5;
+        firstValue += (random() - 0.5) * 1.2;
+      }
+    }
   }
 }
 
@@ -229,28 +699,112 @@ export function roadBreakup(d: Dressing, m: CityMaterials, random: Rand, o: { x:
  * Wooden-style utility poles along both kerbs with crossarms and a transformer now and then, and
  * the wires between them (sagging, merged into one mesh). `points` run down one side of the street.
  */
-export function utilityLines(d: Dressing, m: CityMaterials, random: Rand, points: [number, number][], o: { height?: number; across?: number } = {}) {
-  const h = o.height ?? 8.5, tips: T.Vector3[][] = [];
-  for (const [x, z] of points) {
-    const lean = (random() - .5) * .06;
-    d.add(d.cyl, m.trim, null, [x, h / 2, z], [.24, h, .24], [lean, 0, lean]);
-    d.box(m.steel, null, [x, h - .5, z], [.12, .12, 2.2]);
-    d.box(m.steel, null, [x, h - 1.2, z], [.1, .1, 1.6]);
-    for (const dz of [-.9, 0, .9]) d.add(d.cyl, m.unit, null, [x, h - .35, z + dz], [.08, .2, .08]);
-    if (random() > .6) { d.add(d.cyl, m.unit, null, [x + Math.sign(x) * .45, h - 2.4, z], [.55, .9, .55]); d.box(m.steel, null, [x + Math.sign(x) * .2, h - 2.4, z], [.4, .08, .08]); }
-    tips.push([-.9, 0, .9].map(dz => new T.Vector3(x, h - .35, z + dz)));
+export function utilityLines(
+  depth: Dressing,
+  material: CityMaterials,
+  random: RandomSource,
+  points: [number, number][],
+  offset: { height?: number; across?: number } = {},
+) {
+  const height = offset.height ?? 8.5,
+    tips: THREE.Vector3[][] = [];
+  for (const [xPosition, zPosition] of points) {
+    const lean = (random() - 0.5) * 0.06;
+    depth.add(
+      depth.cyl,
+      material.trim,
+      null,
+      [xPosition, height / 2, zPosition],
+      [0.24, height, 0.24],
+      [lean, 0, lean],
+    );
+    depth.box(
+      material.steel,
+      null,
+      [xPosition, height - 0.5, zPosition],
+      [0.12, 0.12, 2.2],
+    );
+    depth.box(
+      material.steel,
+      null,
+      [xPosition, height - 1.2, zPosition],
+      [0.1, 0.1, 1.6],
+    );
+    for (const deltaZ of [-0.9, 0, 0.9])
+      depth.add(
+        depth.cyl,
+        material.unit,
+        null,
+        [xPosition, height - 0.35, zPosition + deltaZ],
+        [0.08, 0.2, 0.08],
+      );
+    if (random() > 0.6) {
+      depth.add(
+        depth.cyl,
+        material.unit,
+        null,
+        [xPosition + Math.sign(xPosition) * 0.45, height - 2.4, zPosition],
+        [0.55, 0.9, 0.55],
+      );
+      depth.box(
+        material.steel,
+        null,
+        [xPosition + Math.sign(xPosition) * 0.2, height - 2.4, zPosition],
+        [0.4, 0.08, 0.08],
+      );
+    }
+    tips.push(
+      [-0.9, 0, 0.9].map(
+        (deltaZ2) =>
+          new THREE.Vector3(xPosition, height - 0.35, zPosition + deltaZ2),
+      ),
+    );
   }
-  const tubes: T.BufferGeometry[] = [];
-  const sag = (a: T.Vector3, b: T.Vector3, drop: number) => {
-    const mid = a.clone().lerp(b, .5); mid.y -= drop;
-    tubes.push(new T.TubeGeometry(new T.QuadraticBezierCurve3(a, mid, b), 16, .018, 4, false));
+  const tubes: THREE.BufferGeometry[] = [];
+  const sag = (
+    startPoint: THREE.Vector3,
+    endPoint: THREE.Vector3,
+    drop: number,
+  ) => {
+    const mid = startPoint.clone().lerp(endPoint, 0.5);
+    mid.y -= drop;
+    tubes.push(
+      new THREE.TubeGeometry(
+        new THREE.QuadraticBezierCurve3(startPoint, mid, endPoint),
+        16,
+        0.018,
+        4,
+        false,
+      ),
+    );
   };
   // Wires run pole to pole along the street; every other pole drops one across to the far side.
-  for (let i = 1; i < tips.length; i++) for (let j = 0; j < 3; j++) sag(tips[i - 1][j], tips[i][j], .6 + random() * .5);
-  if (o.across) tips.forEach((t, i) => { if (i % 2 === 0) sag(t[1], new T.Vector3(o.across!, h - 1.6 - random(), t[1].z + (random() - .5) * 2), 1.2 + random()); });
+  for (let index = 1; index < tips.length; index++)
+    for (let segmentIndex = 0; segmentIndex < 3; segmentIndex++)
+      sag(
+        tips[index - 1][segmentIndex],
+        tips[index][segmentIndex],
+        0.6 + random() * 0.5,
+      );
+  if (offset.across)
+    tips.forEach((timeSeconds, index2) => {
+      if (index2 % 2 === 0)
+        sag(
+          timeSeconds[1],
+          new THREE.Vector3(
+            offset.across!,
+            height - 1.6 - random(),
+            timeSeconds[1].z + (random() - 0.5) * 2,
+          ),
+          1.2 + random(),
+        );
+    });
   if (tubes.length) {
-    const geometry = mergeGeometries(tubes, false); tubes.forEach(g => g.dispose());
-    if (geometry) d.k.mesh(geometry, m.cable, { p: [0, 0, 0] }).name = 'city-dressing';
+    const geometry = mergeGeometries(tubes, false);
+    tubes.forEach((geometry2) => geometry2.dispose());
+    if (geometry)
+      depth.k.mesh(geometry, material.cable, { p: [0, 0, 0] }).name =
+        'city-dressing';
   }
 }
 
@@ -259,19 +813,61 @@ export function utilityLines(d: Dressing, m: CityMaterials, random: Rand, points
  * towers only carry them on their front). Each box is recovered from its 24 vertices, so this works
  * on any merged BoxGeometry set without touching the shared source. Boxes under `minHeight` are skipped.
  */
-export function skinMergedBoxes(d: Dressing, m: CityMaterials, mesh: T.Mesh, relativeTo: T.Object3D, random: Rand, o: { storey: number; from: number; minHeight: number }) {
-  const pos = mesh.geometry.getAttribute('position');
-  if (!pos || pos.count % 24) return;
+export function skinMergedBoxes(
+  depth2: Dressing,
+  material: CityMaterials,
+  mesh: THREE.Mesh,
+  relativeTo: THREE.Object3D,
+  random: RandomSource,
+  offset: { storey: number; from: number; minHeight: number },
+) {
+  const position = mesh.geometry.getAttribute('position');
+  if (!position || position.count % 24) return;
   relativeTo.updateMatrixWorld(true);
-  const toLocal = relativeTo.matrixWorld.clone().invert().multiply(mesh.matrixWorld);
-  const v = new T.Vector3(), c = new T.Vector3(), faceC = (from: number) => { const f = new T.Vector3(); for (let i = 0; i < 4; i++) f.add(v.fromBufferAttribute(pos, from + i)); return f.multiplyScalar(.25); };
-  for (let b = 0; b < pos.count; b += 24) {
-    c.set(0, 0, 0); for (let i = 0; i < 24; i++) c.add(v.fromBufferAttribute(pos, b + i)); c.multiplyScalar(1 / 24);
-    const ax = faceC(b).sub(c), ay = faceC(b + 8).sub(c), az = faceC(b + 16).sub(c);
-    const w = ax.length() * 2, h = ay.length() * 2, depth = az.length() * 2;
-    if (h < o.minHeight || w < 1 || depth < 1) continue;
-    const base = c.clone().sub(ay);
-    const frame = new T.Matrix4().makeBasis(ax.normalize(), ay.normalize(), az.normalize()).setPosition(base).premultiply(toLocal);
-    dressFacade(d, m, frame, w, h, depth, ['+x', '-x', '-z'], random, { from: o.from, storey: o.storey, style: 'apartment', lit: .07 });
+  const toLocal = relativeTo.matrixWorld
+    .clone()
+    .invert()
+    .multiply(mesh.matrixWorld);
+  const vector = new THREE.Vector3(),
+    vector2 = new THREE.Vector3(),
+    faceC = (from: number) => {
+      const vector3 = new THREE.Vector3();
+      for (let index = 0; index < 4; index++)
+        vector3.add(vector.fromBufferAttribute(position, from + index));
+      return vector3.multiplyScalar(0.25);
+    };
+  for (let secondValue = 0; secondValue < position.count; secondValue += 24) {
+    vector2.set(0, 0, 0);
+    for (let index2 = 0; index2 < 24; index2++)
+      vector2.add(vector.fromBufferAttribute(position, secondValue + index2));
+    vector2.multiplyScalar(1 / 24);
+    const ax = faceC(secondValue).sub(vector2),
+      ay = faceC(secondValue + 8).sub(vector2),
+      az = faceC(secondValue + 16).sub(vector2);
+    const width = ax.length() * 2,
+      height = ay.length() * 2,
+      depth = az.length() * 2;
+    if (height < offset.minHeight || width < 1 || depth < 1) continue;
+    const base = vector2.clone().sub(ay);
+    const frame = new THREE.Matrix4()
+      .makeBasis(ax.normalize(), ay.normalize(), az.normalize())
+      .setPosition(base)
+      .premultiply(toLocal);
+    dressFacade(
+      depth2,
+      material,
+      frame,
+      width,
+      height,
+      depth,
+      ['+x', '-x', '-z'],
+      random,
+      {
+        from: offset.from,
+        storey: offset.storey,
+        style: 'apartment',
+        lit: 0.07,
+      },
+    );
   }
 }

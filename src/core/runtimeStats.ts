@@ -1,7 +1,9 @@
 import type { Object3D } from 'three';
 
-// Mutable per-frame diagnostics. Written by RuntimeBridge, read (polled) by the dev HUD.
-// Never React state: nothing re-renders at frame rate.
+/**
+ * Mutable renderer diagnostics polled by the developer HUD.
+ * Keeping these outside React state avoids a component render on every frame.
+ */
 export const runtimeStats = {
   fps: 60,
   frameMs: 16.7,
@@ -13,5 +15,13 @@ export const runtimeStats = {
   frameTasks: 0,
 };
 
-/** Dev/presentation-only handle for the scene audit. Stays null in normal production. */
-export const debugHandles: { scene: Object3D | null; transitions: { still(type: string, cover: number, beat?: string): void; cancel(): void } | null } = { scene: null, transitions: null };
+/**
+ * Optional inspection handles populated only in development or presentation mode.
+ */
+export const debugHandles: {
+  scene: Object3D | null;
+  transitions: {
+    still(type: string, cover: number, beat?: string): void;
+    cancel(): void;
+  } | null;
+} = { scene: null, transitions: null };

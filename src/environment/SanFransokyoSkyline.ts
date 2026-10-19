@@ -1,4 +1,4 @@
-import * as T from 'three';
+import * as THREE from 'three';
 import { SceneKit, seeded } from '../phase2/SceneKit';
 
 /**
@@ -43,7 +43,8 @@ col=mix(col,uHaze,haze*.82);
 gl_FragColor=vec4(col,1.);}`;
 // A vertical band of haze: thick at the water, gone by the top.
 const HAZE_FS = `varying vec2 vUv;uniform vec3 uColor;uniform float uOpacity;void main(){float a=pow(1.-vUv.y,2.2)*uOpacity*smoothstep(0.,.08,vUv.x)*smoothstep(1.,.92,vUv.x);gl_FragColor=vec4(uColor,a);}`;
-const UV_VS = 'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
+const UV_VS =
+  'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
 // Light points (aviation lights, house lights, deck lamps): round, soft, optionally blinking.
 const DOTS_VS = `attribute float aSeed;uniform float uTime;uniform float uSize;uniform float uBlink;varying float vA;varying vec3 vC;attribute vec3 color;
 void main(){vec4 mv=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*mv;
@@ -52,219 +53,814 @@ gl_PointSize=uSize*(300./-mv.z);}`;
 const DOTS_FS = `varying float vA;varying vec3 vC;void main(){vec2 p=gl_PointCoord-.5;float d=length(p);float a=smoothstep(.5,.0,d);gl_FragColor=vec4(vC*a*vA*1.6,a*vA);}`;
 
 /** A neon sign: glowing text drawn once into a canvas. */
-function neon(text: string, color: string, opts: { w?: number; h?: number; font?: string; frame?: boolean } = {}) {
-  const w = opts.w ?? 512, h = opts.h ?? 128;
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  const x = c.getContext('2d')!;
-  x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.font = opts.font ?? `700 ${Math.round(h * .56)}px "Space Grotesk", Arial, sans-serif`;
-  x.shadowColor = color; x.shadowBlur = h * .16; x.fillStyle = color;
-  for (let i = 0; i < 3; i++) x.fillText(text, w / 2, h / 2 + 2);
-  x.shadowBlur = 0; x.fillStyle = '#fff6f0'; x.globalAlpha = .7; x.fillText(text, w / 2, h / 2 + 2); x.globalAlpha = 1;
-  if (opts.frame) { x.strokeStyle = color; x.lineWidth = 6; x.shadowColor = color; x.shadowBlur = 14; x.strokeRect(10, 10, w - 20, h - 20); }
-  const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4; return t;
+function neon(
+  text: string,
+  color: string,
+  options: { w?: number; h?: number; font?: string; frame?: boolean } = {},
+) {
+  const width = options.w ?? 512,
+    height = options.h ?? 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const drawingContext = canvas.getContext('2d')!;
+  drawingContext.textAlign = 'center';
+  drawingContext.textBaseline = 'middle';
+  drawingContext.font =
+    options.font ??
+    `700 ${Math.round(height * 0.56)}px "Space Grotesk", Arial, sans-serif`;
+  drawingContext.shadowColor = color;
+  drawingContext.shadowBlur = height * 0.16;
+  drawingContext.fillStyle = color;
+  for (let index = 0; index < 3; index++)
+    drawingContext.fillText(text, width / 2, height / 2 + 2);
+  drawingContext.shadowBlur = 0;
+  drawingContext.fillStyle = '#fff6f0';
+  drawingContext.globalAlpha = 0.7;
+  drawingContext.fillText(text, width / 2, height / 2 + 2);
+  drawingContext.globalAlpha = 1;
+  if (options.frame) {
+    drawingContext.strokeStyle = color;
+    drawingContext.lineWidth = 6;
+    drawingContext.shadowColor = color;
+    drawingContext.shadowBlur = 14;
+    drawingContext.strokeRect(10, 10, width - 20, height - 20);
+  }
+  const timeSeconds = new THREE.CanvasTexture(canvas);
+  timeSeconds.colorSpace = THREE.SRGBColorSpace;
+  timeSeconds.anisotropy = 4;
+  return timeSeconds;
 }
 
-export function buildSanFransokyo(k: SceneKit, sunDir: T.Vector3) {
-  const random = seeded(2214), rand = (a: number, b: number) => a + random() * (b - a);
-  const textures: T.Texture[] = [];
-  const disposeExtra = () => textures.forEach(t => t.dispose());
-  const city = new T.Group(); city.name = 'san-fransokyo'; k.root.add(city);
+/**
+ * Build the shared skyline with tiered architecture and controlled distant detail.
+ */
+export function buildSanFransokyo(sceneKit: SceneKit, sunDir: THREE.Vector3) {
+  const random = seeded(2214),
+    randomBetween = (startValue: number, endValue: number) =>
+      startValue + random() * (endValue - startValue);
+  const textures: THREE.Texture[] = [];
+  const disposeExtra = () =>
+    textures.forEach((timeSeconds) => timeSeconds.dispose());
+  const city = new THREE.Group();
+  city.name = 'san-fransokyo';
+  sceneKit.root.add(city);
   const timeUniforms: { value: number }[] = [];
 
   // ── Skyline layers. Each is one instanced box mesh with the facade shader.
-  const facade = (base: string, haze: string, range: [number, number], lit: number, cell: [number, number]) => {
-    const u = { uBase: { value: new T.Color(base) }, uHaze: { value: new T.Color(haze) }, uHazeRange: { value: new T.Vector2(...range) }, uLit: { value: lit }, uSun: { value: sunDir.clone() }, uTime: { value: 0 }, uCell: { value: new T.Vector2(...cell) } };
-    timeUniforms.push(u.uTime);
-    return k.ownMaterial(new T.ShaderMaterial({ uniforms: u, vertexShader: FACADE_VS, fragmentShader: FACADE_FS, fog: false }));
+  const facade = (
+    base: string,
+    haze: string,
+    range: [number, number],
+    lit: number,
+    cell: [number, number],
+  ) => {
+    const vector = {
+      uBase: { value: new THREE.Color(base) },
+      uHaze: { value: new THREE.Color(haze) },
+      uHazeRange: { value: new THREE.Vector2(...range) },
+      uLit: { value: lit },
+      uSun: { value: sunDir.clone() },
+      uTime: { value: 0 },
+      uCell: { value: new THREE.Vector2(...cell) },
+    };
+    timeUniforms.push(vector.uTime);
+    return sceneKit.ownMaterial(
+      new THREE.ShaderMaterial({
+        uniforms: vector,
+        vertexShader: FACADE_VS,
+        fragmentShader: FACADE_FS,
+        fog: false,
+      }),
+    );
   };
   type B = { x: number; z: number; w: number; d: number; h: number };
-  const layer = (list: B[], mat: T.Material, capMat?: T.Material, caps?: number) => {
-    const mesh = new T.InstancedMesh(k.boxGeo, mat, list.length), m = new T.Object3D();
-    list.forEach((b, i) => { m.position.set(b.x, b.h / 2 - 1.2, b.z); m.scale.set(b.w, b.h, b.d); m.updateMatrix(); mesh.setMatrixAt(i, m.matrix); });
-    mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere(); city.add(mesh);
+  const layer = (
+    list: B[],
+    material: THREE.Material,
+    capMat?: THREE.Material,
+    caps?: number,
+  ) => {
+    const mesh = new THREE.InstancedMesh(
+        sceneKit.boxGeo,
+        material,
+        list.length,
+      ),
+      sceneObject = new THREE.Object3D();
+    list.forEach((secondEntry, index) => {
+      sceneObject.position.set(
+        secondEntry.x,
+        secondEntry.h / 2 - 1.2,
+        secondEntry.z,
+      );
+      sceneObject.scale.set(secondEntry.w, secondEntry.h, secondEntry.d);
+      sceneObject.updateMatrix();
+      mesh.setMatrixAt(index, sceneObject.matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+    city.add(mesh);
     // Setbacks: a narrower block on top of the taller ones.
-    const tops = list.filter(b => b.h > 30 && random() > .35);
+    const tops = list.filter(
+      (secondEntry) => secondEntry.h > 30 && random() > 0.35,
+    );
     if (tops.length) {
-      const top = new T.InstancedMesh(k.boxGeo, mat, tops.length);
-      tops.forEach((b, i) => { const hh = b.h * rand(.12, .25); m.position.set(b.x + rand(-.1, .1) * b.w, b.h - 1.2 + hh / 2, b.z); m.scale.set(b.w * rand(.5, .75), hh, b.d * rand(.5, .75)); m.updateMatrix(); top.setMatrixAt(i, m.matrix); b.h += hh; });
-      top.instanceMatrix.needsUpdate = true; top.computeBoundingSphere(); city.add(top);
+      const top = new THREE.InstancedMesh(
+        sceneKit.boxGeo,
+        material,
+        tops.length,
+      );
+      tops.forEach((secondEntry, index) => {
+        const hh = secondEntry.h * randomBetween(0.12, 0.25);
+        sceneObject.position.set(
+          secondEntry.x + randomBetween(-0.1, 0.1) * secondEntry.w,
+          secondEntry.h - 1.2 + hh / 2,
+          secondEntry.z,
+        );
+        sceneObject.scale.set(
+          secondEntry.w * randomBetween(0.5, 0.75),
+          hh,
+          secondEntry.d * randomBetween(0.5, 0.75),
+        );
+        sceneObject.updateMatrix();
+        top.setMatrixAt(index, sceneObject.matrix);
+        secondEntry.h += hh;
+      });
+      top.instanceMatrix.needsUpdate = true;
+      top.computeBoundingSphere();
+      city.add(top);
     }
     // Pagoda caps: flared four-sided roofs on some of the towers.
     if (capMat && caps) {
       const picked = list.filter(() => random() < caps);
-      const roof = k.ownGeometry(new T.ConeGeometry(.75, .35, 4, 1)); roof.rotateY(Math.PI / 4);
-      const cap = new T.InstancedMesh(roof, capMat, picked.length * 2);
-      picked.forEach((b, i) => {
-        for (let j = 0; j < 2; j++) { const s = Math.max(b.w, b.d) * (1.25 - j * .35); m.position.set(b.x, b.h - 1.2 + s * .1 + j * s * .32, b.z); m.scale.set(s, s, s); m.updateMatrix(); cap.setMatrixAt(i * 2 + j, m.matrix); }
+      const roof = sceneKit.ownGeometry(
+        new THREE.ConeGeometry(0.75, 0.35, 4, 1),
+      );
+      roof.rotateY(Math.PI / 4);
+      const cap = new THREE.InstancedMesh(roof, capMat, picked.length * 2);
+      picked.forEach((secondEntry, index) => {
+        for (let segmentIndex = 0; segmentIndex < 2; segmentIndex++) {
+          const scaleFactor =
+            Math.max(secondEntry.w, secondEntry.d) *
+            (1.25 - segmentIndex * 0.35);
+          sceneObject.position.set(
+            secondEntry.x,
+            secondEntry.h -
+              1.2 +
+              scaleFactor * 0.1 +
+              segmentIndex * scaleFactor * 0.32,
+            secondEntry.z,
+          );
+          sceneObject.scale.set(scaleFactor, scaleFactor, scaleFactor);
+          sceneObject.updateMatrix();
+          cap.setMatrixAt(index * 2 + segmentIndex, sceneObject.matrix);
+        }
       });
-      cap.instanceMatrix.needsUpdate = true; cap.computeBoundingSphere(); city.add(cap);
+      cap.instanceMatrix.needsUpdate = true;
+      cap.computeBoundingSphere();
+      city.add(cap);
     }
     return list;
   };
 
   // Far: a pale wall of towers fading into the sunset.
   const far: B[] = [];
-  for (let x = -300; x < 300; x += rand(7, 14)) far.push({ x, z: rand(-300, -270), w: rand(8, 16), d: 10, h: rand(12, 34) + (Math.abs(x - 40) < 90 ? rand(10, 40) : 0) });
-  layer(far, facade('#7a6a92', '#d99a8c', [180, 330], .35, [2.6, 2.2]));
+  for (let xPosition = -300; xPosition < 300; xPosition += randomBetween(7, 14))
+    far.push({
+      x: xPosition,
+      z: randomBetween(-300, -270),
+      w: randomBetween(8, 16),
+      d: 10,
+      h:
+        randomBetween(12, 34) +
+        (Math.abs(xPosition - 40) < 90 ? randomBetween(10, 40) : 0),
+    });
+  layer(far, facade('#7a6a92', '#d99a8c', [180, 330], 0.35, [2.6, 2.2]));
   // Mid: downtown, the tall cluster right of the bridge, pagoda caps on some.
-  const midMat = facade('#3f3c5a', '#c98c8c', [140, 300], .75, [1.9, 1.6]);
+  const midMat = facade('#3f3c5a', '#c98c8c', [140, 300], 0.75, [1.9, 1.6]);
   const mid: B[] = [];
-  for (let x = -200; x < 220; x += rand(5, 10)) {
-    const downtown = Math.exp(-Math.pow((x - 55) / 55, 2));
-    mid.push({ x, z: rand(-215, -185), w: rand(5, 10), d: rand(5, 9), h: rand(10, 24) + downtown * rand(20, 62) });
+  for (
+    let xPosition2 = -200;
+    xPosition2 < 220;
+    xPosition2 += randomBetween(5, 10)
+  ) {
+    const downtown = Math.exp(-Math.pow((xPosition2 - 55) / 55, 2));
+    mid.push({
+      x: xPosition2,
+      z: randomBetween(-215, -185),
+      w: randomBetween(5, 10),
+      d: randomBetween(5, 9),
+      h: randomBetween(10, 24) + downtown * randomBetween(20, 62),
+    });
   }
-  layer(mid, midMat, k.standard('#2b2436', .9, 0), .14);
+  layer(mid, midMat, sceneKit.standard('#2b2436', 0.9, 0), 0.14);
   // Near: the waterfront: low blocks, warehouses on the piers.
-  const nearMat = facade('#2e2c42', '#b88282', [90, 240], .9, [1.5, 1.3]);
+  const nearMat = facade('#2e2c42', '#b88282', [90, 240], 0.9, [1.5, 1.3]);
   const near: B[] = [];
-  for (let x = 30; x < 230; x += rand(5, 11)) near.push({ x, z: rand(-150, -132), w: rand(5, 11), d: rand(5, 10), h: rand(5, 16) });
-  for (let x = -230; x < -90; x += rand(6, 12)) near.push({ x, z: rand(-175, -150), w: rand(5, 10), d: rand(5, 9), h: rand(4, 12) });
+  for (
+    let xPosition3 = 30;
+    xPosition3 < 230;
+    xPosition3 += randomBetween(5, 11)
+  )
+    near.push({
+      x: xPosition3,
+      z: randomBetween(-150, -132),
+      w: randomBetween(5, 11),
+      d: randomBetween(5, 10),
+      h: randomBetween(5, 16),
+    });
+  for (
+    let xPosition4 = -230;
+    xPosition4 < -90;
+    xPosition4 += randomBetween(6, 12)
+  )
+    near.push({
+      x: xPosition4,
+      z: randomBetween(-175, -150),
+      w: randomBetween(5, 10),
+      d: randomBetween(5, 9),
+      h: randomBetween(4, 12),
+    });
   layer(near, nearMat);
   // Piers below the waterfront.
-  for (const x of [45, 85, 125, 170]) k.box({ p: [x, -1, -122], s: [9, .8, 22] }, k.standard('#3a3242', .9, 0), city);
+  for (const xPosition5 of [45, 85, 125, 170])
+    sceneKit.box(
+      { p: [xPosition5, -1, -122], s: [9, 0.8, 22] },
+      sceneKit.standard('#3a3242', 0.9, 0),
+      city,
+    );
 
   // The tiered pyramid tower downtown, pagoda tiers stacked up a tapering spire.
-  const spire = new T.Group(); spire.position.set(62, -1.2, -196); city.add(spire);
-  const spireMat = k.standard('#45405e', .7, .2), tierMat = k.standard('#2a2234', .8, .1);
-  k.mesh(new T.ConeGeometry(9, 96, 4, 1, false), spireMat, { p: [0, 48, 0], r: [0, Math.PI / 4, 0] }, spire);
-  for (let i = 0; i < 6; i++) { const y = 18 + i * 12, s = 13 - i * 1.6; k.mesh(new T.ConeGeometry(s, 3.2, 4, 1, true), tierMat, { p: [0, y, 0], r: [0, Math.PI / 4, 0] }, spire); }
+  const spire = new THREE.Group();
+  spire.position.set(62, -1.2, -196);
+  city.add(spire);
+  const spireMat = sceneKit.standard('#45405e', 0.7, 0.2),
+    tierMat = sceneKit.standard('#2a2234', 0.8, 0.1);
+  sceneKit.mesh(
+    new THREE.ConeGeometry(9, 96, 4, 1, false),
+    spireMat,
+    { p: [0, 48, 0], r: [0, Math.PI / 4, 0] },
+    spire,
+  );
+  for (let index2 = 0; index2 < 6; index2++) {
+    const yPosition = 18 + index2 * 12,
+      scaleFactor2 = 13 - index2 * 1.6;
+    sceneKit.mesh(
+      new THREE.ConeGeometry(scaleFactor2, 3.2, 4, 1, true),
+      tierMat,
+      { p: [0, yPosition, 0], r: [0, Math.PI / 4, 0] },
+      spire,
+    );
+  }
   // A round tower with a disc crown beside it, and a needle mast.
-  const drum = new T.Group(); drum.position.set(92, -1.2, -204); city.add(drum);
-  k.mesh(new T.CylinderGeometry(5.5, 6.5, 70, 20), spireMat, { p: [0, 35, 0] }, drum);
-  k.mesh(new T.CylinderGeometry(10, 8, 2.4, 24), tierMat, { p: [0, 71, 0] }, drum);
-  k.mesh(new T.CylinderGeometry(.3, .5, 22, 6), tierMat, { p: [0, 83, 0] }, drum);
+  const drum = new THREE.Group();
+  drum.position.set(92, -1.2, -204);
+  city.add(drum);
+  sceneKit.mesh(
+    new THREE.CylinderGeometry(5.5, 6.5, 70, 20),
+    spireMat,
+    { p: [0, 35, 0] },
+    drum,
+  );
+  sceneKit.mesh(
+    new THREE.CylinderGeometry(10, 8, 2.4, 24),
+    tierMat,
+    { p: [0, 71, 0] },
+    drum,
+  );
+  sceneKit.mesh(
+    new THREE.CylinderGeometry(0.3, 0.5, 22, 6),
+    tierMat,
+    { p: [0, 83, 0] },
+    drum,
+  );
 
   // ── The bridge: deck and truss, two vermilion towers with pagoda roofs, cables and hangers.
-  const bridge = new T.Group(); bridge.position.set(-30, -1.2, -112); bridge.rotation.y = .1; city.add(bridge);
-  const vermilion = k.standard('#b4473a', .55, .2), deep = k.standard('#7a2d27', .7, .1), deckMat = k.standard('#5a4a4a', .8, .1), roofMat = k.standard('#2c2026', .7, .1);
-  k.box({ p: [0, 9, 0], s: [190, .8, 4.4] }, deckMat, bridge);
-  k.box({ p: [0, 8.1, 0], s: [190, 1.2, 3.6] }, deep, bridge);
-  for (let x = -94; x <= 94; x += 4) k.box({ p: [x, 8.4, 0], s: [.25, 1.6, 3.8], r: [0, 0, .5 * (x % 8 === 0 ? 1 : -1)] }, deep, bridge);
-  for (const x of [-42, 42]) {
-    for (const side of [-1, 1]) k.box({ p: [x, 22, side * 2.4], s: [1.6, 46, 1.4], r: [side * .015, 0, 0] }, vermilion, bridge);
+  const bridge = new THREE.Group();
+  bridge.position.set(-30, -1.2, -112);
+  bridge.rotation.y = 0.1;
+  city.add(bridge);
+  const vermilion = sceneKit.standard('#b4473a', 0.55, 0.2),
+    deep = sceneKit.standard('#7a2d27', 0.7, 0.1),
+    deckMat = sceneKit.standard('#5a4a4a', 0.8, 0.1),
+    roofMat = sceneKit.standard('#2c2026', 0.7, 0.1);
+  sceneKit.box({ p: [0, 9, 0], s: [190, 0.8, 4.4] }, deckMat, bridge);
+  sceneKit.box({ p: [0, 8.1, 0], s: [190, 1.2, 3.6] }, deep, bridge);
+  for (let xPosition6 = -94; xPosition6 <= 94; xPosition6 += 4)
+    sceneKit.box(
+      {
+        p: [xPosition6, 8.4, 0],
+        s: [0.25, 1.6, 3.8],
+        r: [0, 0, 0.5 * (xPosition6 % 8 === 0 ? 1 : -1)],
+      },
+      deep,
+      bridge,
+    );
+  for (const xPosition7 of [-42, 42]) {
+    for (const side of [-1, 1])
+      sceneKit.box(
+        {
+          p: [xPosition7, 22, side * 2.4],
+          s: [1.6, 46, 1.4],
+          r: [side * 0.015, 0, 0],
+        },
+        vermilion,
+        bridge,
+      );
     // Crossbeams with upturned ends, like a gate's top beam.
-    for (const y of [16, 30, 42]) {
-      k.box({ p: [x, y, 0], s: [1.8, 1.3, 7.2] }, vermilion, bridge);
-      for (const side of [-1, 1]) k.box({ p: [x, y + .5, side * 3.9], s: [1.8, .6, 1.4], r: [-side * .35, 0, 0] }, vermilion, bridge);
+    for (const yPosition2 of [16, 30, 42]) {
+      sceneKit.box(
+        { p: [xPosition7, yPosition2, 0], s: [1.8, 1.3, 7.2] },
+        vermilion,
+        bridge,
+      );
+      for (const side of [-1, 1])
+        sceneKit.box(
+          {
+            p: [xPosition7, yPosition2 + 0.5, side * 3.9],
+            s: [1.8, 0.6, 1.4],
+            r: [-side * 0.35, 0, 0],
+          },
+          vermilion,
+          bridge,
+        );
     }
     // Pagoda roof: two flared tiers and a finial.
-    k.mesh(new T.ConeGeometry(6, 2.6, 4, 1), roofMat, { p: [x, 46, 0], r: [0, Math.PI / 4, 0] }, bridge);
-    k.mesh(new T.ConeGeometry(4.2, 2.2, 4, 1), roofMat, { p: [x, 48.4, 0], r: [0, Math.PI / 4, 0] }, bridge);
-    k.mesh(new T.CylinderGeometry(.15, .3, 3, 6), k.standard('#c9a050', .3, .8), { p: [x, 50.6, 0] }, bridge);
+    sceneKit.mesh(
+      new THREE.ConeGeometry(6, 2.6, 4, 1),
+      roofMat,
+      { p: [xPosition7, 46, 0], r: [0, Math.PI / 4, 0] },
+      bridge,
+    );
+    sceneKit.mesh(
+      new THREE.ConeGeometry(4.2, 2.2, 4, 1),
+      roofMat,
+      { p: [xPosition7, 48.4, 0], r: [0, Math.PI / 4, 0] },
+      bridge,
+    );
+    sceneKit.mesh(
+      new THREE.CylinderGeometry(0.15, 0.3, 3, 6),
+      sceneKit.standard('#c9a050', 0.3, 0.8),
+      { p: [xPosition7, 50.6, 0] },
+      bridge,
+    );
   }
   // Main cables and hangers.
-  const cableY = (x: number) => Math.abs(x) <= 42 ? 10 + 34 * Math.pow(Math.abs(x) / 42, 2) : 44 - (Math.abs(x) - 42) * .65;
+  const cableY = (xPosition8: number) =>
+    Math.abs(xPosition8) <= 42
+      ? 10 + 34 * Math.pow(Math.abs(xPosition8) / 42, 2)
+      : 44 - (Math.abs(xPosition8) - 42) * 0.65;
   for (const side of [-1, 1]) {
-    const pts: T.Vector3[] = []; for (let i = 0; i <= 80; i++) { const x = -95 + i * 190 / 80; pts.push(new T.Vector3(x, Math.max(9.5, cableY(x)), side * 2.2)); }
-    k.line(pts, '#c2564a', .95, bridge);
-    for (let x = -40; x <= 40; x += 3) k.line([new T.Vector3(x, 9.4, side * 2.2), new T.Vector3(x, cableY(x), side * 2.2)], '#a54a40', .6, bridge);
+    const points: THREE.Vector3[] = [];
+    for (let index3 = 0; index3 <= 80; index3++) {
+      const xPosition9 = -95 + (index3 * 190) / 80;
+      points.push(
+        new THREE.Vector3(
+          xPosition9,
+          Math.max(9.5, cableY(xPosition9)),
+          side * 2.2,
+        ),
+      );
+    }
+    sceneKit.line(points, '#c2564a', 0.95, bridge);
+    for (let xPosition10 = -40; xPosition10 <= 40; xPosition10 += 3)
+      sceneKit.line(
+        [
+          new THREE.Vector3(xPosition10, 9.4, side * 2.2),
+          new THREE.Vector3(xPosition10, cableY(xPosition10), side * 2.2),
+        ],
+        '#a54a40',
+        0.6,
+        bridge,
+      );
   }
 
   // ── Lights: deck lamps, aviation blinkers on the tops, house lights on the hills.
-  const dots = (pts: T.Vector3[], colors: T.Color[], size: number, blink: boolean, parent: T.Object3D = city) => {
-    const g = k.ownGeometry(new T.BufferGeometry()).setFromPoints(pts);
-    g.setAttribute('color', new T.Float32BufferAttribute(colors.flatMap(c => [c.r, c.g, c.b]), 3));
-    g.setAttribute('aSeed', new T.Float32BufferAttribute(pts.map(() => random()), 1));
-    const u = { uTime: { value: 0 }, uSize: { value: size }, uBlink: { value: blink ? 1 : 0 } }; timeUniforms.push(u.uTime);
-    const p = new T.Points(g, k.ownMaterial(new T.ShaderMaterial({ uniforms: u, vertexShader: DOTS_VS, fragmentShader: DOTS_FS, transparent: true, depthWrite: false, blending: T.AdditiveBlending, fog: false })));
-    p.frustumCulled = false; parent.add(p); return p;
+  const dots = (
+    points2: THREE.Vector3[],
+    colors: THREE.Color[],
+    size: number,
+    blink: boolean,
+    parent: THREE.Object3D = city,
+  ) => {
+    const geometry = sceneKit
+      .ownGeometry(new THREE.BufferGeometry())
+      .setFromPoints(points2);
+    geometry.setAttribute(
+      'color',
+      new THREE.Float32BufferAttribute(
+        colors.flatMap((color) => [color.r, color.g, color.b]),
+        3,
+      ),
+    );
+    geometry.setAttribute(
+      'aSeed',
+      new THREE.Float32BufferAttribute(
+        points2.map(() => random()),
+        1,
+      ),
+    );
+    const progress = {
+      uTime: { value: 0 },
+      uSize: { value: size },
+      uBlink: { value: blink ? 1 : 0 },
+    };
+    timeUniforms.push(progress.uTime);
+    const material = new THREE.Points(
+      geometry,
+      sceneKit.ownMaterial(
+        new THREE.ShaderMaterial({
+          uniforms: progress,
+          vertexShader: DOTS_VS,
+          fragmentShader: DOTS_FS,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          fog: false,
+        }),
+      ),
+    );
+    material.frustumCulled = false;
+    parent.add(material);
+    return material;
   };
-  const warm = new T.Color('#ffd49a'), red = new T.Color('#ff3a2a');
-  const deckLights: T.Vector3[] = []; for (let x = -92; x <= 92; x += 5) for (const s of [-1, 1]) deckLights.push(new T.Vector3(x, 10, s * 2.3));
-  dots(deckLights, deckLights.map(() => warm), .5, false, bridge);
+  const warm = new THREE.Color('#ffd49a'),
+    red = new THREE.Color('#ff3a2a');
+  const deckLights: THREE.Vector3[] = [];
+  for (let xPosition11 = -92; xPosition11 <= 92; xPosition11 += 5)
+    for (const scaleFactor3 of [-1, 1])
+      deckLights.push(new THREE.Vector3(xPosition11, 10, scaleFactor3 * 2.3));
+  dots(
+    deckLights,
+    deckLights.map(() => warm),
+    0.5,
+    false,
+    bridge,
+  );
   bridge.updateMatrix();
-  const blinkers: T.Vector3[] = [];
-  for (const x of [-42, 42]) blinkers.push(new T.Vector3(x, 52.4, 0).applyMatrix4(bridge.matrix));
-  for (const b of mid.filter(b => b.h > 40)) blinkers.push(new T.Vector3(b.x, b.h - .6, b.z));
-  blinkers.push(new T.Vector3(62, 95, -196), new T.Vector3(92, 94.5, -204));
-  dots(blinkers, blinkers.map(() => red), 1.1, true);
+  const blinkers: THREE.Vector3[] = [];
+  for (const xPosition12 of [-42, 42])
+    blinkers.push(
+      new THREE.Vector3(xPosition12, 52.4, 0).applyMatrix4(bridge.matrix),
+    );
+  for (const secondEntry2 of mid.filter((secondEntry) => secondEntry.h > 40))
+    blinkers.push(
+      new THREE.Vector3(secondEntry2.x, secondEntry2.h - 0.6, secondEntry2.z),
+    );
+  blinkers.push(
+    new THREE.Vector3(62, 95, -196),
+    new THREE.Vector3(92, 94.5, -204),
+  );
+  dots(
+    blinkers,
+    blinkers.map(() => red),
+    1.1,
+    true,
+  );
   // Hills on the left with the houses' lights scattered up them.
-  const hillMat = k.standard('#3c3550', .95, 0);
-  for (let i = 0; i < 7; i++) k.mesh(k.sphereGeo, hillMat, { p: [-260 + i * 34, -14, -238 + rand(-10, 10)], s: [38, 30 + rand(0, 16), 22] }, city);
-  const houses: T.Vector3[] = [];
-  for (let i = 0; i < 260; i++) { const x = rand(-280, -50), z = rand(-232, -222), y = Math.max(0, 18 * Math.exp(-Math.pow((x + 170) / 80, 2)) * rand(.1, 1.05)); houses.push(new T.Vector3(x, y, z)); }
-  dots(houses, houses.map(() => (random() > .8 ? new T.Color('#bfe2ff') : warm)), .55, false);
+  const hillMat = sceneKit.standard('#3c3550', 0.95, 0);
+  for (let index4 = 0; index4 < 7; index4++)
+    sceneKit.mesh(
+      sceneKit.sphereGeo,
+      hillMat,
+      {
+        p: [-260 + index4 * 34, -14, -238 + randomBetween(-10, 10)],
+        s: [38, 30 + randomBetween(0, 16), 22],
+      },
+      city,
+    );
+  const houses: THREE.Vector3[] = [];
+  for (let index5 = 0; index5 < 260; index5++) {
+    const xPosition13 = randomBetween(-280, -50),
+      zPosition = randomBetween(-232, -222),
+      yPosition3 = Math.max(
+        0,
+        18 *
+          Math.exp(-Math.pow((xPosition13 + 170) / 80, 2)) *
+          randomBetween(0.1, 1.05),
+      );
+    houses.push(new THREE.Vector3(xPosition13, yPosition3, zPosition));
+  }
+  dots(
+    houses,
+    houses.map(() => (random() > 0.8 ? new THREE.Color('#bfe2ff') : warm)),
+    0.55,
+    false,
+  );
 
   // ── Neon signs on the waterfront and the downtown roofs.
-  const sign = (text: string, color: string, p: [number, number, number], w: number, opts: Parameters<typeof neon>[2] = {}, flicker = false) => {
-    const tex = neon(text, color, opts); textures.push(tex);
-    const mat = k.ownMaterial(new T.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, blending: T.AdditiveBlending, toneMapped: false, fog: false }));
-    const h = w * (opts.h ?? 128) / (opts.w ?? 512);
-    const m = k.mesh(k.ownGeometry(new T.PlaneGeometry(w, h)), mat, { p }, city);
-    return { m, mat, flicker };
+  const sign = (
+    text: string,
+    color: string,
+    points2: [number, number, number],
+    width: number,
+    options: Parameters<typeof neon>[2] = {},
+    flicker = false,
+  ) => {
+    const texture = neon(text, color, options);
+    textures.push(texture);
+    const material = sceneKit.ownMaterial(
+      new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        toneMapped: false,
+        fog: false,
+      }),
+    );
+    const height = (width * (options.h ?? 128)) / (options.w ?? 512);
+    const material2 = sceneKit.mesh(
+      sceneKit.ownGeometry(new THREE.PlaneGeometry(width, height)),
+      material,
+      { p: points2 },
+      city,
+    );
+    return { m: material2, mat: material, flicker };
   };
   const signs = [
     sign('SAN FRANSOKYO', '#ff6a4a', [-150, 22, -224], 58, { w: 1024, h: 128 }),
-    sign('LUCKY CAT CAFÉ', '#ff9a3c', [72, 11, -129], 15, { frame: true }, true),
-    sign('ラーメン', '#5ef0ff', [112, 13, -131], 9, { w: 512, h: 160, font: '700 110px "Noto Sans JP", "Yu Gothic", sans-serif' }),
+    sign(
+      'LUCKY CAT CAFÉ',
+      '#ff9a3c',
+      [72, 11, -129],
+      15,
+      { frame: true },
+      true,
+    ),
+    sign('ラーメン', '#5ef0ff', [112, 13, -131], 9, {
+      w: 512,
+      h: 160,
+      font: '700 110px "Noto Sans JP", "Yu Gothic", sans-serif',
+    }),
     sign('SFIT', '#9fd7ff', [30, 46, -186], 12, { w: 512, h: 160 }),
     sign('KREI TECH', '#c79bff', [98, 66, -197], 16, { w: 768, h: 128 }),
-    sign('桜', '#ff7fb3', [150, 15, -136], 4.5, { w: 256, h: 256, font: '700 200px "Noto Sans JP", "Yu Gothic", sans-serif' }, true),
+    sign(
+      '桜',
+      '#ff7fb3',
+      [150, 15, -136],
+      4.5,
+      {
+        w: 256,
+        h: 256,
+        font: '700 200px "Noto Sans JP", "Yu Gothic", sans-serif',
+      },
+      true,
+    ),
     sign('FERRY', '#ffd27a', [48, 4.5, -111], 8, {}),
   ];
 
   // ── The wind turbines that ride over the city: white blimps with a rotor, tethered down.
-  const turbineMat = k.standard('#e9e2dc', .55, .15), ringMat = k.standard('#9a948e', .4, .6);
-  const turbines: { g: T.Group; rotor: T.Group; base: T.Vector3; ph: number }[] = [];
-  for (const [x, y, z, s] of [[-90, 70, -190, 1], [-10, 88, -240, 1.3], [70, 76, -170, .9], [150, 92, -230, 1.2], [-180, 82, -250, 1.1]] as const) {
-    const g = new T.Group(); g.position.set(x, y, z); g.scale.setScalar(s); g.rotation.y = rand(-.4, .4); city.add(g);
-    k.mesh(k.sphereGeo, turbineMat, { p: [0, 0, 0], s: [9, 3.2, 3.2] }, g);
-    for (const r of [0, Math.PI / 2]) k.box({ p: [-7.2, 0, 0], s: [2.6, .25, 5.4], r: [r, 0, 0] }, turbineMat, g);
-    const rotor = new T.Group(); rotor.position.x = 8.6; g.add(rotor);
-    k.mesh(new T.TorusGeometry(3.6, .25, 8, 28), ringMat, { p: [0, 0, 0], r: [0, Math.PI / 2, 0] }, rotor);
-    for (let i = 0; i < 3; i++) k.box({ p: [0, 0, 0], s: [.2, 6.6, .7], r: [i * Math.PI * 2 / 3, 0, 0] }, ringMat, rotor);
-    k.line([new T.Vector3(x, y - 3 * s, z), new T.Vector3(x + rand(-8, 8), -1, z + 10)], '#5a5266', .5, city);
-    turbines.push({ g, rotor, base: g.position.clone(), ph: random() * 6 });
+  const turbineMat = sceneKit.standard('#e9e2dc', 0.55, 0.15),
+    ringMat = sceneKit.standard('#9a948e', 0.4, 0.6);
+  const turbines: {
+    g: THREE.Group;
+    rotor: THREE.Group;
+    base: THREE.Vector3;
+    ph: number;
+  }[] = [];
+  for (const [xPosition14, yPosition4, zPosition2, state] of [
+    [-90, 70, -190, 1],
+    [-10, 88, -240, 1.3],
+    [70, 76, -170, 0.9],
+    [150, 92, -230, 1.2],
+    [-180, 82, -250, 1.1],
+  ] as const) {
+    const group = new THREE.Group();
+    group.position.set(xPosition14, yPosition4, zPosition2);
+    group.scale.setScalar(state);
+    group.rotation.y = randomBetween(-0.4, 0.4);
+    city.add(group);
+    sceneKit.mesh(
+      sceneKit.sphereGeo,
+      turbineMat,
+      { p: [0, 0, 0], s: [9, 3.2, 3.2] },
+      group,
+    );
+    for (const radius of [0, Math.PI / 2])
+      sceneKit.box(
+        { p: [-7.2, 0, 0], s: [2.6, 0.25, 5.4], r: [radius, 0, 0] },
+        turbineMat,
+        group,
+      );
+    const rotor = new THREE.Group();
+    rotor.position.x = 8.6;
+    group.add(rotor);
+    sceneKit.mesh(
+      new THREE.TorusGeometry(3.6, 0.25, 8, 28),
+      ringMat,
+      { p: [0, 0, 0], r: [0, Math.PI / 2, 0] },
+      rotor,
+    );
+    for (let index6 = 0; index6 < 3; index6++)
+      sceneKit.box(
+        {
+          p: [0, 0, 0],
+          s: [0.2, 6.6, 0.7],
+          r: [(index6 * Math.PI * 2) / 3, 0, 0],
+        },
+        ringMat,
+        rotor,
+      );
+    sceneKit.line(
+      [
+        new THREE.Vector3(xPosition14, yPosition4 - 3 * state, zPosition2),
+        new THREE.Vector3(
+          xPosition14 + randomBetween(-8, 8),
+          -1,
+          zPosition2 + 10,
+        ),
+      ],
+      '#5a5266',
+      0.5,
+      city,
+    );
+    turbines.push({
+      g: group,
+      rotor,
+      base: group.position.clone(),
+      ph: random() * 6,
+    });
   }
 
   // ── The bay: a ferry crossing with lit windows, sailboats with mast lights, a buoy.
-  const boats: { g: T.Group; speed: number; x0: number; bob: number }[] = [];
-  const hullMat = k.standard('#e8e2d8', .6, .1), darkHull = k.standard('#2a2a36', .7, .1);
-  const winMat = k.basic('#ffd08a', 1.4);
-  { const g = new T.Group(); g.position.set(-60, -1.1, -62); city.add(g);
-    k.box({ p: [0, .4, 0], s: [14, 1.4, 4.2] }, darkHull, g); k.box({ p: [0, 1.6, 0], s: [11, 1.2, 3.6] }, hullMat, g); k.box({ p: [-1, 2.7, 0], s: [6.5, 1, 3] }, hullMat, g);
-    for (let i = 0; i < 8; i++) k.box({ p: [-4.6 + i * 1.3, 1.65, 1.82], s: [.7, .45, .04] }, winMat, g);
-    k.box({ p: [2, 3.6, 0], s: [.6, 1.6, .6] }, k.standard('#b4473a', .6, .2), g);
-    k.mesh(k.sphereGeo, k.basic('#ffe2b0', 2), { p: [2, 4.6, 0], s: [.25, .25, .25] }, g);
-    boats.push({ g, speed: 2.2, x0: -60, bob: 0 }); }
-  for (const [x, z] of [[-28, -46], [20, -78], [-95, -88], [95, -58], [140, -96]] as const) {
-    const g = new T.Group(); g.position.set(x, -1.15, z); g.rotation.y = rand(0, Math.PI * 2); city.add(g);
-    k.box({ p: [0, .25, 0], s: [4, .6, 1.3] }, hullMat, g);
-    k.box({ p: [0, 3.2, 0], s: [.1, 5.6, .1] }, darkHull, g);
-    const sail = new T.Shape(); sail.moveTo(0, 0); sail.lineTo(0, 5); sail.lineTo(2.4, .3); sail.closePath();
-    k.mesh(new T.ShapeGeometry(sail), k.ownMaterial(new T.MeshStandardMaterial({ color: '#f3ece2', roughness: .8, side: T.DoubleSide })), { p: [.1, .6, 0] }, g);
-    boats.push({ g, speed: rand(.15, .4), x0: x, bob: random() * 6 });
+  const boats: { g: THREE.Group; speed: number; x0: number; bob: number }[] =
+    [];
+  const hullMat = sceneKit.standard('#e8e2d8', 0.6, 0.1),
+    darkHull = sceneKit.standard('#2a2a36', 0.7, 0.1);
+  const winMat = sceneKit.basic('#ffd08a', 1.4);
+  {
+    const group2 = new THREE.Group();
+    group2.position.set(-60, -1.1, -62);
+    city.add(group2);
+    sceneKit.box({ p: [0, 0.4, 0], s: [14, 1.4, 4.2] }, darkHull, group2);
+    sceneKit.box({ p: [0, 1.6, 0], s: [11, 1.2, 3.6] }, hullMat, group2);
+    sceneKit.box({ p: [-1, 2.7, 0], s: [6.5, 1, 3] }, hullMat, group2);
+    for (let index7 = 0; index7 < 8; index7++)
+      sceneKit.box(
+        { p: [-4.6 + index7 * 1.3, 1.65, 1.82], s: [0.7, 0.45, 0.04] },
+        winMat,
+        group2,
+      );
+    sceneKit.box(
+      { p: [2, 3.6, 0], s: [0.6, 1.6, 0.6] },
+      sceneKit.standard('#b4473a', 0.6, 0.2),
+      group2,
+    );
+    sceneKit.mesh(
+      sceneKit.sphereGeo,
+      sceneKit.basic('#ffe2b0', 2),
+      { p: [2, 4.6, 0], s: [0.25, 0.25, 0.25] },
+      group2,
+    );
+    boats.push({ g: group2, speed: 2.2, x0: -60, bob: 0 });
+  }
+  for (const [xPosition15, zPosition3] of [
+    [-28, -46],
+    [20, -78],
+    [-95, -88],
+    [95, -58],
+    [140, -96],
+  ] as const) {
+    const group3 = new THREE.Group();
+    group3.position.set(xPosition15, -1.15, zPosition3);
+    group3.rotation.y = randomBetween(0, Math.PI * 2);
+    city.add(group3);
+    sceneKit.box({ p: [0, 0.25, 0], s: [4, 0.6, 1.3] }, hullMat, group3);
+    sceneKit.box({ p: [0, 3.2, 0], s: [0.1, 5.6, 0.1] }, darkHull, group3);
+    const sail = new THREE.Shape();
+    sail.moveTo(0, 0);
+    sail.lineTo(0, 5);
+    sail.lineTo(2.4, 0.3);
+    sail.closePath();
+    sceneKit.mesh(
+      new THREE.ShapeGeometry(sail),
+      sceneKit.ownMaterial(
+        new THREE.MeshStandardMaterial({
+          color: '#f3ece2',
+          roughness: 0.8,
+          side: THREE.DoubleSide,
+        }),
+      ),
+      { p: [0.1, 0.6, 0] },
+      group3,
+    );
+    boats.push({
+      g: group3,
+      speed: randomBetween(0.15, 0.4),
+      x0: xPosition15,
+      bob: random() * 6,
+    });
   }
   // Reflected light streaks under the lit things on the water.
-  const streakMat = k.ownMaterial(new T.ShaderMaterial({ uniforms: { uColor: { value: new T.Color('#ffb070') }, uOpacity: { value: .5 } }, vertexShader: UV_VS, fragmentShader: `varying vec2 vUv;uniform vec3 uColor;uniform float uOpacity;void main(){float a=pow(vUv.y,1.5)*smoothstep(0.,.5,vUv.x)*smoothstep(1.,.5,vUv.x)*uOpacity;gl_FragColor=vec4(uColor*a,a);}`, transparent: true, depthWrite: false, blending: T.AdditiveBlending, fog: false }));
-  for (const [x, z, w, l] of [[-30, -110, 3, 40], [72, -128, 2, 22], [112, -130, 1.5, 18], [-150, -220, 6, 50], [62, -190, 2.5, 50]] as const) {
-    k.mesh(k.ownGeometry(new T.PlaneGeometry(w, l)), streakMat, { p: [x, -1.15, z + l / 2], r: [-Math.PI / 2, 0, 0] }, city);
+  const streakMat = sceneKit.ownMaterial(
+    new THREE.ShaderMaterial({
+      uniforms: {
+        uColor: { value: new THREE.Color('#ffb070') },
+        uOpacity: { value: 0.5 },
+      },
+      vertexShader: UV_VS,
+      fragmentShader: `varying vec2 vUv;uniform vec3 uColor;uniform float uOpacity;void main(){float a=pow(vUv.y,1.5)*smoothstep(0.,.5,vUv.x)*smoothstep(1.,.5,vUv.x)*uOpacity;gl_FragColor=vec4(uColor*a,a);}`,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      fog: false,
+    }),
+  );
+  for (const [xPosition16, zPosition4, width2, entry] of [
+    [-30, -110, 3, 40],
+    [72, -128, 2, 22],
+    [112, -130, 1.5, 18],
+    [-150, -220, 6, 50],
+    [62, -190, 2.5, 50],
+  ] as const) {
+    sceneKit.mesh(
+      sceneKit.ownGeometry(new THREE.PlaneGeometry(width2, entry)),
+      streakMat,
+      {
+        p: [xPosition16, -1.15, zPosition4 + entry / 2],
+        r: [-Math.PI / 2, 0, 0],
+      },
+      city,
+    );
   }
 
   // ── The sun on the horizon, and haze between the layers.
   const sunAt = sunDir.clone().normalize().multiplyScalar(360);
-  const sunMat = k.ownMaterial(new T.ShaderMaterial({ uniforms: {}, vertexShader: UV_VS, fragmentShader: 'varying vec2 vUv;void main(){vec2 p=vUv-.5;float d=length(p)*2.;float a=smoothstep(.32,.28,d)+pow(max(0.,1.-d),3.)*.55;vec3 c=mix(vec3(1.,.6,.35),vec3(1.,.95,.8),smoothstep(.3,0.,d));gl_FragColor=vec4(c*a,a);}', transparent: true, depthWrite: false, blending: T.AdditiveBlending, fog: false }));
-  const sun = k.mesh(k.ownGeometry(new T.PlaneGeometry(90, 90)), sunMat, { p: [sunAt.x, Math.max(6, sunAt.y), sunAt.z] }, city);
-  sun.lookAt(0, 4, 0); sun.renderOrder = -1;
-  const haze = (z: number, color: string, opacity: number, height: number) => {
-    const m = k.ownMaterial(new T.ShaderMaterial({ uniforms: { uColor: { value: new T.Color(color) }, uOpacity: { value: opacity } }, vertexShader: UV_VS, fragmentShader: HAZE_FS, transparent: true, depthWrite: false, fog: false }));
-    k.mesh(k.ownGeometry(new T.PlaneGeometry(900, height)), m, { p: [0, height / 2 - 1.5, z] }, city);
+  const sunMat = sceneKit.ownMaterial(
+    new THREE.ShaderMaterial({
+      uniforms: {},
+      vertexShader: UV_VS,
+      fragmentShader:
+        'varying vec2 vUv;void main(){vec2 p=vUv-.5;float d=length(p)*2.;float a=smoothstep(.32,.28,d)+pow(max(0.,1.-d),3.)*.55;vec3 c=mix(vec3(1.,.6,.35),vec3(1.,.95,.8),smoothstep(.3,0.,d));gl_FragColor=vec4(c*a,a);}',
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      fog: false,
+    }),
+  );
+  const sun = sceneKit.mesh(
+    sceneKit.ownGeometry(new THREE.PlaneGeometry(90, 90)),
+    sunMat,
+    { p: [sunAt.x, Math.max(6, sunAt.y), sunAt.z] },
+    city,
+  );
+  sun.lookAt(0, 4, 0);
+  sun.renderOrder = -1;
+  const haze = (
+    zPosition5: number,
+    color: string,
+    opacity: number,
+    height: number,
+  ) => {
+    const color2 = sceneKit.ownMaterial(
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uColor: { value: new THREE.Color(color) },
+          uOpacity: { value: opacity },
+        },
+        vertexShader: UV_VS,
+        fragmentShader: HAZE_FS,
+        transparent: true,
+        depthWrite: false,
+        fog: false,
+      }),
+    );
+    sceneKit.mesh(
+      sceneKit.ownGeometry(new THREE.PlaneGeometry(900, height)),
+      color2,
+      { p: [0, height / 2 - 1.5, zPosition5] },
+      city,
+    );
   };
-  haze(-128, '#e3a08e', .35, 26);
-  haze(-178, '#e0988c', .45, 40);
-  haze(-238, '#e7a690', .55, 60);
-  haze(-305, '#f0b49a', .6, 80);
+  haze(-128, '#e3a08e', 0.35, 26);
+  haze(-178, '#e0988c', 0.45, 40);
+  haze(-238, '#e7a690', 0.55, 60);
+  haze(-305, '#f0b49a', 0.6, 80);
 
   return {
-    update(t: number, dt: number) {
-      for (const u of timeUniforms) u.value = t;
-      for (const tb of turbines) { tb.rotor.rotation.x += dt * 1.6; tb.g.position.y = tb.base.y + Math.sin(t * .3 + tb.ph) * 1.2; tb.g.rotation.z = Math.sin(t * .25 + tb.ph) * .03; }
-      for (const b of boats) {
-        if (b.speed > 1) { b.g.position.x = ((b.x0 + t * b.speed + 160) % 320) - 160; }
-        b.g.position.y = -1.15 + Math.sin(t * 1.3 + b.bob) * .08; b.g.rotation.z = Math.sin(t * 1.1 + b.bob) * .04;
+    update(timeSeconds: number, deltaSeconds: number) {
+      for (const progress of timeUniforms) progress.value = timeSeconds;
+      for (const tb of turbines) {
+        tb.rotor.rotation.x += deltaSeconds * 1.6;
+        tb.g.position.y = tb.base.y + Math.sin(timeSeconds * 0.3 + tb.ph) * 1.2;
+        tb.g.rotation.z = Math.sin(timeSeconds * 0.25 + tb.ph) * 0.03;
       }
-      for (const sg of signs) if (sg.flicker) sg.mat.opacity = Math.sin(t * 13) * Math.sin(t * 3.1) > .85 ? .35 : 1;
+      for (const group4 of boats) {
+        if (group4.speed > 1) {
+          group4.g.position.x =
+            ((group4.x0 + timeSeconds * group4.speed + 160) % 320) - 160;
+        }
+        group4.g.position.y =
+          -1.15 + Math.sin(timeSeconds * 1.3 + group4.bob) * 0.08;
+        group4.g.rotation.z = Math.sin(timeSeconds * 1.1 + group4.bob) * 0.04;
+      }
+      for (const sg of signs)
+        if (sg.flicker)
+          sg.mat.opacity =
+            Math.sin(timeSeconds * 13) * Math.sin(timeSeconds * 3.1) > 0.85
+              ? 0.35
+              : 1;
     },
     dispose: disposeExtra,
   };

@@ -23,6 +23,10 @@ npm run preview
 
 Deploy the contents of `dist/` to a static host. `node server.mjs` also serves the included build on port 4173 without installing dependencies.
 
+## Website context
+
+See [WEBSITE_CONTEXT.md](docs/WEBSITE_CONTEXT.md) for the complete playable flow, architecture, model ownership, rendering lifecycle, controls and verification workflow.
+
 ## Controls
 
 The opening advances automatically. Hold W, Space or the mouse to walk/sprint; use the on-screen controls for interactions. E guides the opening chip interactions. Later engineering, Bay 6 and telemetry controls explain the required action. The regulator remote and dragging interactions are available on screen. The sound toggle works throughout.

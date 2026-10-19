@@ -10,13 +10,22 @@ import { audioEngine } from '../audio/AudioMix';
 //  - per-state manifests let the flow warm the NEXT chapter during the current one
 //    (ExperienceStates.STATE_PROFILES[state].preload), so there is no big startup download.
 
-type Kind = 'gltf' | 'texture' | 'audio';
-export type AssetEntry = { url: string; kind: Kind; optional?: boolean };
+/**
+ * Asset category understood by the shared asset loader.
+ */
+type AssetKind = 'gltf' | 'texture' | 'audio';
+/**
+ * Load/cache metadata for an asset.
+ */
+export type AssetEntry = { url: string; kind: AssetKind; optional?: boolean };
 
 const MANIFEST: Partial<Record<ExperienceState, AssetEntry[]>> = {
   AWAKE: [{ url: MODEL_URL, kind: 'gltf' }],
 };
 
+/**
+ * Owns shared runtime services state and its existing runtime lifecycle.
+ */
 class AssetManager {
   private baymax: Promise<Group> | null = null;
   private baymaxTemplate: Group | null = null;
@@ -26,11 +35,22 @@ class AssetManager {
   readonly failed = new Set<string>();
 
   loadBaymax(): Promise<Group> {
-    this.baymax ??= this.gltf.loadAsync(MODEL_URL).then(gltf => {
-      gltf.scene.traverse(object => { if ('isMesh' in object) { object.castShadow = true; object.receiveShadow = true; } });
-      this.baymaxTemplate = gltf.scene.clone(true);
-      return gltf.scene;
-    }).catch(error=>{this.baymax=null;throw error;});
+    this.baymax ??= this.gltf
+      .loadAsync(MODEL_URL)
+      .then((gltf) => {
+        gltf.scene.traverse((object) => {
+          if ('isMesh' in object) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+          }
+        });
+        this.baymaxTemplate = gltf.scene.clone(true);
+        return gltf.scene;
+      })
+      .catch((error) => {
+        this.baymax = null;
+        throw error;
+      });
     return this.baymax;
   }
 
@@ -43,34 +63,56 @@ class AssetManager {
   /** Phase branches declare what their chapter needs (one call at module load). */
   declare(state: ExperienceState, entries: AssetEntry[]) {
     const list = MANIFEST[state] ?? (MANIFEST[state] = []);
-    for (const entry of entries) if (!list.some(e => e.url === entry.url)) list.push(entry);
+    for (const entry of entries)
+      if (!list.some((event) => event.url === entry.url)) list.push(entry);
   }
 
   load<T = unknown>(entry: AssetEntry): Promise<T | null> {
     // Baymax has its own shadow setup; reuse that promise so the GLB is fetched once.
-    if (entry.url === MODEL_URL && entry.kind === 'gltf') return this.loadBaymax().then(g => g as T, error => { if (entry.optional) return null; throw error; });
+    if (entry.url === MODEL_URL && entry.kind === 'gltf')
+      return this.loadBaymax().then(
+        (group) => group as T,
+        (error) => {
+          if (entry.optional) return null;
+          throw error;
+        },
+      );
     let pending = this.cache.get(entry.url) as Promise<T | null> | undefined;
     if (pending) return pending;
     const source: Promise<unknown> =
-      entry.kind === 'gltf' ? this.gltf.loadAsync(entry.url).then(g => g.scene)
-      : entry.kind === 'texture' ? this.textures.loadAsync(entry.url).then((t: Texture) => { t.colorSpace = SRGBColorSpace; return t; })
-      : audioEngine.load(entry.url);
-    pending = source.then(value => value as T).catch(error => {
-      this.cache.delete(entry.url);
-      this.failed.add(entry.url);
-      if (!entry.optional) throw error;
-      if (import.meta.env.DEV) console.warn(`[lattice] optional asset skipped: ${entry.url}`);
-      return null;
-    });
+      entry.kind === 'gltf'
+        ? this.gltf.loadAsync(entry.url).then((group) => group.scene)
+        : entry.kind === 'texture'
+          ? this.textures.loadAsync(entry.url).then((timeSeconds: Texture) => {
+              timeSeconds.colorSpace = SRGBColorSpace;
+              return timeSeconds;
+            })
+          : audioEngine.load(entry.url);
+    pending = source
+      .then((value) => value as T)
+      .catch((error) => {
+        this.cache.delete(entry.url);
+        this.failed.add(entry.url);
+        if (!entry.optional) throw error;
+        if (import.meta.env.DEV)
+          console.warn(`[lattice] optional asset skipped: ${entry.url}`);
+        return null;
+      });
     this.cache.set(entry.url, pending);
     return pending;
   }
-  get<T = unknown>(url: string, kind: Kind = 'gltf', optional = true) { return this.load<T>({ url, kind, optional }); }
+  get<T = unknown>(url: string, kind: AssetKind = 'gltf', optional = true) {
+    return this.load<T>({ url, kind, optional });
+  }
 
   /** Warm a chapter's manifest in the background. Never rejects. */
   preload(state: ExperienceState) {
     const entries = MANIFEST[state] ?? [];
-    return Promise.all(entries.map(entry => this.load({ ...entry, optional: true }).catch(() => null))).then(() => undefined);
+    return Promise.all(
+      entries.map((entry) =>
+        this.load({ ...entry, optional: true }).catch(() => null),
+      ),
+    ).then(() => undefined);
   }
 }
 export const assets = new AssetManager();

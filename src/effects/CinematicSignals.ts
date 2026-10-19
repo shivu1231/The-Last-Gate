@@ -10,8 +10,17 @@ export const cinematicSignals = {
   /** Degrees added to the camera FOV for push/pull kicks. */
   fov: 0,
 };
+/**
+ * Runtime-derived contract for cinematic rendering.
+ */
 export type CinematicSignals = typeof cinematicSignals;
 
+/**
+ * Reset the mutable cinematic presentation signals to their existing defaults.
+ */
 export function resetSignals() {
-  cinematicSignals.exposure = 0; cinematicSignals.instability = 0; cinematicSignals.blur = 0; cinematicSignals.fov = 0;
+  cinematicSignals.exposure = 0;
+  cinematicSignals.instability = 0;
+  cinematicSignals.blur = 0;
+  cinematicSignals.fov = 0;
 }

@@ -1,11 +1,28 @@
 /* Global production layer: transition veil, cursor behaviour, interaction locking. */
-.transition-veil{position:fixed;inset:0;width:100%;height:100%;z-index:11;pointer-events:none;visibility:hidden}
+.transition-veil {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 11;
+  pointer-events: none;
+  visibility: hidden;
+}
 
 /* While a scene transition runs, in-world prompts can't be double-triggered. */
-html.is-transitioning .experience button:not(.sound){pointer-events:none}
-html.is-transitioning .shell-interaction{opacity:0;transition:opacity .25s ease}
+html.is-transitioning .experience button:not(.sound) {
+  pointer-events: none;
+}
+html.is-transitioning .shell-interaction {
+  opacity: 0;
+  transition: opacity .25s ease;
+}
 
 /* Free look: the cursor gets out of the frame when the hand is still. */
-html.cursor-idle,html.cursor-idle *{cursor:none!important}
+html.cursor-idle,html.cursor-idle * {
+  cursor: none !important;
+}
 /* Object interaction: small, quiet affordance — never a custom sci-fi reticle. */
-html.cursor-interact canvas{cursor:pointer}
+html.cursor-interact canvas {
+  cursor: pointer;
+}

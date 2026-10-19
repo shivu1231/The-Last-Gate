@@ -2,204 +2,668 @@
    panels with faint sage borders, warm off-white text, sage for the live thing and for done, warm
    brass for the hot line, muted coral only for danger. Loaded last, so it recolours the shared rail and pills
    inside the bay without changing them anywhere else. */
-.bay{
-  --p4-panel:rgba(243,240,233,.96); --p4-tile:rgba(31,35,38,.05); --p4-line:rgba(31,35,38,.13); --p4-ink:#1F2326; --p4-strong:#1F2326;
-  --p4-dim:#6b7072; --p4-faint:#8a8f8d; --p4-cyan:#C2611A; --p4-cyan-soft:rgba(240,138,60,.14); --p4-done:#3E7A58;
-  --p4-warm:#C2611A; --p4-red:#A8231C; --p4-btn:#FBF9F4; --p4-btn-hi:#fff; --p4-btn-line:rgba(31,35,38,.16);
-  color:var(--p4-ink);
+.bay {
+  --p4-panel:rgba(243,240,233,.96);
+  --p4-tile:rgba(31,35,38,.05);
+  --p4-line:rgba(31,35,38,.13);
+  --p4-ink:#1F2326;
+  --p4-strong:#1F2326;
+  --p4-dim:#6b7072;
+  --p4-faint:#8a8f8d;
+  --p4-cyan:#C2611A;
+  --p4-cyan-soft:rgba(240,138,60,.14);
+  --p4-done:#3E7A58;
+  --p4-warm:#C2611A;
+  --p4-red:#A8231C;
+  --p4-btn:#FBF9F4;
+  --p4-btn-hi:#fff;
+  --p4-btn-line:rgba(31,35,38,.16);
+  color: var(--p4-ink);
 }
 
 /* Panels */
-.bay .lg-rail,.bay .bay-card,.bay .bay-plan{background:var(--p4-panel);border:1px solid var(--p4-line);color:var(--p4-ink);box-shadow:0 18px 50px rgba(2,6,12,.45);backdrop-filter:blur(8px)}
-.bay .lg-rail-head h2,.bay .bay-card h1{color:var(--p4-strong)}
-.bay .bay-card p{color:var(--p4-ink)}
-.bay .lg-rail-kicker,.bay .bay-kicker{color:var(--p4-dim)!important}
-.bay .lg-rail-kicker span{color:var(--p4-cyan)}
-.bay .bay-card .bay-kicker{color:var(--p4-cyan)!important}
-.bay .lg-rail-meter{background:var(--p4-line)}
-.bay .lg-rail-meter i{background:var(--p4-cyan)}
+.bay .lg-rail,.bay .bay-card,.bay .bay-plan {
+  background: var(--p4-panel);
+  border: 1px solid var(--p4-line);
+  color: var(--p4-ink);
+  box-shadow: 0 18px 50px rgba(2,6,12,.45);
+  backdrop-filter: blur(8px);
+}
+.bay .lg-rail-head h2,.bay .bay-card h1 {
+  color: var(--p4-strong);
+}
+.bay .bay-card p {
+  color: var(--p4-ink);
+}
+.bay .lg-rail-kicker,.bay .bay-kicker {
+  color: var(--p4-dim) !important;
+}
+.bay .lg-rail-kicker span {
+  color: var(--p4-cyan);
+}
+.bay .bay-card .bay-kicker {
+  color: var(--p4-cyan) !important;
+}
+.bay .lg-rail-meter {
+  background: var(--p4-line);
+}
+.bay .lg-rail-meter i {
+  background: var(--p4-cyan);
+}
 
 /* Task rows */
-.bay .lg-task{border-top-color:var(--p4-line)}
-.bay .lg-task-mark{background:var(--p4-tile);color:var(--p4-dim);box-shadow:inset 0 0 0 1px var(--p4-line)}
-.bay .lg-task[data-state=open] .lg-task-mark{background:var(--p4-cyan-soft);color:var(--p4-cyan);box-shadow:inset 0 0 0 1.5px var(--p4-cyan)}
-.bay .lg-task[data-state=done] .lg-task-mark{background:rgba(182,205,185,.16);color:var(--p4-done);box-shadow:inset 0 0 0 1px rgba(182,205,185,.5)}
-.bay .lg-task-text b{color:var(--p4-strong)}
-.bay .lg-task[data-state=done] .lg-task-text b{color:var(--p4-dim)}
-.bay .lg-task-text small{color:var(--p4-dim)}
-.bay .lg-task-chip{color:var(--p4-done)}
-.bay .lg-task-hint{background:var(--p4-cyan-soft);box-shadow:inset 2px 0 0 var(--p4-cyan);color:var(--p4-ink)}
-.bay .lg-rail-notes{border-top-color:var(--p4-line)}
-.bay .lg-rail-notes li{color:var(--p4-dim)}
-.bay .lg-rail-notes li:before{background:var(--p4-cyan)}
-.bay .lg-rail-notes li:last-child{color:var(--p4-strong)}
+.bay .lg-task {
+  border-top-color: var(--p4-line);
+}
+.bay .lg-task-mark {
+  background: var(--p4-tile);
+  color: var(--p4-dim);
+  box-shadow: inset 0 0 0 1px var(--p4-line);
+}
+.bay .lg-task[data-state=open] .lg-task-mark {
+  background: var(--p4-cyan-soft);
+  color: var(--p4-cyan);
+  box-shadow: inset 0 0 0 1.5px var(--p4-cyan);
+}
+.bay .lg-task[data-state=done] .lg-task-mark {
+  background: rgba(182,205,185,.16);
+  color: var(--p4-done);
+  box-shadow: inset 0 0 0 1px rgba(182,205,185,.5);
+}
+.bay .lg-task-text b {
+  color: var(--p4-strong);
+}
+.bay .lg-task[data-state=done] .lg-task-text b {
+  color: var(--p4-dim);
+}
+.bay .lg-task-text small {
+  color: var(--p4-dim);
+}
+.bay .lg-task-chip {
+  color: var(--p4-done);
+}
+.bay .lg-task-hint {
+  background: var(--p4-cyan-soft);
+  box-shadow: inset 2px 0 0 var(--p4-cyan);
+  color: var(--p4-ink);
+}
+.bay .lg-rail-notes {
+  border-top-color: var(--p4-line);
+}
+.bay .lg-rail-notes li {
+  color: var(--p4-dim);
+}
+.bay .lg-rail-notes li:before {
+  background: var(--p4-cyan);
+}
+.bay .lg-rail-notes li:last-child {
+  color: var(--p4-strong);
+}
 
 /* Buttons: the earlier phases' teal, kept in pill form. */
-.bay .lg-pill{background:var(--p4-btn);border:1px solid var(--p4-btn-line);color:#e1e6d9;box-shadow:none}
-.bay .lg-pill:hover:not(:disabled){background:var(--p4-btn-hi)}
-.bay .lg-pill i{color:var(--p4-cyan)}
-.bay .lg-pill:focus-visible{outline-color:var(--p4-cyan)}
-.bay .lg-pill-quiet{background:transparent;border-color:var(--p4-line);color:var(--p4-cyan)}
-.bay .lg-pill-quiet:hover:not(:disabled){background:var(--p4-cyan-soft)}
-.bay .lg-pill-ghost{background:rgba(16,26,29,.55);border-color:var(--p4-line);color:var(--p4-ink)}
-.bay .lg-pill-ghost:hover:not(:disabled){background:rgba(24,36,38,.85)}
+.bay .lg-pill {
+  background: var(--p4-btn);
+  border: 1px solid var(--p4-btn-line);
+  color: #e1e6d9;
+  box-shadow: none;
+}
+.bay .lg-pill:hover:not(:disabled) {
+  background: var(--p4-btn-hi);
+}
+.bay .lg-pill i {
+  color: var(--p4-cyan);
+}
+.bay .lg-pill:focus-visible {
+  outline-color: var(--p4-cyan);
+}
+.bay .lg-pill-quiet {
+  background: transparent;
+  border-color: var(--p4-line);
+  color: var(--p4-cyan);
+}
+.bay .lg-pill-quiet:hover:not(:disabled) {
+  background: var(--p4-cyan-soft);
+}
+.bay .lg-pill-ghost {
+  background: rgba(16,26,29,.55);
+  border-color: var(--p4-line);
+  color: var(--p4-ink);
+}
+.bay .lg-pill-ghost:hover:not(:disabled) {
+  background: rgba(24,36,38,.85);
+}
 
 /* Info card details, found card */
-.bay .bay-card-next{border-top-color:var(--p4-line);color:var(--p4-strong)!important}
-.bay .bay-card-next span{color:var(--p4-cyan)}
-.bay .bay-found-tag{color:var(--p4-cyan)!important}
-.bay .bay-spec div{background:var(--p4-tile);border:1px solid var(--p4-line)}
-.bay .bay-spec dt{color:var(--p4-dim)}
-.bay .bay-spec dd{color:var(--p4-strong)}
-.bay .bay-next{color:var(--p4-dim)!important}
+.bay .bay-card-next {
+  border-top-color: var(--p4-line);
+  color: var(--p4-strong) !important;
+}
+.bay .bay-card-next span {
+  color: var(--p4-cyan);
+}
+.bay .bay-found-tag {
+  color: var(--p4-cyan) !important;
+}
+.bay .bay-spec div {
+  background: var(--p4-tile);
+  border: 1px solid var(--p4-line);
+}
+.bay .bay-spec dt {
+  color: var(--p4-dim);
+}
+.bay .bay-spec dd {
+  color: var(--p4-strong);
+}
+.bay .bay-next {
+  color: var(--p4-dim) !important;
+}
 
 /* Top bar, pins, Hiro's line, controls */
-.bay .bay-brand small{color:var(--p4-dim)}
-.bay .bay-chapters{background:rgba(16,26,29,.7);border-color:var(--p4-line)}
-.bay .bay-chapters li{color:var(--p4-dim)}
-.bay .bay-chapters b{background:var(--p4-tile);box-shadow:inset 0 0 0 1px var(--p4-line)}
-.bay .bay-chapters .is-done b{background:rgba(182,205,185,.16);color:var(--p4-done)}
-.bay .bay-chapters .is-now{background:var(--p4-cyan-soft);color:var(--p4-strong);box-shadow:inset 0 0 0 1px rgba(192,208,172,.45)}
-.bay .bay-chapters .is-now b{background:#2b3a33;color:var(--p4-cyan)}
-.bay .bay-pin{background:rgba(16,26,29,.9);color:var(--p4-strong);box-shadow:0 8px 22px rgba(2,6,12,.5),inset 0 0 0 1px var(--p4-line)}
-.bay .bay-pin:hover{background:rgba(24,36,38,.96);box-shadow:0 8px 22px rgba(2,6,12,.5),inset 0 0 0 1px var(--p4-cyan)}
-.bay .bay-pin i{background:var(--p4-cyan);box-shadow:0 0 0 4px var(--p4-cyan-soft)}
-.bay .bay-pin i:after{border-color:var(--p4-cyan)}
-.bay .bay-pin small{background:var(--p4-tile);color:var(--p4-dim)}
-.bay .bay-pin:focus-visible{outline-color:var(--p4-cyan)}
-.bay .bay-pin-seen{color:var(--p4-dim)}
-.bay .bay-pin-seen i{background:var(--p4-faint)}
-.bay .bay-line{background:rgba(16,26,29,.78);box-shadow:inset 0 0 0 1px var(--p4-line)}
-.bay .bay-line b{background:#2b3a33;color:var(--p4-cyan);box-shadow:inset 0 0 0 1px var(--p4-btn-line)}
-.bay .bay-line small{color:var(--p4-dim)}
-.bay .bay-controls{background:rgba(16,26,29,.7);border-color:var(--p4-line);color:var(--p4-dim)}
-.bay .bay-controls span{background:var(--p4-tile);color:var(--p4-ink);box-shadow:inset 0 0 0 1px var(--p4-line)}
+.bay .bay-brand small {
+  color: var(--p4-dim);
+}
+.bay .bay-chapters {
+  background: rgba(16,26,29,.7);
+  border-color: var(--p4-line);
+}
+.bay .bay-chapters li {
+  color: var(--p4-dim);
+}
+.bay .bay-chapters b {
+  background: var(--p4-tile);
+  box-shadow: inset 0 0 0 1px var(--p4-line);
+}
+.bay .bay-chapters .is-done b {
+  background: rgba(182,205,185,.16);
+  color: var(--p4-done);
+}
+.bay .bay-chapters .is-now {
+  background: var(--p4-cyan-soft);
+  color: var(--p4-strong);
+  box-shadow: inset 0 0 0 1px rgba(192,208,172,.45);
+}
+.bay .bay-chapters .is-now b {
+  background: #2b3a33;
+  color: var(--p4-cyan);
+}
+.bay .bay-pin {
+  background: rgba(16,26,29,.9);
+  color: var(--p4-strong);
+  box-shadow:
+    0 8px 22px rgba(2,6,12,.5),inset 0 0 0 1px var(--p4-line);
+}
+.bay .bay-pin:hover {
+  background: rgba(24,36,38,.96);
+  box-shadow:
+    0 8px 22px rgba(2,6,12,.5),inset 0 0 0 1px var(--p4-cyan);
+}
+.bay .bay-pin i {
+  background: var(--p4-cyan);
+  box-shadow: 0 0 0 4px var(--p4-cyan-soft);
+}
+.bay .bay-pin i:after {
+  border-color: var(--p4-cyan);
+}
+.bay .bay-pin small {
+  background: var(--p4-tile);
+  color: var(--p4-dim);
+}
+.bay .bay-pin:focus-visible {
+  outline-color: var(--p4-cyan);
+}
+.bay .bay-pin-seen {
+  color: var(--p4-dim);
+}
+.bay .bay-pin-seen i {
+  background: var(--p4-faint);
+}
+.bay .bay-line {
+  background: rgba(16,26,29,.78);
+  box-shadow: inset 0 0 0 1px var(--p4-line);
+}
+.bay .bay-line b {
+  background: #2b3a33;
+  color: var(--p4-cyan);
+  box-shadow: inset 0 0 0 1px var(--p4-btn-line);
+}
+.bay .bay-line small {
+  color: var(--p4-dim);
+}
+.bay .bay-controls {
+  background: rgba(16,26,29,.7);
+  border-color: var(--p4-line);
+  color: var(--p4-dim);
+}
+.bay .bay-controls span {
+  background: var(--p4-tile);
+  color: var(--p4-ink);
+  box-shadow: inset 0 0 0 1px var(--p4-line);
+}
 
 /* Floor plan */
-.bay .bay-plan-scale{color:var(--p4-dim)}
-.bay .bay-plan-scale i{border-color:var(--p4-dim)}
-.bay .bay-plan-floor{fill:rgba(24,36,38,.9)}
-.bay .bay-plan-wall{stroke:var(--p4-dim)}
-.bay .bay-plan-hatch{stroke:var(--p4-line)}
-.bay .bay-plan-block{fill:#1c2a2b;stroke:var(--p4-line)}
-.bay .bay-plan-toolwall{stroke:var(--p4-ink)}
-.bay .bay-plan-rack{stroke:var(--p4-faint)}
-.bay .bay-plan-stairs{fill:#121c1e;stroke:var(--p4-dim)}
-.bay .bay-plan-tread{stroke:var(--p4-faint)}
-.bay .bay-plan-dock{fill:rgba(192,208,172,.2);stroke:var(--p4-cyan)}
-.bay .bay-plan-cable{stroke:var(--p4-faint)}
-.bay .bay-plan-cable.is-live{stroke:var(--p4-warm)}
-.bay .bay-plan-mark circle{fill:var(--p4-panel);stroke:var(--p4-cyan)}
-.bay .bay-plan-mark .bay-plan-dot{fill:var(--p4-cyan)}
-.bay .bay-plan-mark.is-seen circle{stroke:var(--p4-faint)}
-.bay .bay-plan-mark.is-seen .bay-plan-dot{fill:var(--p4-faint)}
-.bay .bay-plan-mark.is-target circle{stroke:var(--p4-red)}
-.bay .bay-plan-mark.is-target .bay-plan-dot{fill:var(--p4-red)}
-.bay .bay-plan-hiro circle{fill:var(--p4-cyan);stroke:#0b1210}
-.bay .bay-plan-cone{fill:rgba(192,208,172,.24)}
-.bay .bay-plan-label{fill:var(--p4-faint)}
-.bay .bay-plan-where{color:var(--p4-dim)}
-.bay .bay-plan-where b{color:var(--p4-strong)}
-.bay .bay-plan-legend{color:var(--p4-ink)}
-.bay .bay-plan-legend .is-you{background:var(--p4-cyan);box-shadow:0 0 0 3px var(--p4-cyan-soft)}
-.bay .bay-plan-legend .is-todo{background:transparent;box-shadow:inset 0 0 0 2px var(--p4-cyan)}
-.bay .bay-plan-legend .is-seen{background:transparent;box-shadow:inset 0 0 0 2px var(--p4-faint)}
-.bay .bay-plan-legend .is-line{background:repeating-linear-gradient(90deg,var(--p4-warm) 0 4px,transparent 4px 7px)}
+.bay .bay-plan-scale {
+  color: var(--p4-dim);
+}
+.bay .bay-plan-scale i {
+  border-color: var(--p4-dim);
+}
+.bay .bay-plan-floor {
+  fill: rgba(24,36,38,.9);
+}
+.bay .bay-plan-wall {
+  stroke: var(--p4-dim);
+}
+.bay .bay-plan-hatch {
+  stroke: var(--p4-line);
+}
+.bay .bay-plan-block {
+  fill: #1c2a2b;
+  stroke: var(--p4-line);
+}
+.bay .bay-plan-toolwall {
+  stroke: var(--p4-ink);
+}
+.bay .bay-plan-rack {
+  stroke: var(--p4-faint);
+}
+.bay .bay-plan-stairs {
+  fill: #121c1e;
+  stroke: var(--p4-dim);
+}
+.bay .bay-plan-tread {
+  stroke: var(--p4-faint);
+}
+.bay .bay-plan-dock {
+  fill: rgba(192,208,172,.2);
+  stroke: var(--p4-cyan);
+}
+.bay .bay-plan-cable {
+  stroke: var(--p4-faint);
+}
+.bay .bay-plan-cable.is-live {
+  stroke: var(--p4-warm);
+}
+.bay .bay-plan-mark circle {
+  fill: var(--p4-panel);
+  stroke: var(--p4-cyan);
+}
+.bay .bay-plan-mark .bay-plan-dot {
+  fill: var(--p4-cyan);
+}
+.bay .bay-plan-mark.is-seen circle {
+  stroke: var(--p4-faint);
+}
+.bay .bay-plan-mark.is-seen .bay-plan-dot {
+  fill: var(--p4-faint);
+}
+.bay .bay-plan-mark.is-target circle {
+  stroke: var(--p4-red);
+}
+.bay .bay-plan-mark.is-target .bay-plan-dot {
+  fill: var(--p4-red);
+}
+.bay .bay-plan-hiro circle {
+  fill: var(--p4-cyan);
+  stroke: #0b1210;
+}
+.bay .bay-plan-cone {
+  fill: rgba(192,208,172,.24);
+}
+.bay .bay-plan-label {
+  fill: var(--p4-faint);
+}
+.bay .bay-plan-where {
+  color: var(--p4-dim);
+}
+.bay .bay-plan-where b {
+  color: var(--p4-strong);
+}
+.bay .bay-plan-legend {
+  color: var(--p4-ink);
+}
+.bay .bay-plan-legend .is-you {
+  background: var(--p4-cyan);
+  box-shadow: 0 0 0 3px var(--p4-cyan-soft);
+}
+.bay .bay-plan-legend .is-todo {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--p4-cyan);
+}
+.bay .bay-plan-legend .is-seen {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--p4-faint);
+}
+.bay .bay-plan-legend .is-line {
+  background: repeating-linear-gradient(90deg,var(--p4-warm) 0 4px,transparent 4px 7px);
+}
 
 /* Regulator drawing: light line work on the dark panel. */
-.bay .bay-schem{background:var(--p4-tile);box-shadow:inset 0 0 0 1px var(--p4-line)}
-.bay .bay-schem .s-body{fill:#2c3a37;stroke:var(--p4-ink)}
-.bay .bay-schem .s-dark{fill:#182321;stroke:var(--p4-ink)}
-.bay .bay-schem .s-cap{fill:#111a19;stroke:var(--p4-ink)}
-.bay .bay-schem .s-steel{fill:#8d9c8f;stroke:var(--p4-ink)}
-.bay .bay-schem .s-plate{fill:#0d1514;stroke:var(--p4-dim)}
-.bay .bay-schem .s-bezel{fill:#8d9c8f;stroke:var(--p4-ink)}
-.bay .bay-schem .s-face{fill:#e9e4d6;stroke:var(--p4-dim)}
-.bay .bay-schem .s-needle{stroke:var(--p4-red)}
-.bay .bay-schem .s-chev{fill:var(--p4-red)}
-.bay .bay-schem .s-spec{fill:#d9d2bf;stroke:var(--p4-dim)}
-.bay .bay-schem .s-text{stroke:#3c4a5c}
-.bay .bay-schem .s-led{fill:var(--p4-done);stroke:#0b1210}
-.bay .bay-schem .s-cable-y{stroke:#d9a91e}
-.bay .bay-schem .s-cable-k{stroke:#3a4640}
-.bay .bay-schem .s-call polyline{stroke:var(--p4-cyan)}
-.bay .bay-schem .s-call circle{fill:var(--p4-cyan)}
-.bay .bay-schem .s-call-a{fill:var(--p4-strong)}
-.bay .bay-schem .s-call-b{fill:var(--p4-dim)}
+.bay .bay-schem {
+  background: var(--p4-tile);
+  box-shadow: inset 0 0 0 1px var(--p4-line);
+}
+.bay .bay-schem .s-body {
+  fill: #2c3a37;
+  stroke: var(--p4-ink);
+}
+.bay .bay-schem .s-dark {
+  fill: #182321;
+  stroke: var(--p4-ink);
+}
+.bay .bay-schem .s-cap {
+  fill: #111a19;
+  stroke: var(--p4-ink);
+}
+.bay .bay-schem .s-steel {
+  fill: #8d9c8f;
+  stroke: var(--p4-ink);
+}
+.bay .bay-schem .s-plate {
+  fill: #0d1514;
+  stroke: var(--p4-dim);
+}
+.bay .bay-schem .s-bezel {
+  fill: #8d9c8f;
+  stroke: var(--p4-ink);
+}
+.bay .bay-schem .s-face {
+  fill: #e9e4d6;
+  stroke: var(--p4-dim);
+}
+.bay .bay-schem .s-needle {
+  stroke: var(--p4-red);
+}
+.bay .bay-schem .s-chev {
+  fill: var(--p4-red);
+}
+.bay .bay-schem .s-spec {
+  fill: #d9d2bf;
+  stroke: var(--p4-dim);
+}
+.bay .bay-schem .s-text {
+  stroke: #3c4a5c;
+}
+.bay .bay-schem .s-led {
+  fill: var(--p4-done);
+  stroke: #0b1210;
+}
+.bay .bay-schem .s-cable-y {
+  stroke: #d9a91e;
+}
+.bay .bay-schem .s-cable-k {
+  stroke: #3a4640;
+}
+.bay .bay-schem .s-call polyline {
+  stroke: var(--p4-cyan);
+}
+.bay .bay-schem .s-call circle {
+  fill: var(--p4-cyan);
+}
+.bay .bay-schem .s-call-a {
+  fill: var(--p4-strong);
+}
+.bay .bay-schem .s-call-b {
+  fill: var(--p4-dim);
+}
 
 /* Orange + mist white (tracker PW-01); chips over the scene get the same plate so text stays dark
    on light. P4-01: the rail stops above the controls strip and scrolls instead of running under it. */
-.bay .lg-rail,.bay .bay-card,.bay .bay-plan{border:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 0 0 1px rgba(31,35,38,.06),0 16px 36px rgba(4,10,16,.34)}
-.bay .lg-rail{max-height:calc(100vh - 92px - 84px);overflow-y:auto;overscroll-behavior:contain}
-.bay .bay-pin,.bay .bay-line,.bay .bay-controls,.bay .bay-chapters{background:rgba(243,240,233,.94);color:#1F2326}
-.bay .bay-pin:hover{background:#fff}
-.bay .bay-chapters .is-now b,.bay .bay-line b{background:#F08A3C;color:#1F2326}
-.bay .lg-pill{border-radius:13px;font-family:var(--lg-display);box-shadow:inset 0 -2px 0 rgba(31,35,38,.07),0 1px 2px rgba(31,35,38,.12)}
-.bay .lg-pill:not(.lg-pill-quiet):not(.lg-pill-ghost){background:linear-gradient(180deg,#F59A52,#F08A3C);color:#1F2326;border-color:transparent}
-.bay .lg-pill-ghost{background:rgba(243,240,233,.9);color:#1F2326}
+.bay .lg-rail,.bay .bay-card,.bay .bay-plan {
+  border: 0;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),inset 0 0 0 1px rgba(31,35,38,.06),0 16px 36px rgba(4,10,16,.34);
+}
+.bay .lg-rail {
+  max-height: calc(100vh - 92px - 84px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.bay .bay-pin,.bay .bay-line,.bay .bay-controls,.bay .bay-chapters {
+  background: rgba(243,240,233,.94);
+  color: #1F2326;
+}
+.bay .bay-pin:hover {
+  background: #fff;
+}
+.bay .bay-chapters .is-now b,.bay .bay-line b {
+  background: #F08A3C;
+  color: #1F2326;
+}
+.bay .lg-pill {
+  border-radius: 13px;
+  font-family: var(--lg-display);
+  box-shadow:
+    inset 0 -2px 0 rgba(31,35,38,.07),0 1px 2px rgba(31,35,38,.12);
+}
+.bay .lg-pill:not(.lg-pill-quiet):not(.lg-pill-ghost) {
+  background: linear-gradient(180deg,#F59A52,#F08A3C);
+  color: #1F2326;
+  border-color: transparent;
+}
+.bay .lg-pill-ghost {
+  background: rgba(243,240,233,.9);
+  color: #1F2326;
+}
 
 /* Bay 6 polish pass: tighter info cards, a calmer floor plan, and a slim scrollbar on the panels
    that can scroll (the task rail, and the found card on short screens). */
-.bay .bay-card{padding:20px 22px 18px}
-.bay .bay-card h1{margin:0 0 8px;font-size:24px;line-height:1.15;text-wrap:balance}
-.bay .bay-card p:not(.bay-kicker){font-size:13.5px;line-height:1.5;text-wrap:pretty}
-.bay .bay-kicker{display:flex;align-items:center;gap:8px;margin-bottom:10px!important}
-.bay .bay-card .bay-kicker:before{content:'';flex:none;width:14px;height:2px;border-radius:1px;background:var(--p4-cyan)}
-.bay .bay-card-next{align-items:center;margin-top:14px!important;padding:9px 12px 9px 10px;border:0;border-radius:12px;background:var(--p4-tile);font:600 13px/1.35 var(--lg-display)}
-.bay .bay-card-next span{padding:4px 7px;border-radius:7px;background:var(--p4-cyan-soft);letter-spacing:.12em}
+.bay .bay-card {
+  padding: 20px 22px 18px;
+}
+.bay .bay-card h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.bay .bay-card p:not(.bay-kicker) {
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.bay .bay-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px !important;
+}
+.bay .bay-card .bay-kicker:before {
+  content: '';
+  flex: none;
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--p4-cyan);
+}
+.bay .bay-card-next {
+  align-items: center;
+  margin-top: 14px !important;
+  padding: 9px 12px 9px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--p4-tile);
+  font: 600 13px/1.35 var(--lg-display);
+}
+.bay .bay-card-next span {
+  padding: 4px 7px;
+  border-radius: 7px;
+  background: var(--p4-cyan-soft);
+  letter-spacing: .12em;
+}
 
 /* Floor plan: location on top, legend pinned to the bottom with a hairline, no dead gap. */
-.bay .bay-plan{padding:16px 18px 14px;row-gap:0}
-.bay .bay-plan header{margin-bottom:12px}
-.bay .bay-plan-floor{rx:4px}
-.bay .bay-plan-side{justify-content:flex-start;gap:14px}
-.bay .bay-plan-where{padding:1px 0 1px 10px;border-left:2px solid var(--p4-cyan);font-size:12px}
-.bay .bay-plan-where b{margin-bottom:2px;font-size:14.5px}
-.bay .bay-plan-legend{margin-top:auto;padding-top:12px;border-top:1px solid var(--p4-line);gap:8px;font-size:11.5px}
-.bay .bay-plan-block{fill:#26302f;stroke:rgba(243,240,233,.14)}
-.bay .bay-plan-stairs{fill:#1b2424;stroke:var(--p4-faint)}
+.bay .bay-plan {
+  padding: 16px 18px 14px;
+  row-gap: 0;
+}
+.bay .bay-plan header {
+  margin-bottom: 12px;
+}
+.bay .bay-plan-floor {
+  rx: 4px;
+}
+.bay .bay-plan-side {
+  justify-content: flex-start;
+  gap: 14px;
+}
+.bay .bay-plan-where {
+  padding: 1px 0 1px 10px;
+  border-left: 2px solid var(--p4-cyan);
+  font-size: 12px;
+}
+.bay .bay-plan-where b {
+  margin-bottom: 2px;
+  font-size: 14.5px;
+}
+.bay .bay-plan-legend {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--p4-line);
+  gap: 8px;
+  font-size: 11.5px;
+}
+.bay .bay-plan-block {
+  fill: #26302f;
+  stroke: rgba(243,240,233,.14);
+}
+.bay .bay-plan-stairs {
+  fill: #1b2424;
+  stroke: var(--p4-faint);
+}
 
 /* Found card: never runs off a short screen. */
-.bay .bay-found .bay-actions{flex-direction:column;align-items:stretch;gap:4px;margin-top:16px}
-.bay .bay-found .bay-actions .lg-pill:not(.lg-pill-quiet){justify-content:space-between;padding:14px 18px 14px 20px}
-.bay .bay-found .bay-actions .lg-pill-quiet{align-self:flex-start;padding:9px 4px;border:0;background:transparent;box-shadow:none;font-size:13px;color:var(--p4-dim)}
-.bay .bay-found .bay-actions .lg-pill-quiet:hover:not(:disabled){background:transparent;color:var(--p4-cyan)}
-.bay .bay-found{max-height:calc(100vh - 84px - 24px);overflow-y:auto;overscroll-behavior:contain}
+.bay .bay-found .bay-actions {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  margin-top: 16px;
+}
+.bay .bay-found .bay-actions .lg-pill:not(.lg-pill-quiet) {
+  justify-content: space-between;
+  padding: 14px 18px 14px 20px;
+}
+.bay .bay-found .bay-actions .lg-pill-quiet {
+  align-self: flex-start;
+  padding: 9px 4px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+  color: var(--p4-dim);
+}
+.bay .bay-found .bay-actions .lg-pill-quiet:hover:not(:disabled) {
+  background: transparent;
+  color: var(--p4-cyan);
+}
+.bay .bay-found {
+  max-height: calc(100vh - 84px - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 
 /* Slim scrollbar in the panel's own colours instead of the default grey one. */
-.bay .lg-rail,.bay .bay-found{scroll-behavior:smooth}
-.bay .lg-rail::-webkit-scrollbar,.bay .bay-found::-webkit-scrollbar{width:10px}
-.bay .lg-rail::-webkit-scrollbar-track,.bay .bay-found::-webkit-scrollbar-track{margin:18px 0;background:transparent}
-.bay .lg-rail::-webkit-scrollbar-thumb,.bay .bay-found::-webkit-scrollbar-thumb{border:3px solid transparent;border-radius:6px;background:rgba(31,35,38,.2) padding-box}
-.bay .lg-rail::-webkit-scrollbar-thumb:hover,.bay .bay-found::-webkit-scrollbar-thumb:hover{background:rgba(194,97,26,.55) padding-box}
-.bay .lg-rail::-webkit-scrollbar-button,.bay .bay-found::-webkit-scrollbar-button{display:none}
-@supports not selector(::-webkit-scrollbar){.bay .lg-rail,.bay .bay-found{scrollbar-width:thin;scrollbar-color:rgba(31,35,38,.24) transparent}}
-@media (prefers-reduced-motion:reduce){.bay .lg-rail,.bay .bay-found{scroll-behavior:auto}}
+.bay .lg-rail,.bay .bay-found {
+  scroll-behavior: smooth;
+}
+.bay .lg-rail::-webkit-scrollbar,.bay .bay-found::-webkit-scrollbar {
+  width: 10px;
+}
+.bay .lg-rail::-webkit-scrollbar-track,.bay .bay-found::-webkit-scrollbar-track {
+  margin: 18px 0;
+  background: transparent;
+}
+.bay .lg-rail::-webkit-scrollbar-thumb,.bay .bay-found::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 6px;
+  background: rgba(31,35,38,.2) padding-box;
+}
+.bay .lg-rail::-webkit-scrollbar-thumb:hover,.bay .bay-found::-webkit-scrollbar-thumb:hover {
+  background: rgba(194,97,26,.55) padding-box;
+}
+.bay .lg-rail::-webkit-scrollbar-button,.bay .bay-found::-webkit-scrollbar-button {
+  display: none;
+}
+@supports not selector(::-webkit-scrollbar) {
+  .bay .lg-rail,.bay .bay-found {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(31,35,38,.24) transparent;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .bay .lg-rail,.bay .bay-found {
+    scroll-behavior: auto;
+  }
+}
 /* Where scroll-driven animation exists, the rail's bottom edge fades only while there's more below (no fade when nothing overflows).
    The entry slide is kept as the first animation. */
 @property --bay-fade{syntax:'<length>';inherits:false;initial-value:0px}
-@keyframes bayRailFade{from{--bay-fade:44px}to{--bay-fade:0px}}
-@supports (animation-timeline:scroll()){
-  .bay .bay-rail{animation:baySlide .8s .3s both var(--lg-ease),bayRailFade linear both;animation-timeline:auto,scroll(self);animation-range:normal,calc(100% - 40px) 100%;-webkit-mask-image:linear-gradient(#000 calc(100% - var(--bay-fade)),transparent);mask-image:linear-gradient(#000 calc(100% - var(--bay-fade)),transparent)}
+@keyframes bayRailFade {
+  from {
+    --bay-fade:44px;
+  }
+  to {
+    --bay-fade:0px;
+  }
+}
+@supports (animation-timeline:scroll()) {
+  .bay .bay-rail {
+    animation:
+      baySlide .8s .3s both var(--lg-ease),bayRailFade linear both;
+    animation-timeline: auto,scroll(self);
+    animation-range:
+      normal,calc(100% - 40px) 100%;
+    -webkit-mask-image: linear-gradient(#000 calc(100% - var(--bay-fade)),transparent);
+    mask-image: linear-gradient(#000 calc(100% - var(--bay-fade)),transparent);
+  }
 }
 
 /* Short screens (1366×768 and similar): tighter rows so the field notes fit before the rail scrolls. */
-@media (max-height:820px){
-  .bay .bay-rail,.bay .bay-side,.bay .bay-found{top:76px}
-  .bay .lg-rail{padding:18px 18px 12px;max-height:calc(100vh - 76px - 76px)}
-  .bay .lg-rail-head h2{font-size:21px}
-  .bay .lg-rail-meter{margin:11px 0 4px}
-  .bay .lg-task{padding:8px 0}
-  .bay .lg-task-hint{padding:7px 11px}
-  .bay .lg-rail-notes{padding-top:10px}
-  .bay .lg-rail-notes ul{gap:4px}
-  .bay .bay-card{padding:18px 20px 16px}
-  .bay .bay-card h1{font-size:22px}
-  .bay .bay-found{max-height:calc(100vh - 76px - 20px)}
-  .bay .bay-found h1{font-size:28px}
-  .bay .bay-controls{bottom:20px}
+@media (max-height:820px) {
+  .bay .bay-rail,.bay .bay-side,.bay .bay-found {
+    top: 76px;
+  }
+  .bay .lg-rail {
+    padding: 18px 18px 12px;
+    max-height: calc(100vh - 76px - 76px);
+  }
+  .bay .lg-rail-head h2 {
+    font-size: 21px;
+  }
+  .bay .lg-rail-meter {
+    margin: 11px 0 4px;
+  }
+  .bay .lg-task {
+    padding: 8px 0;
+  }
+  .bay .lg-task-hint {
+    padding: 7px 11px;
+  }
+  .bay .lg-rail-notes {
+    padding-top: 10px;
+  }
+  .bay .lg-rail-notes ul {
+    gap: 4px;
+  }
+  .bay .bay-card {
+    padding: 18px 20px 16px;
+  }
+  .bay .bay-card h1 {
+    font-size: 22px;
+  }
+  .bay .bay-found {
+    max-height: calc(100vh - 76px - 20px);
+  }
+  .bay .bay-found h1 {
+    font-size: 28px;
+  }
+  .bay .bay-controls {
+    bottom: 20px;
+  }
 }
 
 /* Performance: every panel over the canvas is near-opaque, so the inherited backdrop blurs bought
    nothing visible but were recomputed against the live 3D frame every frame. Off inside the bay. */
-.bay .lg-rail,.bay .bay-card,.bay .bay-plan,.bay .bay-chapters,.bay .bay-controls,.bay .bay-line,.bay .lg-pill-ghost{-webkit-backdrop-filter:none;backdrop-filter:none}
+.bay .lg-rail,.bay .bay-card,.bay .bay-plan,.bay .bay-chapters,.bay .bay-controls,.bay .bay-line,.bay .lg-pill-ghost {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}

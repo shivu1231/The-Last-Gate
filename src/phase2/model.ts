@@ -1,9 +1,23 @@
 import { enterRecovery } from '../recovery/state';
+/**
+ * Data contract used by the retained fracture sequence.
+ */
 export type EntryStage = 'fracture' | 'afterimage';
-export type Stage = EntryStage;
-export type Snapshot = Readonly<{
-  stage: Stage; model: number; stored: boolean; scanning: boolean;
-  message: string; caption: string; action: string;
+/**
+ * Retained legacy fracture/afterimage stage identifier.
+ */
+export type PhaseTwoStage = EntryStage;
+/**
+ * Current state of the retained Phase 2 runtime.
+ */
+export type PhaseTwoSnapshot = Readonly<{
+  stage: PhaseTwoStage;
+  model: number;
+  stored: boolean;
+  scanning: boolean;
+  message: string;
+  caption: string;
+  action: string;
 }>;
 
 /** One authored clock and discrete notifications. No frame-rate React updates. */
@@ -16,13 +30,18 @@ export class PhaseTwoDirector {
   recording = false;
   paused = false;
   private listeners = new Set<() => void>();
-  private snapshot: Snapshot;
+  private snapshot: PhaseTwoSnapshot;
 
   constructor(entry: EntryStage = 'fracture') {
     const recorded = entry === 'afterimage';
     this.snapshot = {
-      stage: entry, model: 0, stored: false, scanning: false,
-      message: '', caption: '', action: '',
+      stage: entry,
+      model: 0,
+      stored: false,
+      scanning: false,
+      message: '',
+      caption: '',
+      action: '',
     };
     // Entering directly at afterimage still requires the scan before the trace exists.
     void recorded;
@@ -30,15 +49,17 @@ export class PhaseTwoDirector {
   }
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
-    return () => { this.listeners.delete(listener); };
+    return () => {
+      this.listeners.delete(listener);
+    };
   };
   getSnapshot = () => this.snapshot;
 
-  private patch(patch: Partial<Snapshot>) {
+  private patch(patch: Partial<PhaseTwoSnapshot>) {
     this.snapshot = { ...this.snapshot, ...patch };
-    this.listeners.forEach(listener => listener());
+    this.listeners.forEach((listener) => listener());
   }
-  private enter(stage: Stage) {
+  private enter(stage: PhaseTwoStage) {
     this.stageTime = 0;
     this.focusTime = 0;
     this.focused = false;
@@ -47,41 +68,53 @@ export class PhaseTwoDirector {
     this.refresh();
   }
   private refresh() {
-    const s = this.snapshot;
-    if (s.stage === 'afterimage') this.patch({
-      action: s.stored ? 'FOLLOW THE TRACE  /  E' : 'FOCUS ON THE STILL LINE  /  E TO SCAN',
-    });
+    const state = this.snapshot;
+    if (state.stage === 'afterimage')
+      this.patch({
+        action: state.stored
+          ? 'FOLLOW THE TRACE  /  E'
+          : 'FOCUS ON THE STILL LINE  /  E TO SCAN',
+      });
   }
   /** Scan the still line, then follow the stored trace through the portal to Baymax. */
   act() {
-    const s = this.snapshot;
-    if (s.stage !== 'afterimage') return;
-    if (s.stored) enterRecovery();
-    else if (!s.scanning) {
+    const state = this.snapshot;
+    if (state.stage !== 'afterimage') return;
+    if (state.stored) enterRecovery();
+    else if (!state.scanning) {
       this.scanTime = 0;
       this.patch({ scanning: true, action: 'RECORDING LOCAL STABILITY...' });
     }
   }
   step(delta: number) {
     if (this.paused) return;
-    const dt = Math.min(Math.max(delta, 0), .05);
-    this.time += dt;
-    this.stageTime += dt;
-    const s = this.snapshot, t = this.stageTime;
-    if (s.stage === 'fracture' && t >= 8) this.enter('afterimage');
-    if (s.stage === 'afterimage') {
-      if (this.focused && !s.scanning && !s.stored) {
-        this.focusTime += dt;
-        if (this.focusTime > .9) this.act();
+    const deltaSeconds = Math.min(Math.max(delta, 0), 0.05);
+    this.time += deltaSeconds;
+    this.stageTime += deltaSeconds;
+    const state = this.snapshot,
+      timeSeconds = this.stageTime;
+    if (state.stage === 'fracture' && timeSeconds >= 8)
+      this.enter('afterimage');
+    if (state.stage === 'afterimage') {
+      if (this.focused && !state.scanning && !state.stored) {
+        this.focusTime += deltaSeconds;
+        if (this.focusTime > 0.9) this.act();
       } else if (!this.focused) this.focusTime = 0;
-      if (s.scanning && !s.stored) {
-        this.scanTime += dt;
-        if (this.scanTime >= 3.2) this.patch({
-          stored: true, scanning: false, model: 9, message: 'AFTERIMAGE TRACE STORED',
-          caption: 'He is mapping the dimension.', action: 'FOLLOW THE TRACE  /  E',
-        });
+      if (state.scanning && !state.stored) {
+        this.scanTime += deltaSeconds;
+        if (this.scanTime >= 3.2)
+          this.patch({
+            stored: true,
+            scanning: false,
+            model: 9,
+            message: 'AFTERIMAGE TRACE STORED',
+            caption: 'He is mapping the dimension.',
+            action: 'FOLLOW THE TRACE  /  E',
+          });
       }
     }
   }
-  dispose() { this.listeners.clear(); }
+  dispose() {
+    this.listeners.clear();
+  }
 }

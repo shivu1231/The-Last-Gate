@@ -12,22 +12,43 @@ export class CameraShot {
   private look = new Vector3();
   private initialized = false;
 
-  update(camera: Camera, key: string, position: Vector3, focus: Vector3, dt: number, duration = 1.35) {
+  update(
+    camera: Camera,
+    key: string,
+    position: Vector3,
+    focus: Vector3,
+    deltaSeconds: number,
+    duration = 1.35,
+  ) {
     if (this.key !== key) {
-      this.key = key; this.elapsed = 0;
+      this.key = key;
+      this.elapsed = 0;
       this.from.copy(camera.position);
       if (!this.initialized) {
-        camera.getWorldDirection(this.fromLook).multiplyScalar(Math.max(3, camera.position.distanceTo(focus))).add(camera.position);
-        this.look.copy(this.fromLook); this.initialized = true;
+        camera
+          .getWorldDirection(this.fromLook)
+          .multiplyScalar(Math.max(3, camera.position.distanceTo(focus)))
+          .add(camera.position);
+        this.look.copy(this.fromLook);
+        this.initialized = true;
       } else this.fromLook.copy(this.look);
-      this.to.copy(position); this.toLook.copy(focus);
+      this.to.copy(position);
+      this.toLook.copy(focus);
     }
-    this.elapsed += dt;
-    const t = MathUtils.clamp(this.elapsed / (reducedMotion ? .12 : duration), 0, 1);
-    const e = t * t * t * (t * (t * 6 - 15) + 10);
-    camera.position.lerpVectors(this.from, this.to, e);
-    this.look.lerpVectors(this.fromLook, this.toLook, e);
+    this.elapsed += deltaSeconds;
+    const timeSeconds = MathUtils.clamp(
+      this.elapsed / (reducedMotion ? 0.12 : duration),
+      0,
+      1,
+    );
+    const easedProgress =
+      timeSeconds *
+      timeSeconds *
+      timeSeconds *
+      (timeSeconds * (timeSeconds * 6 - 15) + 10);
+    camera.position.lerpVectors(this.from, this.to, easedProgress);
+    this.look.lerpVectors(this.fromLook, this.toLook, easedProgress);
     camera.lookAt(this.look);
-    return t >= 1;
+    return timeSeconds >= 1;
   }
 }

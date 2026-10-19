@@ -1,31 +1,146 @@
-.later-scene-curtain{position:absolute;inset:0;z-index:90;display:grid;place-items:center;background:#000;color:#c9c7c1;opacity:1;pointer-events:auto;transition:none;font:13px/1.5 Manrope,'Segoe UI',sans-serif}
-.later-scene-curtain.is-ready{opacity:0;pointer-events:none;transition:opacity .3s ease}
-.later-scene-curtain>div{max-width:340px;text-align:center;padding:24px}
-.later-scene-curtain small{font:9px 'IBM Plex Mono',monospace;letter-spacing:.2em}
-.later-scene-curtain button{border:1px solid #777;border-radius:7px;padding:9px 18px;color:#fff;background:#242424}
-.chapter-cover.later-cover{background:#000}
-.later-cover-note{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:9px;color:#aaa;font:9px 'IBM Plex Mono',monospace;letter-spacing:.2em}
-:is(.walk.walk,.bay.bay,.p5.p5,.p6.p6){--lg-display:'Segoe UI',system-ui,sans-serif;--lg-body:'Segoe UI',system-ui,sans-serif;--display:var(--lg-display)}
-.p6 .p6-veil,.p6.p6-set-home .p6-veil,.p6 .p6-veil.black,.p6 .p6-loading,.bay .bay-loading{background:#000}
-.bay.bay .lg-pill:not(.lg-pill-quiet):not(.lg-pill-ghost){background:#b85420;color:#fff;border-color:#a94a1b;justify-content:center;gap:14px}
-.bay.bay .lg-pill:not(.lg-pill-quiet):not(.lg-pill-ghost):hover{background:#a94a1b}
-.bay.bay .lg-pill:not(.lg-pill-quiet):not(.lg-pill-ghost) i{color:#fff}
-.bay.bay .bay-chapters .is-now b,.bay.bay .bay-line b,.p6 .p6-say b{background:#b85420;color:#fff}
-.p6 .p6-hint[data-label]:not([data-label=""])::after{background:#b85420;color:#fff}
-.bay-stage-crates .bay-plan,.bay-stage-box .bay-plan{display:none}
-.bay-stage-crates .lg-rail-notes,.bay-stage-box .lg-rail-notes{display:none}
-.p5.p5.p5 .p5-primary,.walk.walk .walk-enter{background:#b85420;color:#fff;display:flex;align-items:center;justify-content:center;gap:12px}
-.p5.p5.p5 .p5-primary:hover:not(:disabled),.walk.walk .walk-enter:hover{background:#a94a1b}
-.p5.p5.p5 .p5-primary i{color:#fff;margin-left:0}
-.bay.bay .lg-rail-head h2,.bay.bay .bay-card h1{font-family:var(--lg-display);font-weight:600;line-height:1.22;letter-spacing:-.02em}
-.bay.bay .lg-rail-head h2{font-size:23px}
-.bay.bay .bay-card h1{font-size:25px}
-.bay.bay .lg-task-text b{font:600 14px/1.35 var(--lg-body);letter-spacing:0}
-.bay.bay .lg-task-text small,.bay.bay .lg-task-hint,.bay.bay .bay-card>p:not(.bay-kicker){font-family:var(--lg-body);font-size:13px;line-height:1.5;letter-spacing:0}
-.bay.bay .lg-rail-kicker,.bay.bay .bay-kicker{font-family:var(--lg-body);font-size:10px;font-weight:600;letter-spacing:.09em}
-.bay.bay .lg-pill,.p5.p5.p5 .p5-primary{font:600 13px/1.3 var(--lg-body);letter-spacing:.015em}
-.p5.p5 .p5-panel,.p5.p5 .p5-body,.p5.p5 .p5-note{font-family:var(--lg-body)}
-.p5.p5 .p5-panel h1{font-family:var(--lg-display);font-weight:600;letter-spacing:-.02em}
-@media(prefers-reduced-motion:reduce){.later-scene-curtain.is-ready{transition:none}}
-
-
+.later-scene-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: #000;
+  color: #c9c7c1;
+  opacity: 1;
+  pointer-events: auto;
+  transition: none;
+  font:
+    13px/1.5 Manrope,'Segoe UI',sans-serif;
+}
+.later-scene-curtain.is-ready {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+.later-scene-curtain>div {
+  max-width: 340px;
+  text-align: center;
+  padding: 24px;
+}
+.later-scene-curtain small {
+  font:
+    9px 'IBM Plex Mono',monospace;
+  letter-spacing: .2em;
+}
+.later-scene-curtain button {
+  border: 1px solid #777;
+  border-radius: 7px;
+  padding: 9px 18px;
+  color: #fff;
+  background: #242424;
+}
+.chapter-cover.later-cover {
+  background: #000;
+}
+.later-cover-note {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 9px;
+  color: #aaa;
+  font:
+    9px 'IBM Plex Mono',monospace;
+  letter-spacing: .2em;
+}
+:is(.walk.walk,.bay.bay,.p5.p5,.p6.p6) {
+  --lg-display:'Segoe UI',system-ui,sans-serif;
+  --lg-body:'Segoe UI',system-ui,sans-serif;
+  --display:var(--lg-display);
+}
+.p6 .p6-veil,.p6.p6-set-home .p6-veil,.p6 .p6-veil.black,.p6 .p6-loading,.bay .bay-loading {
+  background: #000;
+}
+.bay.bay .lg-pill:not(.lg-pill-quiet):not(.lg-pill-ghost) {
+  background: #b85420;
+  color: #fff;
+  border-color: #a94a1b;
+  justify-content: center;
+  gap: 14px;
+}
+.bay.bay .lg-pill:not(.lg-pill-quiet):not(.lg-pill-ghost):hover {
+  background: #a94a1b;
+}
+.bay.bay .lg-pill:not(.lg-pill-quiet):not(.lg-pill-ghost) i {
+  color: #fff;
+}
+.bay.bay .bay-chapters .is-now b,.bay.bay .bay-line b,.p6 .p6-say b {
+  background: #b85420;
+  color: #fff;
+}
+.p6 .p6-hint[data-label]:not([data-label=""])::after {
+  background: #b85420;
+  color: #fff;
+}
+.bay-stage-crates .bay-plan,.bay-stage-box .bay-plan {
+  display: none;
+}
+.bay-stage-crates .lg-rail-notes,.bay-stage-box .lg-rail-notes {
+  display: none;
+}
+.p5.p5.p5 .p5-primary,.walk.walk .walk-enter {
+  background: #b85420;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.p5.p5.p5 .p5-primary:hover:not(:disabled),.walk.walk .walk-enter:hover {
+  background: #a94a1b;
+}
+.p5.p5.p5 .p5-primary i {
+  color: #fff;
+  margin-left: 0;
+}
+.bay.bay .lg-rail-head h2,.bay.bay .bay-card h1 {
+  font-family: var(--lg-display);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -.02em;
+}
+.bay.bay .lg-rail-head h2 {
+  font-size: 23px;
+}
+.bay.bay .bay-card h1 {
+  font-size: 25px;
+}
+.bay.bay .lg-task-text b {
+  font: 600 14px/1.35 var(--lg-body);
+  letter-spacing: 0;
+}
+.bay.bay .lg-task-text small,.bay.bay .lg-task-hint,.bay.bay .bay-card>p:not(.bay-kicker) {
+  font-family: var(--lg-body);
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+.bay.bay .lg-rail-kicker,.bay.bay .bay-kicker {
+  font-family: var(--lg-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .09em;
+}
+.bay.bay .lg-pill,.p5.p5.p5 .p5-primary {
+  font: 600 13px/1.3 var(--lg-body);
+  letter-spacing: .015em;
+}
+.p5.p5 .p5-panel,.p5.p5 .p5-body,.p5.p5 .p5-note {
+  font-family: var(--lg-body);
+}
+.p5.p5 .p5-panel h1 {
+  font-family: var(--lg-display);
+  font-weight: 600;
+  letter-spacing: -.02em;
+}
+@media (prefers-reduced-motion:reduce) {
+  .later-scene-curtain.is-ready {
+    transition: none;
+  }
+}

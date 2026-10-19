@@ -1,40 +1,113 @@
-import * as T from 'three';
+import * as THREE from 'three';
 
 /** Small canvas-texture toolkit for Bay 6: every surface is painted in code, nothing is loaded. */
 
-export type Rand = () => number;
-export function seeded(seed: number): Rand { return () => { seed = (seed * 1664525 + 1013904223) >>>0; return seed / 4294967296; }; }
+export type RandomSource = () => number;
+/**
+ * Return a deterministic random source so rebuilding preserves the authored layout.
+ */
+export function seeded(seed: number): RandomSource {
+  return () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+}
 
-export function paint(w: number, h: number, draw: (x: CanvasRenderingContext2D, w: number, h: number) => void, srgb = true) {
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  draw(c.getContext('2d')!, w, h);
-  const t = new T.CanvasTexture(c); if (srgb) t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8; return t;
+/**
+ * Draw a procedural canvas texture and retain the existing color-space settings.
+ */
+export function paint(
+  width: number,
+  height: number,
+  draw: (
+    drawingContext: CanvasRenderingContext2D,
+    width2: number,
+    height2: number,
+  ) => void,
+  srgb = true,
+) {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  draw(canvas.getContext('2d')!, width, height);
+  const timeSeconds = new THREE.CanvasTexture(canvas);
+  if (srgb) timeSeconds.colorSpace = THREE.SRGBColorSpace;
+  timeSeconds.anisotropy = 8;
+  return timeSeconds;
 }
 
 /** Fine grain: thousands of light and dark flecks so no surface reads as flat colour. */
-export function grain(x: CanvasRenderingContext2D, w: number, h: number, r: Rand, count: number, strength = .18) {
-  for (let i = 0; i < count; i++) {
-    const v = r() > .5 ? 255 : 0; x.fillStyle = `rgba(${v},${v},${v},${r() * strength})`;
-    x.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2);
+export function grain(
+  drawingContext: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  result: RandomSource,
+  count: number,
+  strength = 0.18,
+) {
+  for (let index = 0; index < count; index++) {
+    const value = result() > 0.5 ? 255 : 0;
+    drawingContext.fillStyle = `rgba(${value},${value},${value},${result() * strength})`;
+    drawingContext.fillRect(
+      result() * width,
+      result() * height,
+      1 + result() * 2,
+      1 + result() * 2,
+    );
   }
 }
 
 /** Soft dark patches: grime, oil, handling marks. */
-export function grime(x: CanvasRenderingContext2D, w: number, h: number, r: Rand, count: number, color = '20,16,12', alpha = .22) {
-  for (let i = 0; i < count; i++) {
-    const cx = r() * w, cy = r() * h, rad = 8 + r() * Math.max(w, h) * .18;
-    const g = x.createRadialGradient(cx, cy, 0, cx, cy, rad);
-    g.addColorStop(0, `rgba(${color},${alpha * (.4 + r() * .6)})`); g.addColorStop(1, `rgba(${color},0)`);
-    x.fillStyle = g; x.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
+export function grime(
+  drawingContext: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  result: RandomSource,
+  count: number,
+  color = '20,16,12',
+  alpha = 0.22,
+) {
+  for (let index = 0; index < count; index++) {
+    const cx = result() * width,
+      cy = result() * height,
+      rad = 8 + result() * Math.max(width, height) * 0.18;
+    const group = drawingContext.createRadialGradient(cx, cy, 0, cx, cy, rad);
+    group.addColorStop(0, `rgba(${color},${alpha * (0.4 + result() * 0.6)})`);
+    group.addColorStop(1, `rgba(${color},0)`);
+    drawingContext.fillStyle = group;
+    drawingContext.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
   }
 }
 
-export function scratches(x: CanvasRenderingContext2D, w: number, h: number, r: Rand, count: number, color = '235,232,224', alpha = .45) {
-  x.lineCap = 'round';
-  for (let i = 0; i < count; i++) {
-    const sx = r() * w, sy = r() * h, a = r() * Math.PI, len = 6 + r() * w * .18;
-    x.strokeStyle = `rgba(${color},${alpha * r()})`; x.lineWidth = .6 + r() * 1.4;
-    x.beginPath(); x.moveTo(sx, sy); x.quadraticCurveTo(sx + Math.cos(a) * len * .5 + (r() - .5) * 6, sy + Math.sin(a) * len * .5 + (r() - .5) * 6, sx + Math.cos(a) * len, sy + Math.sin(a) * len); x.stroke();
+/**
+ * Paint the existing seeded surface-wear details into the supplied canvas.
+ */
+export function scratches(
+  drawingContext: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  result: RandomSource,
+  count: number,
+  color = '235,232,224',
+  alpha = 0.45,
+) {
+  drawingContext.lineCap = 'round';
+  for (let index = 0; index < count; index++) {
+    const scaleX = result() * width,
+      scaleY = result() * height,
+      firstValue = result() * Math.PI,
+      len = 6 + result() * width * 0.18;
+    drawingContext.strokeStyle = `rgba(${color},${alpha * result()})`;
+    drawingContext.lineWidth = 0.6 + result() * 1.4;
+    drawingContext.beginPath();
+    drawingContext.moveTo(scaleX, scaleY);
+    drawingContext.quadraticCurveTo(
+      scaleX + Math.cos(firstValue) * len * 0.5 + (result() - 0.5) * 6,
+      scaleY + Math.sin(firstValue) * len * 0.5 + (result() - 0.5) * 6,
+      scaleX + Math.cos(firstValue) * len,
+      scaleY + Math.sin(firstValue) * len,
+    );
+    drawingContext.stroke();
   }
 }
 
@@ -42,68 +115,232 @@ export function scratches(x: CanvasRenderingContext2D, w: number, h: number, r: 
  * Chipped paint along the texture border. Box faces map the whole texture, so the border lands on
  * the object's edges: that's where hands, tools and knocks wear paint back to bare metal.
  */
-export function edgeWear(x: CanvasRenderingContext2D, w: number, h: number, r: Rand, metal = '#d6d3cb', depth = 22, density = 1) {
-  const n = Math.round((w + h) * 1.1 * density);
-  for (let i = 0; i < n; i++) {
-    const side = Math.floor(r() * 4), t = r(), d = Math.pow(r(), 2.4) * depth, s = 1 + r() * 5 * (1 - d / depth);
-    const px = side === 0 ? t * w : side === 1 ? t * w : side === 2 ? d : w - d;
-    const py = side === 0 ? d : side === 1 ? h - d : t * h;
-    x.fillStyle = metal; x.globalAlpha = .55 + r() * .45;
-    x.beginPath(); x.ellipse(px, py, s * (1 + r()), s, r() * Math.PI, 0, Math.PI * 2); x.fill();
+export function edgeWear(
+  drawingContext: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  result: RandomSource,
+  metal = '#d6d3cb',
+  depth = 22,
+  density = 1,
+) {
+  const count = Math.round((width + height) * 1.1 * density);
+  for (let index = 0; index < count; index++) {
+    const side = Math.floor(result() * 4),
+      timeSeconds = result(),
+      depth2 = Math.pow(result(), 2.4) * depth,
+      scaleFactor = 1 + result() * 5 * (1 - depth2 / depth);
+    const px =
+      side === 0
+        ? timeSeconds * width
+        : side === 1
+          ? timeSeconds * width
+          : side === 2
+            ? depth2
+            : width - depth2;
+    const py =
+      side === 0 ? depth2 : side === 1 ? height - depth2 : timeSeconds * height;
+    drawingContext.fillStyle = metal;
+    drawingContext.globalAlpha = 0.55 + result() * 0.45;
+    drawingContext.beginPath();
+    drawingContext.ellipse(
+      px,
+      py,
+      scaleFactor * (1 + result()),
+      scaleFactor,
+      result() * Math.PI,
+      0,
+      Math.PI * 2,
+    );
+    drawingContext.fill();
   }
-  x.globalAlpha = 1;
-  x.strokeStyle = 'rgba(15,14,12,.55)'; x.lineWidth = 2; x.strokeRect(1, 1, w - 2, h - 2);
+  drawingContext.globalAlpha = 1;
+  drawingContext.strokeStyle = 'rgba(15,14,12,.55)';
+  drawingContext.lineWidth = 2;
+  drawingContext.strokeRect(1, 1, width - 2, height - 2);
 }
 
-export function rust(x: CanvasRenderingContext2D, w: number, h: number, r: Rand, count: number) {
-  for (let i = 0; i < count; i++) {
-    const cx = r() * w, cy = r() * h, rad = 2 + r() * 9;
-    const g = x.createRadialGradient(cx, cy, 0, cx, cy, rad);
-    g.addColorStop(0, 'rgba(110,52,24,.75)'); g.addColorStop(.6, 'rgba(140,74,36,.35)'); g.addColorStop(1, 'rgba(140,74,36,0)');
-    x.fillStyle = g; x.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
+/**
+ * Paint the existing seeded surface-wear details into the supplied canvas.
+ */
+export function rust(
+  drawingContext: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  result: RandomSource,
+  count: number,
+) {
+  for (let index = 0; index < count; index++) {
+    const cx = result() * width,
+      cy = result() * height,
+      rad = 2 + result() * 9;
+    const group = drawingContext.createRadialGradient(cx, cy, 0, cx, cy, rad);
+    group.addColorStop(0, 'rgba(110,52,24,.75)');
+    group.addColorStop(0.6, 'rgba(140,74,36,.35)');
+    group.addColorStop(1, 'rgba(140,74,36,0)');
+    drawingContext.fillStyle = group;
+    drawingContext.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
     // Run-off streak below a rust spot.
-    if (r() > .6) { x.fillStyle = 'rgba(110,60,30,.18)'; x.fillRect(cx - 1, cy, 2, rad * (3 + r() * 5)); }
+    if (result() > 0.6) {
+      drawingContext.fillStyle = 'rgba(110,60,30,.18)';
+      drawingContext.fillRect(cx - 1, cy, 2, rad * (3 + result() * 5));
+    }
   }
 }
 
 /** Worn painted metal: base coat, grain, grime, scratches, rust spots and chipped edges. */
-export function wornPaint(base: string, seed: number, opts: { metal?: string; rustSpots?: number; scratchCount?: number; wear?: number; size?: number } = {}) {
-  const r = seeded(seed), size = opts.size ?? 512;
-  return paint(size, size, (x, w, h) => {
-    x.fillStyle = base; x.fillRect(0, 0, w, h);
-    grain(x, w, h, r, w * 14, .12);
-    grime(x, w, h, r, 14);
-    scratches(x, w, h, r, opts.scratchCount ?? 60);
-    rust(x, w, h, r, opts.rustSpots ?? 6);
-    edgeWear(x, w, h, r, opts.metal ?? '#d6d3cb', w * .05, opts.wear ?? 1);
+export function wornPaint(
+  base: string,
+  seed: number,
+  options: {
+    metal?: string;
+    rustSpots?: number;
+    scratchCount?: number;
+    wear?: number;
+    size?: number;
+  } = {},
+) {
+  const result = seeded(seed),
+    size = options.size ?? 512;
+  return paint(size, size, (drawingContext, width, height) => {
+    drawingContext.fillStyle = base;
+    drawingContext.fillRect(0, 0, width, height);
+    grain(drawingContext, width, height, result, width * 14, 0.12);
+    grime(drawingContext, width, height, result, 14);
+    scratches(
+      drawingContext,
+      width,
+      height,
+      result,
+      options.scratchCount ?? 60,
+    );
+    rust(drawingContext, width, height, result, options.rustSpots ?? 6);
+    edgeWear(
+      drawingContext,
+      width,
+      height,
+      result,
+      options.metal ?? '#d6d3cb',
+      width * 0.05,
+      options.wear ?? 1,
+    );
     // Dirt settles toward the bottom edge.
-    const g = x.createLinearGradient(0, h * .6, 0, h); g.addColorStop(0, 'rgba(25,20,15,0)'); g.addColorStop(1, 'rgba(25,20,15,.35)');
-    x.fillStyle = g; x.fillRect(0, 0, w, h);
+    const group = drawingContext.createLinearGradient(
+      0,
+      height * 0.6,
+      0,
+      height,
+    );
+    group.addColorStop(0, 'rgba(25,20,15,0)');
+    group.addColorStop(1, 'rgba(25,20,15,.35)');
+    drawingContext.fillStyle = group;
+    drawingContext.fillRect(0, 0, width, height);
   });
 }
 
 /** Stencilled or printed text on a coloured ground; lines are [text, size as fraction of height]. */
-export function sign(lines: [string, number][], opts: { w?: number; h?: number; bg?: string; fg?: string; font?: string; align?: CanvasTextAlign; border?: boolean; worn?: number; seed?: number } = {}) {
-  const w = opts.w ?? 1024, h = opts.h ?? 256, r = seeded(opts.seed ?? 7);
-  return paint(w, h, x => {
-    x.fillStyle = opts.bg ?? '#1c2430'; x.fillRect(0, 0, w, h);
-    if (opts.border) { x.strokeStyle = opts.fg ?? '#e8e2d0'; x.lineWidth = h * .03; x.strokeRect(h * .05, h * .05, w - h * .1, h - h * .1); }
-    x.fillStyle = opts.fg ?? '#e8e2d0'; x.textAlign = opts.align ?? 'center'; x.textBaseline = 'middle';
-    const total = lines.reduce((s, [, k]) => s + k * 1.18, 0); let y = h / 2 - total * h / 2;
-    for (const [text, k] of lines) {
-      x.font = `${opts.font ?? '700'} ${Math.round(k * h)}px "Space Grotesk", "Arial Narrow", Arial, sans-serif`;
-      y += k * h * .59; x.fillText(text, opts.align === 'left' ? h * .12 : w / 2, y); y += k * h * .59;
+export function sign(
+  lines: [string, number][],
+  options: {
+    w?: number;
+    h?: number;
+    bg?: string;
+    fg?: string;
+    font?: string;
+    align?: CanvasTextAlign;
+    border?: boolean;
+    worn?: number;
+    seed?: number;
+  } = {},
+) {
+  const width = options.w ?? 1024,
+    height = options.h ?? 256,
+    result = seeded(options.seed ?? 7);
+  return paint(width, height, (drawingContext) => {
+    drawingContext.fillStyle = options.bg ?? '#1c2430';
+    drawingContext.fillRect(0, 0, width, height);
+    if (options.border) {
+      drawingContext.strokeStyle = options.fg ?? '#e8e2d0';
+      drawingContext.lineWidth = height * 0.03;
+      drawingContext.strokeRect(
+        height * 0.05,
+        height * 0.05,
+        width - height * 0.1,
+        height - height * 0.1,
+      );
     }
-    if (opts.worn) { grain(x, w, h, r, w * 6 * opts.worn, .2); grime(x, w, h, r, Math.round(6 * opts.worn)); scratches(x, w, h, r, Math.round(30 * opts.worn), '0,0,0', .3); }
+    drawingContext.fillStyle = options.fg ?? '#e8e2d0';
+    drawingContext.textAlign = options.align ?? 'center';
+    drawingContext.textBaseline = 'middle';
+    const total = lines.reduce(
+      (scaleFactor, [, blendFactor]) => scaleFactor + blendFactor * 1.18,
+      0,
+    );
+    let yPosition = height / 2 - (total * height) / 2;
+    for (const [text, blendFactor2] of lines) {
+      drawingContext.font = `${options.font ?? '700'} ${Math.round(blendFactor2 * height)}px "Space Grotesk", "Arial Narrow", Arial, sans-serif`;
+      yPosition += blendFactor2 * height * 0.59;
+      drawingContext.fillText(
+        text,
+        options.align === 'left' ? height * 0.12 : width / 2,
+        yPosition,
+      );
+      yPosition += blendFactor2 * height * 0.59;
+    }
+    if (options.worn) {
+      grain(
+        drawingContext,
+        width,
+        height,
+        result,
+        width * 6 * options.worn,
+        0.2,
+      );
+      grime(
+        drawingContext,
+        width,
+        height,
+        result,
+        Math.round(6 * options.worn),
+      );
+      scratches(
+        drawingContext,
+        width,
+        height,
+        result,
+        Math.round(30 * options.worn),
+        '0,0,0',
+        0.3,
+      );
+    }
   });
 }
 
 /** Diagonal yellow/black hazard stripes. */
-export function hazard(w = 512, h = 64, worn = .8, seed = 3) {
-  const r = seeded(seed);
-  return paint(w, h, x => {
-    x.fillStyle = '#d9a91e'; x.fillRect(0, 0, w, h); x.fillStyle = '#16171a';
-    for (let i = -h; i < w + h; i += h) { x.beginPath(); x.moveTo(i, h); x.lineTo(i + h * .5, h); x.lineTo(i + h, 0); x.lineTo(i + h * .5, 0); x.fill(); }
-    grain(x, w, h, r, w * 8 * worn, .25); scratches(x, w, h, r, 40 * worn, '40,40,40', .5); grime(x, w, h, r, 8 * worn);
+export function hazard(width = 512, height = 64, worn = 0.8, seed = 3) {
+  const result = seeded(seed);
+  return paint(width, height, (drawingContext) => {
+    drawingContext.fillStyle = '#d9a91e';
+    drawingContext.fillRect(0, 0, width, height);
+    drawingContext.fillStyle = '#16171a';
+    for (let index = -height; index < width + height; index += height) {
+      drawingContext.beginPath();
+      drawingContext.moveTo(index, height);
+      drawingContext.lineTo(index + height * 0.5, height);
+      drawingContext.lineTo(index + height, 0);
+      drawingContext.lineTo(index + height * 0.5, 0);
+      drawingContext.fill();
+    }
+    grain(drawingContext, width, height, result, width * 8 * worn, 0.25);
+    scratches(
+      drawingContext,
+      width,
+      height,
+      result,
+      40 * worn,
+      '40,40,40',
+      0.5,
+    );
+    grime(drawingContext, width, height, result, 8 * worn);
   });
 }
