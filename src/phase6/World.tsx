@@ -12,7 +12,6 @@ import {
 } from '../characters/RegulatorController';
 import { FirstPerson } from './fp';
 import { createRelay, BAYMAX_YARD, BAYMAX_REACH_Z } from './relay';
-import { RECORDER } from './relay';
 import {
   createStreet,
   createCartridge,
@@ -820,12 +819,10 @@ export function World({
         ((1 - vector.y) / 2) * el.clientHeight,
       );
     };
-    type What = 'take' | 'chip' | 'cart';
+    type What = 'chip' | 'cart';
     const what = (): What | null => {
       const state = useP6.getState(),
         easedProgress = now() - state.since;
-      if (state.stage === 'limited' && !state.took && easedProgress > 9.6)
-        return 'take';
       if (
         state.stage === 'carry' &&
         state.chip === 'bay' &&
@@ -842,11 +839,9 @@ export function World({
       return null;
     };
     const source = (width: What) =>
-      width === 'take'
-        ? cart.root.getWorldPosition(new THREE.Vector3())
-        : width === 'chip'
-          ? baymax?.dockWorld()
-          : baymax?.combatChip.getWorldPosition(new THREE.Vector3());
+      width === 'chip'
+        ? baymax?.dockWorld()
+        : baymax?.combatChip.getWorldPosition(new THREE.Vector3());
     const dest = (width: What) =>
       width === 'cart' ? env.current?.street?.readerWorld() : null;
     const local = (event: PointerEvent) => {
@@ -863,13 +858,6 @@ export function World({
       const from = source(width);
       if (!from) return;
       if (screen(from).distanceTo(local(event)) > 80) return;
-      // The capture: a click lifts it out of the recorder and into his pocket.
-      if (width === 'take') {
-        audio.unlock();
-        audio.snap();
-        useP6.setState({ took: true });
-        return;
-      }
       audio.unlock();
       holding = width;
       drag.current.active = true;
@@ -1407,12 +1395,6 @@ export function World({
           easedProgress > 7.4 && easedProgress < 9.2 ? 0.2 : pose.lean;
         dread = 0.45 + span(easedProgress, 3.6, 8.4) * 0.3;
         near = 0.3;
-        // Before he goes: the capture, still in the recorder beside him.
-        if (easedProgress > 9.6 && !state2.took) {
-          look.set(RECORDER.x, 1.05, RECORDER.z);
-          lookRate = 3;
-          reach = 0.45;
-        }
       } else {
         feet.x += 0.8;
         feet.z += 0.2;
@@ -2546,19 +2528,8 @@ export function World({
       );
     }
 
-    if (set === 'relay') {
-      const inRec = state2.stage === 'limited' && !state2.took;
-      cart.root.visible = inRec;
-      cart.root.scale.setScalar(inRec ? 1.9 : 1);
-      if (inRec) {
-        if (cart.root.parent !== scene) scene.add(cart.root);
-        cart.root.position.set(RECORDER.x, 1.06, RECORDER.z);
-        cart.root.rotation.set(-Math.PI / 2 + 0.3, 0, 0.4);
-        cart.glow.color
-          .set('#ffb066')
-          .multiplyScalar(1 + 0.6 * Math.sin(elapsedSeconds * 4));
-      }
-    }
+    // The relay hands Hiro information only; nothing is taken from its recorder.
+    if (set === 'relay') cart.root.visible = false;
     baymax.update(
       elapsedSeconds,
       state2.stage === 'bloom'
@@ -2899,8 +2870,6 @@ export function World({
       el.style.transform = `translate(${((vector2.x + 1) / 2) * size.width}px, ${((1 - vector2.y) / 2) * size.height}px)`;
     };
     const st = env.current.street;
-    const taking =
-      state2.stage === 'limited' && !state2.took && easedProgress > 9.6;
     const pulling = state2.stage === 'carry' && state2.chip !== 'out',
       slotting =
         state2.stage === 'carry' &&
@@ -2909,17 +2878,14 @@ export function World({
       homing = state2.stage === 'home' && easedProgress > EMERGE + 2.2;
     hint(
       hints.grab.current,
-      taking
-        ? cart.root.getWorldPosition(new THREE.Vector3())
-        : pulling
-          ? baymax.dockWorld()
-          : slotting
-            ? card.getWorldPosition(new THREE.Vector3())
-            : homing
-              ? home.care.chip.getWorldPosition(new THREE.Vector3())
-              : null,
-      taking ||
-        (pulling && state2.chip === 'bay' && easedProgress > CLUE_END) ||
+      pulling
+        ? baymax.dockWorld()
+        : slotting
+          ? card.getWorldPosition(new THREE.Vector3())
+          : homing
+            ? home.care.chip.getWorldPosition(new THREE.Vector3())
+            : null,
+      (pulling && state2.chip === 'bay' && easedProgress > CLUE_END) ||
         (slotting && state2.cart === 'hand') ||
         (homing && state2.care === 'ground'),
     );

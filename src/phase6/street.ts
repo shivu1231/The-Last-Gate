@@ -21,7 +21,8 @@ import {
  * round to the frame. A reader on a pedestal to its right listens for a signal and the frame opens
  * onto where that signal goes. Powered, it locks onto the strongest one nearby: Baymax's combat
  * chip, which is from this side, so the frame folds back on itself. With the chip pulled the
- * reader is clear, and a capture cartridge played into it tunes the frame. A steel walkway the old
+ * reader is clear; the same chip seated in it gives up Baymax's transit log, whose boundary
+ * signature lets the reader rebuild the return vector. A steel walkway the old
  * crew left runs up over the ring's lower lip, so a load can be taken straight through.
  *
  * Same look as Phases 4 and 5: slate blocks, cyan haze, warm practicals, the displaced skyline.
@@ -1054,7 +1055,7 @@ export function createStreet() {
       sceneKit.basic('#c9a24a', 0.7),
     );
 
-  // The reader: a waist-high pedestal with a slanted face, a cartridge slot and a small screen.
+  // The reader: a waist-high pedestal with a slanted face, a chip slot and a small screen.
   const ped = new THREE.Group();
   ped.position.copy(PEDESTAL);
   sceneKit.root.add(ped);
@@ -1289,7 +1290,7 @@ export function createStreet() {
     portalMat,
     frame,
     hub,
-    /** The reader's cartridge slot in world space, and how it sits (for seating the cartridge). */
+    /** The reader's chip slot in world space, and how it sits (for seating the combat chip). */
     readerWorld: (out = new THREE.Vector3()) => slot.getWorldPosition(out),
     readerQuat: (out = new THREE.Quaternion()) => slot.getWorldQuaternion(out),
     kickDust,
@@ -1517,9 +1518,8 @@ export function createStreet() {
 export type Street = ReturnType<typeof createStreet>;
 
 /**
- * The relay's capture cartridge: the drive Hiro pulled from RX/06 with the healthcare chip's last
- * transmission on it. Thumb-sized, ribbed grip, a sage label and gold contacts at the end that
- * goes in (-Z). `glow` lights its status lamp while it plays.
+ * Retired story prop (the old relay cartridge). It is never shown: the relay hands Hiro no item.
+ * Its root stays mounted on the camera as the hand-side drag anchor for seating the combat chip.
  */
 export function createCartridge() {
   const root = new THREE.Group();

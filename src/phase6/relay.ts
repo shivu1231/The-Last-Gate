@@ -11,7 +11,7 @@ import { createFacility } from '../phase5/facility';
 export const BAYMAX_YARD = new THREE.Vector3(0.6, 0, -11.5);
 /** How far toward the relay he gets under the limit before the punch: still outside the back wall. */
 export const BAYMAX_REACH_Z = -10.3;
-/** The relay's recorder: a rack beside the consoles, the RX/06 capture in its slot on top. */
+/** The relay's recorder: a rack beside the consoles (it logs the trace; nothing is taken from it). */
 export const RECORDER = new THREE.Vector3(2.55, 0, -4.35);
 export const RELAY_STATE = {
   powered: true,
@@ -91,7 +91,7 @@ export function createRelay() {
   );
   // This post used to sit exactly between Hiro's eye and the landing mark.
   sceneKit.box({ p: [8.2, 2.1, -8.9], s: [0.12, 4.2, 0.12] }, sceneKit.metal);
-  // The recorder rack, with a slot lip on top where the capture cartridge sits.
+  // The recorder rack, with an empty slot lip on top.
   sceneKit.box(
     { p: [RECORDER.x, 0.5, RECORDER.z], s: [0.46, 1, 0.38] },
     sceneKit.dark,

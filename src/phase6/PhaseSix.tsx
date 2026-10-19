@@ -48,7 +48,7 @@ import { SceneCurtain } from '../presentation/SceneCurtain';
  * mid-air. Powered, the gate tries and folds shut: its reader has locked onto something, and Hiro
  * can't tell what. When Baymax falls and his bay opens, the combat chip and the reader beat in the
  * same rhythm: the chip, from this side, is the signal the gate's reader is tuned to. Hiro pulls it, the reader
- * lets go, and he plays the relay's capture of the healthcare chip's last transmission into it.
+ * lets go, and the reader reads the transit log Baymax's own combat chip recorded on the crossing.
  * The frame opens onto where that signal went, and Hiro hauls him through. On the other side he
  * puts the healthcare chip back.
  *
@@ -259,9 +259,7 @@ export function PhaseSix({ initial }: { initial: PhaseSixStep }) {
   const line =
     st === 'wake' && easedProgress > 6.2
       ? 'Baymax? Hey, buddy. It’s me.'
-      : st === 'limited' && easedProgress > 9.8 && !state.took
-        ? 'The capture. That comes with me.'
-        : st === 'limited' && easedProgress > 9.8
+      : st === 'limited' && easedProgress > 9.8
           ? 'The trace went to the old gate. That’s where it ends.'
           : st === 'escape' && state.caught
             ? 'No, no—'
@@ -450,31 +448,14 @@ export function PhaseSix({ initial }: { initial: PhaseSixStep }) {
               <OutputMeter value={35} />
             </Panel>
           )}
-          {st === 'limited' && easedProgress > 9.6 && !state.took && (
-            <Panel
-              id="take"
-              label="Relay recorder"
-              title="Take the capture"
-              rows={[
-                ['RX/06', 'Healthcare chip’s last signal', 'orange'],
-                ['Baymax', 'Slowed · still coming', 'red'],
-              ]}
-              action={
-                <span className="p6-withhand">
-                  <DragHand />
-                  Click the cartridge in the recorder.
-                </span>
-              }
-            />
-          )}
-          {st === 'limited' && easedProgress > 9.6 && state.took && (
+          {st === 'limited' && easedProgress > 9.6 && (
             <Panel
               id="buys-time"
               label="Power regulator"
               rows={[
                 ['Baymax', 'Slowed · still coming', 'red'],
                 ['Trace', 'Old gate site'],
-                ['RX/06 capture', 'In pocket', 'orange'],
+                ['Last fix', 'Crossed the boundary', 'orange'],
               ]}
             >
               <button className="p6-btn" onClick={toggle('escape')}>
@@ -636,15 +617,18 @@ export function PhaseSix({ initial }: { initial: PhaseSixStep }) {
               title={pulled > 3.6 ? 'Seat the combat chip' : undefined}
               rows={
                 pulled > 3.6
-                  ? [
-                      [
-                        'Reader',
-                        state.cart === 'slot' ? 'Seating' : 'Ready',
-                        'cyan',
-                      ],
-                      ['Combat chip', 'Removed', 'red'],
-                      ['RX/06 trace', 'Loaded', 'orange'],
-                    ]
+                  ? state.cart === 'slot'
+                    ? [
+                        ['Source', 'Baymax combat chip', 'red'],
+                        ['Transit log', 'Found', 'orange'],
+                        ['Boundary signature', 'Matched', 'cyan'],
+                        ['Return vector', 'Reconstructing', 'cyan'],
+                      ]
+                    : [
+                        ['Reader', 'Ready', 'cyan'],
+                        ['Route signature', 'None on record', 'red'],
+                        ['Combat chip', 'Removed · logged his crossing', 'orange'],
+                      ]
                   : gateRows(['Reader', 'Clear', 'cyan'])
               }
               action={
@@ -660,7 +644,8 @@ export function PhaseSix({ initial }: { initial: PhaseSixStep }) {
               label="The Last Gate"
               tone="cyan"
               rows={[
-                ['Reader', 'Combat chip seated', 'cyan'],
+                ['Source', 'Baymax combat chip', 'cyan'],
+                ['Return vector', 'Reconstructed', 'ok'],
                 ['Gate', 'Open', 'cyan'],
                 ['Field', 'Stable', 'ok'],
               ]}

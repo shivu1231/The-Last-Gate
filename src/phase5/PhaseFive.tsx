@@ -877,7 +877,7 @@ function DishTask({ done }: { done: () => void }) {
 }
 
 /**
- * Render the recorded transmission and save-to-capture interaction.
+ * Render the recorded transmission. Decoding it is information only: nothing is taken away.
  */
 function TraceTask({ done }: { done: () => void }) {
   const traced = useP5((state) => state.traced);
@@ -891,11 +891,11 @@ function TraceTask({ done }: { done: () => void }) {
     },
     [],
   );
-  const save = () => {
+  const decode = () => {
     if (useP5.getState().traced) return;
     useP5.setState({ traced: true, fixes: 4 });
     setNote(
-      'Saved to RX/06. It isn’t in this city; the trace ends at the old portal site.',
+      'Decoded. It isn’t in this city: the signal crossed the boundary at the old portal site.',
     );
     timer.current = window.setTimeout(done, 2600);
   };
@@ -919,8 +919,8 @@ function TraceTask({ done }: { done: () => void }) {
         </div>
       </dl>
       {!traced && (
-        <button className="p5-primary" onClick={save}>
-          SAVE IT TO RX/06
+        <button className="p5-primary" onClick={decode}>
+          DECODE THE LAST FIX
         </button>
       )}
       <p className="p5-note" role="status">

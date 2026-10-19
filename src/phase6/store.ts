@@ -9,7 +9,9 @@ import type { PhaseSixStep } from './entry';
  *   6 faceoff → switchOn2 → drop · 7 carry → bloom · 8 home → seated → boot → end
  *
  * In carry Hiro pulls the combat chip out of the open bay (chip: bay → held → out), then plays the
- * seats that same card in the gate reader (cart: hand → held → slot). The relay capture stays loaded.
+ * seats that same card in the gate reader (cart: hand → held → slot). The card carries Baymax's own
+ * transit log from his crossing; the reader matches its boundary signature and rebuilds the return
+ * vector. The relay gave Hiro information only (the trace ends at the old portal site), never an item.
  */
 export type Stage =
   | 'wake'
@@ -108,8 +110,10 @@ type PhaseSixState = {
   fetchAt: number;
   /** When the combat chip came out (Hiro then walks to the gate's reader). */
   pulledAt: number;
-  /** Hiro has taken the RX/06 capture out of the relay's recorder. */
-  took: boolean;
+  /** Phase 5 decoded the healthcare chip's last transmission: outbound, last fixed at the old portal site. */
+  portalTraceKnown: boolean;
+  /** Baymax's combat chip holds his onboard transit log from the crossing (data on the one physical card). */
+  hasPortalTransitLog: boolean;
   /** On the run, Baymax got to him: the run stops and offers a retry. */
   caught: boolean;
 };
@@ -129,7 +133,8 @@ function stateFor(stage: Stage): PhaseSixState {
     chip: atLeast(stage, 'bloom') ? 'out' : 'bay',
     cart: atLeast(stage, 'bloom') ? 'slot' : 'hand',
     pulledAt: 0,
-    took: atLeast(stage, 'escape'),
+    portalTraceKnown: true,
+    hasPortalTransitLog: true,
     caught: false,
     care: atLeast(stage, 'seated') ? 'seated' : 'ground',
     fetchAt: 0,
