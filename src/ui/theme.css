@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 /* The Last Gate's website layer: soft white panels and a few Big Hero 6 reference colours, used
-   sparingly. Dusk purple for actions and the gate, Hiro's blue-grey for text, Baymax red only for
-   danger and combat. Any phase's UI can import this and read the tokens. */
+   sparingly. Project orange for actions and the gate, graphite for text, Baymax red only for
+   danger and combat. Two type voices: Space Grotesk for display and UI copy, IBM Plex Mono for
+   small technical labels (loaded once from index.html). Any phase's UI can read the tokens. */
 :root {
   --lg-paper:#F3F0E9;
   --lg-white:#FFFFFF;
@@ -16,9 +16,9 @@
   --lg-ink-dim:#6d7a89;
   --lg-red:#C8102E;
   --lg-red-soft:rgba(200,16,46,.16);
-  --lg-display:"Space Grotesk","Sora","Outfit",ui-sans-serif,system-ui,sans-serif;
-  --lg-body:Manrope,ui-rounded,"Segoe UI",system-ui,sans-serif;
-  --lg-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --lg-display:"Space Grotesk",ui-sans-serif,system-ui,"Segoe UI",Arial,sans-serif;
+  --lg-body:var(--lg-display);
+  --lg-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
   --lg-radius-panel:22px;
   --lg-radius-pill:999px;
   --lg-shadow-panel:0 24px 60px rgba(3,10,18,.32),0 2px 6px rgba(3,10,18,.12);

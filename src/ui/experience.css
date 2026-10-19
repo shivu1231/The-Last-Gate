@@ -1,7 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
 :root {
   color-scheme: dark;
-  font-family: 'IBM Plex Mono',monospace;
+  font-family: var(--lg-mono);
   color: #d5ddd2;
   background: #090f12;
   font-synthesis: none;
@@ -181,7 +180,7 @@ button[hidden] {
   letter-spacing: .1em;
   opacity: 0;
   pointer-events: none;
-  font-family: 'IBM Plex Mono',monospace;
+  font-family: var(--lg-mono);
   color: rgba(243,240,233,.62);
 }
 .suit-readout span {
@@ -233,7 +232,7 @@ button[hidden] {
   text-align: center;
   z-index: 13;
   pointer-events: none;
-  font-family: 'DM Sans',sans-serif;
+  font-family: var(--lg-body);
   text-shadow: 0 2px 16px #000;
 }
 .subtitle p {
@@ -245,7 +244,7 @@ button[hidden] {
 .subtitle span {
   display: block;
   font:
-    7px 'IBM Plex Mono',monospace;
+    7px var(--lg-mono);
   letter-spacing: .2em;
   color: #F08A3C;
   margin-bottom: 9px;
@@ -399,7 +398,7 @@ button[hidden] {
 }
 .failed-link small {
   display: block;
-  font-family: 'DM Sans',sans-serif;
+  font-family: var(--lg-body);
   font-size: 12px;
   letter-spacing: 0;
   color: #b0bdab;
@@ -442,7 +441,7 @@ button[hidden] {
 }
 .failure p {
   font:
-    22px 'DM Sans',sans-serif;
+    22px var(--lg-body);
 }
 .failure span {
   font-size: 10px;
@@ -888,13 +887,13 @@ button[hidden] {
 .handoff h1 {
   margin: 0;
   font:
-    400 24px 'DM Sans',sans-serif;
+    400 24px var(--lg-body);
   letter-spacing: .22em;
   color: #e7f6fb;
 }
 .handoff h1 i {
   font:
-    400 9px 'IBM Plex Mono',monospace;
+    400 9px var(--lg-mono);
   letter-spacing: .2em;
   color: #ff6a58;
   display: block;
@@ -933,7 +932,7 @@ button[hidden] {
   top: 22px;
   z-index: 40;
   font:
-    7px 'IBM Plex Mono',monospace;
+    7px var(--lg-mono);
   letter-spacing: .15em;
   color: #a9c6cf;
   opacity: .62;

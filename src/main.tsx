@@ -17,6 +17,7 @@ import { PhaseSixHost } from './phase6';
 
 import { useSceneState } from './state/SceneStateManager';
 import { Failure } from './ui/Failure';
+import './ui/theme.css';
 import './ui/experience.css';
 import './presentation/polish.css';
 import './presentation/revisions.css';
@@ -188,4 +189,17 @@ function App() {
   return <ExperienceRoot />;
 }
 
-createRoot(document.getElementById('root')!).render(<App />);
+// Mount once the two UI faces are in (or after a short cap), so no panel or canvas label paints
+// in a fallback face and then reflows.
+const UI_FACES = [
+  '400 16px "Space Grotesk"',
+  '600 16px "Space Grotesk"',
+  '400 12px "IBM Plex Mono"',
+  '500 12px "IBM Plex Mono"',
+];
+void Promise.race([
+  Promise.all(UI_FACES.map((face) => document.fonts.load(face))),
+  new Promise((resolve) => setTimeout(resolve, 1500)),
+])
+  .catch(() => {})
+  .then(() => createRoot(document.getElementById('root')!).render(<App />));

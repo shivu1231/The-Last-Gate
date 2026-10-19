@@ -21,7 +21,7 @@
 }
 .experience.phase-handoff .handoff p {
   font:
-    400 20px/1.6 'DM Sans',sans-serif;
+    400 20px/1.6 var(--lg-body);
   letter-spacing: .02em;
   color: #d8dfd2;
 }
@@ -29,8 +29,8 @@
   display: none;
 }
 :is(.recovery,.walk,.district-phase,.p5):is(.recovery,.walk,.district-phase,.p5) {
-  font-family: 'DM Sans',sans-serif;
-  --mono: 'IBM Plex Mono',monospace;
+  font-family: var(--lg-body);
+  --mono: var(--lg-mono);
   --ink: #d9dfd2;
   --dim: #95a69c;
   --line: #b5c5b329;
@@ -100,7 +100,7 @@
 }
 .walk .walk-line {
   font:
-    400 20px/1.6 'DM Sans',sans-serif;
+    400 20px/1.6 var(--lg-body);
   bottom: 18vh;
 }
 .walk .walk-line small {
@@ -235,7 +235,7 @@
 }
 .board .board-inspector h2 {
   font:
-    500 31px/1.15 'DM Sans',sans-serif;
+    500 31px/1.15 var(--lg-body);
   letter-spacing: -.025em;
   margin: 18px 0 21px;
 }
@@ -251,7 +251,7 @@
 }
 .board .board-body,.board .board-steps {
   font:
-    400 14px/1.75 'DM Sans',sans-serif;
+    400 14px/1.75 var(--lg-body);
   color: #b0bfb4;
 }
 .board .board-findings li {
@@ -272,7 +272,7 @@
 }
 .board .board-note {
   font:
-    400 13px/1.65 'DM Sans',sans-serif;
+    400 13px/1.65 var(--lg-body);
   color: #c5d0c0;
   min-height: 38px;
 }
@@ -393,7 +393,7 @@
 }
 .board .board-summary h2 {
   font:
-    400 33px/1.22 'DM Sans',sans-serif;
+    400 33px/1.22 var(--lg-body);
   letter-spacing: -.025em;
 }
 .board .board-summary dl {
@@ -415,7 +415,7 @@
 }
 .board .board-question {
   font:
-    14px/1.7 'DM Sans',sans-serif;
+    14px/1.7 var(--lg-body);
   color: #b6c4b2;
   margin: 22px 0;
 }
@@ -479,7 +479,7 @@
 }
 .district-phase h1 {
   font:
-    400 28px/1.2 'DM Sans',sans-serif;
+    400 28px/1.2 var(--lg-body);
   letter-spacing: -.025em;
 }
 .district-phase h1 em {
@@ -488,12 +488,12 @@
 }
 .district-phase h2 {
   font:
-    500 24px/1.25 'DM Sans',sans-serif;
+    500 24px/1.25 var(--lg-body);
   letter-spacing: -.01em;
 }
 .district-phase .district-lead,.district-phase .district-site-detail>p,.district-phase .district-site-detail p {
   font:
-    400 14px/1.65 'DM Sans',sans-serif;
+    400 14px/1.65 var(--lg-body);
   color: #b0bfb4;
 }
 .district-phase .district-location {
@@ -575,7 +575,7 @@
 }
 .district-phase .district-part-facts dd {
   font:
-    14px/1.65 'DM Sans',sans-serif;
+    14px/1.65 var(--lg-body);
   margin-top: 7px;
 }
 .district-phase .district-part-view {
@@ -626,7 +626,7 @@
 }
 .district-phase .workspace-power>p {
   font:
-    14px/1.65 'DM Sans',sans-serif;
+    14px/1.65 var(--lg-body);
 }
 .district-phase .power-route b {
   font-size: 10px;
@@ -661,7 +661,7 @@
 }
 .district-phase .calibration-panel>p,.district-phase .result-explanation {
   font:
-    14px/1.7 'DM Sans',sans-serif;
+    14px/1.7 var(--lg-body);
 }
 .district-phase .calibration-slider,.district-phase .calibration-target span,.district-phase .calibration-warning {
   font-size: 10px;
@@ -708,7 +708,7 @@
 }
 .district-phase .manual-intro {
   font:
-    15px/1.7 'DM Sans',sans-serif;
+    15px/1.7 var(--lg-body);
 }
 .district-phase .manual-heading-row h2 {
   font-size: 29px;
@@ -723,7 +723,7 @@
 }
 .district-phase .manual-systems li span {
   font:
-    14px/1.7 'DM Sans',sans-serif;
+    14px/1.7 var(--lg-body);
 }
 .district-phase .manual-flow {
   font-size: 9px;
@@ -749,7 +749,7 @@
 }
 .p5 .p5-panel h1 {
   font:
-    400 32px/1.18 'DM Sans',sans-serif;
+    400 32px/1.18 var(--lg-body);
   letter-spacing: -.025em;
 }
 .p5 .p5-kicker {
@@ -761,12 +761,12 @@
 }
 .p5 .p5-body {
   font:
-    14px/1.7 'DM Sans',sans-serif;
+    14px/1.7 var(--lg-body);
   color: #afc0b3;
 }
 .p5 .p5-note {
   font:
-    13px/1.65 'DM Sans',sans-serif;
+    13px/1.65 var(--lg-body);
   color: #c4d0bd;
 }
 .p5 .p5-primary {
@@ -918,7 +918,7 @@
 }
 .p5 .p5-found h2 {
   font:
-    400 42px/1.12 'DM Sans',sans-serif;
+    400 42px/1.12 var(--lg-body);
   letter-spacing: -.03em;
   color: #e1e6d8;
 }
@@ -1047,7 +1047,7 @@
   bottom: 55px;
 }
 .district-phase .district-site-list h1,.district-phase .workspace-inventory h1,.district-phase .calibration-panel h1,.district-phase .result-panel h1 {
-  font-family: "DM Sans",sans-serif;
+  font-family: var(--lg-body);
   font-size: 28px;
   line-height: 1.2;
   letter-spacing: -.025em;
@@ -1108,7 +1108,7 @@
 .district-phase .district-part-view span,.district-phase .district-part-view i {
   position: static;
   font:
-    9px 'IBM Plex Mono',monospace;
+    9px var(--lg-mono);
   letter-spacing: .08em;
   background: #0d181be6;
   padding: 9px;

@@ -20,7 +20,7 @@
 }
 .baymax-loading>span {
   font:
-    9px/1.5 'Segoe UI',sans-serif;
+    9px/1.5 var(--lg-mono);
   letter-spacing: .19em;
   color: #a7b0b5;
 }

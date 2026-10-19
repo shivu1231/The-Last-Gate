@@ -4,14 +4,14 @@
   overflow: hidden;
   background: #080f13;
   color: #d8dfd2;
-  --mono: 'IBM Plex Mono',monospace;
+  --mono: var(--lg-mono);
   --line: #a9b5a32b;
   --ink: #d8dfd2;
   --dim: #8b9b94;
   --red: #db7060;
   --cyan: #b8d2c2;
   font:
-    15px/1.6 'DM Sans',sans-serif;
+    15px/1.6 var(--lg-body);
 }
 .recovery-world {
   position: absolute;
@@ -67,7 +67,7 @@
   right: 15%;
   text-align: center;
   font:
-    400 21px/1.6 'DM Sans',sans-serif;
+    400 21px/1.6 var(--lg-body);
   letter-spacing: .015em;
   color: #e3e7dd;
   text-shadow: 0 2px 16px #000;

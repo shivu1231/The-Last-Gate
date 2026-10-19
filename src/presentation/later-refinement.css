@@ -10,7 +10,7 @@
   pointer-events: auto;
   transition: none;
   font:
-    13px/1.5 Manrope,'Segoe UI',sans-serif;
+    13px/1.5 var(--lg-body);
 }
 .later-scene-curtain.is-ready {
   opacity: 0;
@@ -24,7 +24,7 @@
 }
 .later-scene-curtain small {
   font:
-    9px 'IBM Plex Mono',monospace;
+    9px var(--lg-mono);
   letter-spacing: .2em;
 }
 .later-scene-curtain button {
@@ -46,12 +46,10 @@
   gap: 9px;
   color: #aaa;
   font:
-    9px 'IBM Plex Mono',monospace;
+    9px var(--lg-mono);
   letter-spacing: .2em;
 }
 :is(.walk.walk,.bay.bay,.p5.p5,.p6.p6) {
-  --lg-display:'Segoe UI',system-ui,sans-serif;
-  --lg-body:'Segoe UI',system-ui,sans-serif;
   --display:var(--lg-display);
 }
 .p6 .p6-veil,.p6.p6-set-home .p6-veil,.p6 .p6-veil.black,.p6 .p6-loading,.bay .bay-loading {

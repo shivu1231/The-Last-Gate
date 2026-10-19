@@ -5,7 +5,7 @@
   overflow: hidden;
   background: #07121f;
   color: #c5dce9;
-  font-family: 'IBM Plex Mono',monospace;
+  font-family: var(--lg-mono);
   font-weight: 400;
   user-select: none;
 }
@@ -203,7 +203,7 @@
   right: 20%;
   bottom: 180px;
   text-align: center;
-  font-family: 'DM Sans',sans-serif;
+  font-family: var(--lg-body);
   text-shadow: 0 2px 18px #02050d;
   pointer-events: none;
   z-index: 3;
@@ -219,7 +219,7 @@
 .p2-subtitle small {
   display: block;
   font:
-    8px 'IBM Plex Mono',monospace;
+    8px var(--lg-mono);
   letter-spacing: .2em;
   margin-bottom: 10px;
   color: #7599ae;

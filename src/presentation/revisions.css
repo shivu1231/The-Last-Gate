@@ -193,7 +193,7 @@
 .p5 .p5-found h2 {
   margin: 0 0 16px;
   font:
-    400 clamp(27px,2.6vw,40px)/1.18 'DM Sans',sans-serif;
+    400 clamp(27px,2.6vw,40px)/1.18 var(--lg-body);
   letter-spacing: -.025em;
 }
 .p5 .p5-found .p5-body {
