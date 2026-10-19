@@ -953,13 +953,15 @@ export function createFacility() {
     0,
   );
 
-  // Four scene lights total. Floor pools add depth without extra shadow passes.
-  const hemi = new THREE.HemisphereLight('#b3c7c2', '#1d2723', 0.85);
+  // Four scene lights total. Floor pools add depth without extra shadow passes. Cool-neutral and
+  // technical: a low sky fill, a cold sky key from beyond the dish that rims its silhouette, one
+  // neutral service practical and the console's own spill.
+  const hemi = new THREE.HemisphereLight('#a9bcc6', '#161d1c', 0.6);
   sceneKit.root.add(hemi);
-  const sky = new THREE.DirectionalLight('#a5c4da', 1.65);
+  const sky = new THREE.DirectionalLight('#b4cde0', 1.95);
   sky.position.set(-4, 12, -10);
   sceneKit.root.add(sky);
-  const practical = new THREE.PointLight('#dd9d62', 8, 10, 1.7);
+  const practical = new THREE.PointLight('#e2d6c4', 5.5, 10, 1.7);
   practical.position.set(6.5, 3.2, 0.6);
   sceneKit.root.add(practical);
   const consoleGlow = new THREE.PointLight('#9bbfc2', 0.4, 7, 1.8);
@@ -967,8 +969,8 @@ export function createFacility() {
   sceneKit.root.add(consoleGlow);
   const warmPool = sceneKit.haze(
     { p: [6.1, 0.025, 0.8], s: [4.3, 4.3, 1], r: [-Math.PI / 2, 0, 0] },
-    '#ce9b68',
-    0.12,
+    '#cfc3b0',
+    0.08,
   );
   const coolPool = sceneKit.haze(
     { p: [0, 0.027, -1.1], s: [5.2, 3.6, 1], r: [-Math.PI / 2, 0, 0] },
@@ -1019,7 +1021,8 @@ export function createFacility() {
       panelMat.color.set(on ? '#d5d8bd' : '#343d39');
       practical.intensity = THREE.MathUtils.damp(
         practical.intensity,
-        on ? 15 : 8,
+        // The signal reveal quiets the room so the telemetry readout carries the moment.
+        (on ? 11 : 5.5) * (1 - reveal * 0.35),
         3,
         deltaSeconds,
       );
@@ -1065,8 +1068,8 @@ export function createFacility() {
       (boundary.material as THREE.ShaderMaterial).uniforms.opacity.value =
         reveal * 0.38;
       (warmPool.material as THREE.ShaderMaterial).uniforms.opacity.value = on
-        ? 0.16
-        : 0.1;
+        ? 0.1
+        : 0.06;
       (coolPool.material as THREE.ShaderMaterial).uniforms.opacity.value = on
         ? 0.1
         : 0.025;

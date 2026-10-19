@@ -312,9 +312,9 @@ export function createDistrict() {
   sceneKit.haze({ p: [0, 1, 2], s: [16, 10, 1] }, '#24506f', 0.1);
 
   // === LIGHTING: one cool key, selective warm practicals, Baymax's red is added by the scene. ===
-  const hemi = new THREE.HemisphereLight('#a8bdc2', '#111918', 0.65);
+  const hemi = new THREE.HemisphereLight('#9fb6c2', '#10171a', 0.55);
   group.add(hemi);
-  const key = new THREE.DirectionalLight('#e2dec9', 2.3);
+  const key = new THREE.DirectionalLight('#dcdfdc', 2.3);
   key.position.set(-8, 16, 6);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
@@ -327,13 +327,18 @@ export function createDistrict() {
   key.shadow.bias = -0.0005;
   group.add(key);
   // Warm practicals: workshop interior, the amber lamp, a vending unit.
-  const shopLight = new THREE.PointLight('#ffae55', 6, 10, 1.8);
+  const shopLight = new THREE.PointLight('#ffb878', 4.6, 10, 1.8);
   shopLight.position.set(-3.8, 1.4, 1);
   group.add(shopLight);
-  const lampLight = new THREE.PointLight('#ffc062', 4, 9, 2);
+  const lampLight = new THREE.PointLight('#ffd19a', 3.4, 9, 2);
   lampLight.position.set(6.2, 5.1, 5.2);
   group.add(lampLight);
-  // Cool bleed from the fracture.
+  // Cool bleed from the fracture: a soft, unshadowed rim from behind and above the bay that traces
+  // Baymax's shoulders and head and separates him from the debris wall he rests against.
+  const fractureRim = new THREE.SpotLight('#8fc2e4', 34, 15, 0.62, 0.9, 2);
+  fractureRim.position.set(0.6, 6.2, -11.5);
+  fractureRim.target.position.set(2.4, 0.9, -4.8);
+  group.add(fractureRim, fractureRim.target);
 
   group.position.set(0, 0, 0);
 
@@ -371,7 +376,7 @@ export function createDistrict() {
           0.18 *
             Math.sin(time * 23 + Math.sin(time * 7)) *
             (Math.random() > 0.04 ? 1 : 0.3);
-      shopLight.intensity = 6 * flicker;
+      shopLight.intensity = 4.6 * flicker;
       fractureMat.opacity = reduced
         ? 0.9
         : 0.7 + 0.3 * Math.abs(Math.sin(time * 0.9));

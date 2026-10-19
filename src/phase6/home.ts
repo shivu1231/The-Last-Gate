@@ -26,12 +26,12 @@ export const CARE_CHIP_AT = new THREE.Vector3(3.4, 0.9, -2);
 const CARE_CHIP_TILT = new THREE.Euler(-0.35, 0, 0.5);
 
 const SKY_FS = `varying vec3 vDir;void main(){float h=normalize(vDir).y;
-vec3 top=vec3(.2,.17,.36);vec3 mid=vec3(.357,.294,.541);vec3 low=vec3(.98,.62,.45);vec3 glow=vec3(1.,.8,.6);
+vec3 top=vec3(.085,.12,.23);vec3 mid=vec3(.27,.33,.49);vec3 low=vec3(.80,.68,.60);vec3 glow=vec3(1.,.88,.76);
 vec3 c=mix(low,mid,smoothstep(.0,.22,h));c=mix(c,top,smoothstep(.22,.7,h));
 float sun=pow(max(0.,dot(normalize(vDir),normalize(vec3(-.25,.06,-1.)))),40.);
-c+=glow*sun*.8+low*smoothstep(.08,-.05,h)*.2;gl_FragColor=vec4(c,1.);}`;
+c+=glow*sun*.55+low*smoothstep(.08,-.05,h)*.12;gl_FragColor=vec4(c,1.);}`;
 const WATER_FS = `varying vec2 vUv;varying vec3 vWorld;uniform float uTime;void main(){
-float d=clamp(-vWorld.z/220.,0.,1.);vec3 near=vec3(.16,.16,.3);vec3 far=vec3(.85,.56,.48);
+float d=clamp(-vWorld.z/220.,0.,1.);vec3 near=vec3(.09,.12,.2);vec3 far=vec3(.6,.56,.58);
 vec3 c=mix(near,far,pow(d,.7));
 float streak=pow(max(0.,sin(vWorld.x*.9+sin(vWorld.z*.35+uTime*.6)*1.5)),18.)*(1.-d*.6);
 float sunPath=exp(-pow((vWorld.x+.25*-vWorld.z*.25)/(6.+d*30.),2.))*d;
@@ -165,7 +165,7 @@ export function createHome() {
     sceneKit.box({ p: [xPosition2, 2, -4.9], s: [0.1, 4, 0.1] }, rail);
     sceneKit.mesh(
       sceneKit.ownGeometry(new THREE.SphereGeometry(0.2, 14, 10)),
-      sceneKit.basic('#ffd29a', 1.6),
+      sceneKit.basic('#ffe2bd', 1.5),
       { p: [xPosition2, 4.05, -4.9] },
     );
     lamps.push(new THREE.Vector3(xPosition2, 3.8, -4.6));
@@ -247,17 +247,19 @@ export function createHome() {
     0.9,
   );
 
-  // Light: low warm sun from across the water, dusk-purple sky fill, warm lamps.
-  const hemi = new THREE.HemisphereLight('#b9a6d8', '#40353a', 1.15);
+  // Light: a low warm-neutral sun across the water rims the pair; a cool dusk sky fills them from
+  // the city side and the lamps add small warm pools. The warmth reads against the corrupted world,
+  // not from an orange grade.
+  const hemi = new THREE.HemisphereLight('#a7b6d2', '#3a3836', 0.78);
   sceneKit.root.add(hemi);
-  const sun = new THREE.DirectionalLight('#ffb07a', 2.2);
+  const sun = new THREE.DirectionalLight('#ffd9bd', 2.1);
   sun.position.set(-20, 12, -40);
   sceneKit.root.add(sun);
-  const back = new THREE.DirectionalLight('#8f86c9', 0.7);
+  const back = new THREE.DirectionalLight('#c3cee3', 1.05);
   back.position.set(10, 8, 20);
   sceneKit.root.add(back);
   for (const point of lamps) {
-    const light = new THREE.PointLight('#ffcf8a', 3, 9, 1.8);
+    const light = new THREE.PointLight('#ffdcb0', 2.4, 9, 1.8);
     light.position.copy(point);
     sceneKit.root.add(light);
   }
@@ -265,10 +267,10 @@ export function createHome() {
   for (const point2 of lamps)
     sceneKit.haze(
       { p: [point2.x, 0.05, -4.4], s: [5.5, 4.2, 1], r: [-Math.PI / 2, 0, 0] },
-      '#ffb46a',
-      0.2,
+      '#ffd6a6',
+      0.11,
     );
-  sceneKit.haze({ p: [30, 6, -118], s: [520, 34, 1] }, '#ffb08a', 0.14);
+  sceneKit.haze({ p: [30, 6, -118], s: [520, 34, 1] }, '#c9bdb8', 0.1);
   // The gate on this side, closing behind them.
   const gateMat = sceneKit.ownMaterial(
     new THREE.MeshBasicMaterial({
@@ -331,8 +333,8 @@ export function createHome() {
     care,
     careLight,
     kit: sceneKit,
-    background: new THREE.Color('#2a2440'),
-    fog: new THREE.Fog('#b07f7e', 60, 480),
+    background: new THREE.Color('#1b2236'),
+    fog: new THREE.Fog('#8a8e9e', 70, 520),
     update(
       timeSeconds: number,
       deltaSeconds: number,

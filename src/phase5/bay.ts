@@ -235,7 +235,7 @@ export async function createBay() {
           legE.set(sceneObject.rotation.x - 1.42, 0, sceneObject.rotation.z),
         )
       : undefined;
-  const work = new THREE.SpotLight('#ffd1a0', 42, 12, 0.8, 0.7, 2);
+  const work = new THREE.SpotLight('#ffe4c8', 28, 12, 0.72, 0.75, 2);
   work.position
     .copy(body)
     .addScaledVector(side, 2.5)

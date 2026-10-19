@@ -34,7 +34,7 @@ float flick=.85+.15*sin(uTime*(1.+hash(id)*3.)+hash(id.yx)*40.);
 float roof=step(.6,n.y);
 vec3 lamp=mix(vec3(1.,.74,.42),vec3(.62,.86,1.),step(.82,hash(id.yx+vSeed)));
 float sunSide=max(0.,dot(n,normalize(uSun)));
-vec3 col=uBase*(.6+.3*n.y)+vec3(1.,.55,.35)*sunSide*.22;
+vec3 col=uBase*(.6+.3*n.y)+vec3(1.,.8,.64)*sunSide*.2;
 col=mix(col,lamp*1.35*flick,win*on*(1.-roof));
 float d=length(vWorld-cameraPosition);
 float haze=smoothstep(uHazeRange.x,uHazeRange.y,d);
@@ -235,9 +235,9 @@ export function buildSanFransokyo(sceneKit: SceneKit, sunDir: THREE.Vector3) {
         randomBetween(12, 34) +
         (Math.abs(xPosition - 40) < 90 ? randomBetween(10, 40) : 0),
     });
-  layer(far, facade('#7a6a92', '#d99a8c', [180, 330], 0.35, [2.6, 2.2]));
+  layer(far, facade('#6c7190', '#aeaab6', [180, 330], 0.35, [2.6, 2.2]));
   // Mid: downtown, the tall cluster right of the bridge, pagoda caps on some.
-  const midMat = facade('#3f3c5a', '#c98c8c', [140, 300], 0.75, [1.9, 1.6]);
+  const midMat = facade('#3a3e58', '#9e9cac', [140, 300], 0.75, [1.9, 1.6]);
   const mid: B[] = [];
   for (
     let xPosition2 = -200;
@@ -255,7 +255,7 @@ export function buildSanFransokyo(sceneKit: SceneKit, sunDir: THREE.Vector3) {
   }
   layer(mid, midMat, sceneKit.standard('#2b2436', 0.9, 0), 0.14);
   // Near: the waterfront: low blocks, warehouses on the piers.
-  const nearMat = facade('#2e2c42', '#b88282', [90, 240], 0.9, [1.5, 1.3]);
+  const nearMat = facade('#2b2e42', '#8f8e9f', [90, 240], 0.9, [1.5, 1.3]);
   const near: B[] = [];
   for (
     let xPosition3 = 30;
@@ -756,7 +756,7 @@ export function buildSanFransokyo(sceneKit: SceneKit, sunDir: THREE.Vector3) {
   const streakMat = sceneKit.ownMaterial(
     new THREE.ShaderMaterial({
       uniforms: {
-        uColor: { value: new THREE.Color('#ffb070') },
+        uColor: { value: new THREE.Color('#ffd2a4') },
         uOpacity: { value: 0.5 },
       },
       vertexShader: UV_VS,
@@ -833,10 +833,10 @@ export function buildSanFransokyo(sceneKit: SceneKit, sunDir: THREE.Vector3) {
       city,
     );
   };
-  haze(-128, '#e3a08e', 0.35, 26);
-  haze(-178, '#e0988c', 0.45, 40);
-  haze(-238, '#e7a690', 0.55, 60);
-  haze(-305, '#f0b49a', 0.6, 80);
+  haze(-128, '#bab4ba', 0.3, 26);
+  haze(-178, '#b5b0b9', 0.4, 40);
+  haze(-238, '#bfb7ba', 0.5, 60);
+  haze(-305, '#cbc0bc', 0.55, 80);
 
   return {
     update(timeSeconds: number, deltaSeconds: number) {

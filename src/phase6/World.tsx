@@ -729,13 +729,18 @@ export function World({
     };
   }, [set, scene, home, homeScene]);
 
-  // Lights the sets share: a cool key and fill for the city; the home set brings its own.
+  // Lights the sets share: a cool moonlit key, a low sky fill that keeps forms readable without
+  // flattening them, and a cold back-rim from the far end of the street that separates Baymax and
+  // the gate machinery from the dark facades. The home set brings its own.
   const lights = useMemo(() => {
     const group = new THREE.Group();
-    group.add(new THREE.HemisphereLight('#9ec6e4', '#0a1420', 1.3));
-    const key = new THREE.DirectionalLight('#bcd9ec', 1.7);
+    group.add(new THREE.HemisphereLight('#8eb0cc', '#0b1219', 0.74));
+    const key = new THREE.DirectionalLight('#c4d8e8', 2.05);
     key.position.set(-8, 16, 6);
     group.add(key);
+    const rim = new THREE.DirectionalLight('#9cc4e6', 1.15);
+    rim.position.set(9, 7, -24);
+    group.add(rim);
     return group;
   }, []);
   useEffect(() => {
