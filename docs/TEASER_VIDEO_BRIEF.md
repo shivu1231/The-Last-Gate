@@ -19,7 +19,7 @@ The emotional thread is simple: Hiro refuses to leave Baymax behind. Engineering
 ## Full sequence and capture list
 
 ### Opening / portal return
-Capture the unstable portal, the crossing toward San Fransokyo, Hiro turning back and seeing that Baymax has not followed. Hold briefly on the decision to return, then the dangerous crossing back. Use the opening-eye animation as a transition into the playable perspective. Following the eye opening, a brief translucent title treatment can retain the world behind THE LAST GATE and show the actual mouse/scroll controls.
+Capture the unstable portal, the crossing toward San Fransokyo, Hiro turning back and seeing that Baymax has not followed. Hold briefly on the decision to return, then the dangerous crossing back. Use the opening-eye animation as a transition into the playable perspective. Following the eye opening, an upper-left translucent title treatment retains the world behind THE LAST GATE and shows the actual mouse/scroll controls. Allow 6.6 seconds for its staggered entrance, five-second readable hold and fade-out.
 Useful existing dialogue: “Baymax? …Baymax!” / “He’s not moving.” / “I’m not leaving you.”
 
 ### Phase 1 / combat activation and fight
