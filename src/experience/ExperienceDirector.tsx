@@ -1,3 +1,4 @@
+import { OpeningTitle } from '../presentation/OpeningTitle';
 import {
   Component,
   useEffect,
@@ -1597,6 +1598,7 @@ export function ExperienceDirector() {
       aria-label="LAST GATE: Hiro’s vision inside the portal dimension"
     >
       {world}
+      <OpeningTitle phase={phase} />
       <div className="lens-vignette" aria-hidden="true" />
       <div className="film-grain" aria-hidden="true" />
       <div className="organic-blink" ref={aperture} aria-hidden="true">

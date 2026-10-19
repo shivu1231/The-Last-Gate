@@ -1,0 +1,47 @@
+.opening-title {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, .32);
+  color: #f5f4ec;
+  pointer-events: none;
+  animation: opening-title-reveal 1s ease both;
+}
+
+.opening-title-content {
+  width: min(720px, 90vw);
+  text-align: center;
+}
+
+.opening-title-eyebrow {
+  margin: 0 0 16px;
+  font: 10px/1.5 Consolas, monospace;
+  letter-spacing: .22em;
+  opacity: .7;
+}
+
+.opening-title h1 {
+  margin: 0;
+  font: 600 clamp(30px, 5vw, 68px)/1.1 system-ui, sans-serif;
+  letter-spacing: .13em;
+}
+
+.opening-title-controls {
+  margin: 24px 0 0;
+  font: 12px/1.8 system-ui, sans-serif;
+  color: rgba(245, 244, 236, .85);
+}
+
+.opening-title-controls span { padding: 0 8px; opacity: .5; }
+
+@keyframes opening-title-reveal {
+  0%, 100% { opacity: 0; }
+  15%, 80% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opening-title { animation: none; }
+}

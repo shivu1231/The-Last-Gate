@@ -1,1 +1,0 @@
-.transition-veil{position:fixed;inset:0;width:100%;height:100%;z-index:11;pointer-events:none;visibility:hidden}html.is-transitioning .experience button:not(.sound){pointer-events:none}html.is-transitioning .shell-interaction{opacity:0;transition:opacity .25s ease}html.cursor-idle,html.cursor-idle *{cursor:none!important}html.cursor-interact canvas{cursor:pointer}
