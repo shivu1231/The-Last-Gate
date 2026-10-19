@@ -53,7 +53,10 @@ export function EndCard({ onReplay }: { onReplay: () => void }) {
           <p className="lg-ending-team">
             Team Delhi Public School, Maruti Kunj
           </p>
-          <p className="lg-ending-extras">Extras coming soon.</p>
+          <p className="lg-ending-extras">
+            <span className="lg-ending-vr">VR</span>
+            A virtual reality edition is coming soon.
+          </p>
           <button type="button" className="lg-ending-return" onClick={onReplay}>
             Return to the opening
           </button>

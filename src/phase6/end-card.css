@@ -145,9 +145,25 @@
   color: var(--end-dim);
 }
 .lg-ending-extras {
-  margin-top: 8px !important;
+  margin-top: 10px !important;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--end-dim);
+}
+/* The announced VR edition: an orange mono mark with a short rule, never a filled selection-like block. */
+.lg-ending-vr {
+  flex: none;
+  padding-bottom: 3px;
+  border-bottom: 2px solid var(--end-accent);
+  font: 600 12px/1 var(--lg-mono);
+  letter-spacing: .18em;
   color: var(--end-accent);
-  font-style: italic;
+  user-select: none;
+}
+.lg-ending ::selection {
+  background: rgba(240,138,60,.32);
+  color: var(--end-text);
 }
 .lg-ending-tech span {
   font: 500 10px/1 var(--lg-mono);
