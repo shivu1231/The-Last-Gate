@@ -66,6 +66,11 @@ function statusOf(
   }
 }
 
+/** The last repair's result stays on screen this long before the assessment replaces it. */
+const LAST_REPAIR_HOLD_MS = 2600;
+/** Assessment entry (1 s) plus a readable hold before its continue action unlocks. */
+const SUMMARY_READ_MS = 4500;
+
 /**
  * Render the engineering overview, system inspection and repair controls.
  */
@@ -79,6 +84,18 @@ export function BoardOverlay() {
         .catch(() => {});
   }, [complete]);
   const [summary, setSummary] = useState(false);
+  // The assessment is the chapter's reveal. Its way out unlocks only once the panel has finished
+  // entering (1 s) and held still long enough to read (3.5 s); leaving fires once.
+  const [readable, setReadable] = useState(false);
+  const leaving = useRef(false);
+  useEffect(() => {
+    if (!summary) {
+      setReadable(false);
+      return;
+    }
+    const hold = window.setTimeout(() => setReadable(true), SUMMARY_READ_MS);
+    return () => window.clearTimeout(hold);
+  }, [summary]);
   useSfxBed('board');
   useEffect(() => {
     if (!complete) return;
@@ -91,7 +108,7 @@ export function BoardOverlay() {
         assessment: true,
       });
       setSummary(true);
-    }, 1400);
+    }, LAST_REPAIR_HOLD_MS);
     return () => window.clearTimeout(timeSeconds);
   }, [complete]);
   // Internal systems open in INTERNAL view so there is something to see; leaving a system drops ISOLATE.
@@ -289,7 +306,16 @@ export function BoardOverlay() {
               BACK TO THE BOARD
             </button>
             {exit && (
-              <button className="board-primary" onClick={exit.go}>
+              <button
+                className="board-primary"
+                disabled={!readable}
+                aria-disabled={!readable}
+                onClick={() => {
+                  if (!readable || leaving.current) return;
+                  leaving.current = true;
+                  exit.go();
+                }}
+              >
                 {exit.label} <i>→</i>
               </button>
             )}
