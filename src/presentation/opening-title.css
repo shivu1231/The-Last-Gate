@@ -34,7 +34,7 @@
 
 .opening-title h1 {
   margin: 0;
-  font: 500 clamp(28px, 4.4vw, 64px)/1.04 system-ui, sans-serif;
+  font: 500 clamp(32px, 4.9vw, 72px)/1.04 system-ui, sans-serif;
   letter-spacing: .14em;
   text-shadow: 0 2px 24px rgba(0, 0, 0, .2);
 }
@@ -97,7 +97,7 @@
 
 @media (max-height: 480px) {
   .opening-title { padding-top: 24px; }
-  .opening-title h1 { font-size: 28px; }
+  .opening-title h1 { font-size: 31px; }
   .opening-title-eyebrow { margin-bottom: 12px; }
   .opening-title-controls { margin-top: 18px; padding-top: 12px; }
 }
