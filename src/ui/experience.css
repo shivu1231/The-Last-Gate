@@ -1,7 +1,16 @@
 :root {
+  /* Opening HUD over the dark 3D shot: soft-white type, project orange for keys, markers,
+     dividers and selected states, restrained red only for faults and combat. */
+  --hud-ink:#F3F0E9;
+  --hud-text:rgba(243,240,233,.8);
+  --hud-dim:rgba(243,240,233,.5);
+  --hud-faint:rgba(243,240,233,.26);
+  --hud-accent:var(--lg-dusk,#F08A3C);
+  --hud-accent-line:rgba(240,138,60,.45);
+  --hud-red:#D9483B;
   color-scheme: dark;
   font-family: var(--lg-mono);
-  color: #d5ddd2;
+  color: var(--hud-text);
   background: #090f12;
   font-synthesis: none;
 }
@@ -25,7 +34,7 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 button:focus-visible {
-  outline: 1px solid #c5d5c1;
+  outline: 1px solid var(--hud-accent);
   outline-offset: 8px;
 }
 button[hidden] {
@@ -92,12 +101,12 @@ button[hidden] {
   z-index: 20;
   font-size: 7px;
   letter-spacing: .18em;
-  color: #758781;
+  color: var(--hud-dim);
 }
 .signal-line {
   width: 90px;
   height: 1px;
-  background: linear-gradient(90deg,transparent,#a5b8aa,transparent);
+  background: linear-gradient(90deg,transparent,var(--hud-accent),transparent);
   animation: signal 2s ease-in-out infinite;
 }
 @keyframes signal {
@@ -131,7 +140,7 @@ button[hidden] {
 }
 .wave i {
   display: block;
-  background: #b9c8bf;
+  background: var(--hud-ink);
   width: 1px;
   height: 3px;
 }
@@ -145,6 +154,7 @@ button[hidden] {
   height: 13px;
 }
 .wave.active i {
+  background: var(--hud-accent);
   animation: wave 1.3s ease-in-out infinite alternate;
 }
 .wave.active i:nth-child(2) {
@@ -167,7 +177,7 @@ button[hidden] {
   right: 35px;
   font-size: 6px;
   letter-spacing: .1em;
-  color: #8d9b93;
+  color: var(--hud-dim);
   z-index: 14;
   animation: fade-in 3s both;
 }
@@ -181,7 +191,7 @@ button[hidden] {
   opacity: 0;
   pointer-events: none;
   font-family: var(--lg-mono);
-  color: rgba(243,240,233,.62);
+  color: var(--hud-text);
 }
 .suit-readout span {
   display: block;
@@ -189,13 +199,13 @@ button[hidden] {
 .suit-readout b {
   font-weight: 400;
   margin-left: 18px;
-  color: #F08A3C;
+  color: var(--hud-accent);
 }
 .suit-readout i {
   display: block;
   font-style: normal;
   font-size: 6px;
-  color: rgba(243,240,233,.42);
+  color: var(--hud-dim);
   margin-top: 12px;
   letter-spacing: .15em;
 }
@@ -246,7 +256,7 @@ button[hidden] {
   font:
     7px var(--lg-mono);
   letter-spacing: .2em;
-  color: #F08A3C;
+  color: var(--hud-accent);
   margin-bottom: 9px;
 }
 @keyframes caption {
@@ -274,7 +284,7 @@ button[hidden] {
 }
 .skip span {
   margin-left: 15px;
-  color: #8f9a92;
+  color: var(--hud-accent);
 }
 .approach {
   position: absolute;
@@ -290,14 +300,14 @@ button[hidden] {
   touch-action: none;
   padding: 14px 30px;
   white-space: nowrap;
-  color: #b6c7b4;
+  color: var(--hud-text);
   animation: fade-in 2s both;
 }
 .approach small {
   display: block;
   font-size: 6px;
   letter-spacing: .09em;
-  color: #7d9386;
+  color: var(--hud-dim);
   margin-top: 2px;
 }
 .move-line {
@@ -305,7 +315,7 @@ button[hidden] {
   width: 1px;
   height: 23px;
   margin: 0 auto 12px;
-  background: linear-gradient(transparent,#c0cfb7);
+  background: linear-gradient(transparent,var(--hud-accent));
   animation: move-line 2.3s ease-in-out infinite;
 }
 @keyframes move-line {
@@ -321,18 +331,18 @@ button[hidden] {
   z-index: 13;
   font-size: 7px;
   letter-spacing: .18em;
-  color: #9ba99e;
+  color: var(--hud-accent);
   opacity: .42;
   pointer-events: none;
 }
 .signature>span {
-  color: #697e75;
+  color: var(--hud-dim);
   margin: 0 4px;
 }
 .signature i {
   font-style: normal;
   margin-left: 24px;
-  color: #c8d4c0;
+  color: var(--hud-ink);
 }
 .shell-interaction {
   position: absolute;
@@ -352,26 +362,38 @@ button[hidden] {
   width: 28px;
   height: 28px;
   display: block;
-  border: 1px solid #d2ddc37d;
+  border: 1px solid var(--hud-faint);
   border-radius: 100%;
   position: relative;
-  box-shadow: 0 0 15px #d2ddc312;
+  box-shadow: 0 0 15px transparent;
 }
 .interaction-ring:after {
   content: '';
   position: absolute;
   inset: 11px;
   border-radius: 100%;
-  background: #cfddc1;
+  background: var(--hud-ink);
+}
+.shell-interaction:is(:hover,:focus-visible) .interaction-ring:after {
+  background: var(--hud-accent);
+}
+.shell-interaction:active .interaction-ring:after {
+  opacity: .75;
+}
+:is(.skip,.replay,.approach,.sound,.replay-inline,.failure button):active {
+  opacity: .8;
+}
+.failure button:is(:hover,:focus-visible) {
+  border-bottom-color: var(--hud-accent);
 }
 .shell-interaction:hover .interaction-ring {
-  border-color: #d2ddc3;
-  box-shadow: 0 0 20px #d2ddc333;
+  border-color: var(--hud-ink);
+  box-shadow: none;
 }
 .shell-interaction small {
   margin-left: 12px;
-  color: #96a68d;
-  border: 1px solid #a0b68c55;
+  color: var(--hud-accent);
+  border: 1px solid var(--hud-accent-line);
   padding: 2px 4px;
   font-size: 6px;
 }
@@ -393,7 +415,7 @@ button[hidden] {
   opacity: 1;
 }
 .failed-link>span:not(.fault-dot) {
-  color: #cb8a77;
+  color: var(--hud-red);
   margin-left: 15px;
 }
 .failed-link small {
@@ -401,14 +423,14 @@ button[hidden] {
   font-family: var(--lg-body);
   font-size: 12px;
   letter-spacing: 0;
-  color: #b0bdab;
+  color: var(--hud-text);
   margin-top: 17px;
 }
 .fault-dot {
   display: inline-block;
   width: 3px;
   height: 3px;
-  background: #be7b65;
+  background: var(--hud-red);
   margin-right: 7px;
   vertical-align: middle;
 }
@@ -420,12 +442,12 @@ button[hidden] {
   font-size: 7px;
   letter-spacing: .1em;
   padding: 12px 0;
-  color: #b2c1ac;
+  color: var(--hud-text);
   animation: fade-in 1s both;
 }
 .replay span {
   margin-left: 16px;
-  color: #7c9383;
+  color: var(--hud-accent);
 }
 .failure {
   position: absolute;
@@ -445,7 +467,7 @@ button[hidden] {
 }
 .failure span {
   font-size: 10px;
-  color: #9aa99f;
+  color: var(--hud-dim);
   max-width: 340px;
   line-height: 1.8;
 }
@@ -454,7 +476,7 @@ button[hidden] {
   letter-spacing: .14em;
   margin-top: 35px;
   padding: 14px 0;
-  border-bottom: 1px solid #a5b39e66;
+  border-bottom: 1px solid var(--hud-accent-line);
 }
 .sr-only {
   position: absolute;
@@ -533,14 +555,14 @@ button[hidden] {
 .approach {
   font-size: 7px;
   bottom: 8vh;
-  color: #9ba997;
+  color: var(--hud-text);
   letter-spacing: .18em;
   opacity: .6;
   padding: 10px;
 }
 .approach span {
   margin: 0 6px;
-  color: #6c8174;
+  color: var(--hud-accent);
 }
 .lens-vignette {
   background:
@@ -561,7 +583,7 @@ button[hidden] {
 .interaction-ring {
   width: 21px;
   height: 21px;
-  border-color: #d2ddc35c;
+  border-color: var(--hud-faint);
 }
 .interaction-ring:after {
   inset: 8px;
@@ -612,14 +634,14 @@ button[hidden] {
   }
 }
 .shell-action .interaction-ring {
-  border-color: #d3b8a080;
-  box-shadow: 0 0 18px #b52f2620;
+  border-color: var(--hud-accent-line);
+  box-shadow: none;
 }
 .shell-action .interaction-ring:after {
-  background: #d58b70;
+  background: var(--hud-accent);
 }
 .shell-action {
-  color: #c4b8a8;
+  color: var(--hud-text);
   text-shadow: 0 2px 10px #000;
   opacity: .58;
 }
@@ -665,16 +687,16 @@ button[hidden] {
 }
 .hold-track {
   fill: none;
-  stroke: #d2ddc340;
+  stroke: var(--hud-faint);
   stroke-width: 1;
 }
 .hold-fill {
   fill: none;
-  stroke: #e6b39e;
+  stroke: var(--hud-accent);
   stroke-width: 1.4;
   stroke-dasharray: 113.1;
   stroke-dashoffset: calc(113.1 - 113.1*var(--hold));
-  filter: drop-shadow(0 0 4px #d0503a88);
+  filter: drop-shadow(0 0 4px rgba(240,138,60,.5));
 }
 .interaction-label {
   opacity: .85;
@@ -688,7 +710,7 @@ button[hidden] {
   position: absolute;
   inset: -6px;
   border-radius: 100%;
-  border: 1px solid #d5806a30;
+  border: 1px solid var(--hud-accent-line);
   animation: focus-pulse 2.4s ease-in-out infinite;
 }
 @keyframes focus-pulse {
@@ -713,11 +735,11 @@ button[hidden] {
   pointer-events: none;
   padding: 10px 18px 10px 14px;
   background: linear-gradient(90deg,#04090ea8,#04090e40 70%,transparent);
-  border-left: 1px solid #9fc6d433;
+  border-left: 1px solid var(--hud-accent-line);
   font-size: 7.5px;
   letter-spacing: .17em;
   line-height: 2.5;
-  color: #a8bcc2;
+  color: var(--hud-text);
   opacity: 0;
   transition: opacity 1s;
   text-shadow:
@@ -739,7 +761,7 @@ button[hidden] {
 .diagnostic p i {
   flex: 1;
   min-width: 30px;
-  border-bottom: 1px dotted #9fb6be55;
+  border-bottom: 1px dotted var(--hud-faint);
   transform: translateY(-3px);
 }
 .diagnostic b {
@@ -747,14 +769,14 @@ button[hidden] {
   letter-spacing: .2em;
 }
 .diagnostic .tone-ok b {
-  color: #bfe6f2;
+  color: var(--hud-ink);
 }
 .diagnostic .tone-fault b {
-  color: #d29a86;
+  color: var(--hud-accent);
 }
 .diagnostic .tone-red b {
-  color: #ff5446;
-  text-shadow: 0 0 10px #ff2a1c88;
+  color: var(--hud-red);
+  text-shadow: 0 0 8px rgba(200,16,46,.45);
 }
 @keyframes fragment-in {
   0% {
@@ -806,8 +828,8 @@ button[hidden] {
   color: #d6a69c;
 }
 .diagnostic .threat-line b {
-  color: #ff4636;
-  text-shadow: 0 0 14px #ff2a1caa;
+  color: var(--hud-red);
+  text-shadow: 0 0 10px rgba(200,16,46,.55);
   letter-spacing: .24em;
 }
 .phase-ignition .diagnostic.visible {
@@ -838,14 +860,14 @@ button[hidden] {
   z-index: 13;
   font-size: 7px;
   letter-spacing: .2em;
-  color: #b9c5bd;
+  color: var(--hud-text);
   opacity: .5;
   animation: fade-in 1.4s both;
   pointer-events: none;
 }
 .run-hint span {
   margin: 0 6px;
-  color: #7f9187;
+  color: var(--hud-accent);
 }
 .phase-chase .suit-readout,.phase-fracture .suit-readout {
   opacity: .32;
@@ -871,17 +893,17 @@ button[hidden] {
   pointer-events: none;
   text-align: center;
   animation: fade-in 2.6s 2.8s both;
-  color: #cfe6ee;
-  text-shadow: 0 2px 24px #02121c;
+  color: var(--hud-ink);
+  text-shadow: 0 2px 24px #000;
 }
 .handoff p {
   margin: 0;
   font-size: 8px;
   letter-spacing: .32em;
-  color: #9cc0cc;
+  color: var(--hud-text);
 }
 .handoff p span {
-  color: #5f8796;
+  color: var(--hud-accent);
   margin: 0 6px;
 }
 .handoff h1 {
@@ -889,13 +911,13 @@ button[hidden] {
   font:
     400 24px var(--lg-body);
   letter-spacing: .22em;
-  color: #e7f6fb;
+  color: var(--hud-ink);
 }
 .handoff h1 i {
   font:
     400 9px var(--lg-mono);
   letter-spacing: .2em;
-  color: #ff6a58;
+  color: var(--hud-accent);
   display: block;
   margin-bottom: 14px;
   font-style: normal;
@@ -903,11 +925,11 @@ button[hidden] {
 .handoff small {
   font-size: 7px;
   letter-spacing: .2em;
-  color: #88aab6;
+  color: var(--hud-dim);
 }
 .handoff small b {
   font-weight: 400;
-  color: #ff8d7d;
+  color: var(--hud-accent);
   margin: 0 4px;
 }
 .replay-inline {
@@ -915,7 +937,7 @@ button[hidden] {
   margin-top: 40px;
   font-size: 7px;
   letter-spacing: .16em;
-  color: #a9c6cf;
+  color: var(--hud-text);
   padding: 12px 0;
   opacity: .7;
 }
@@ -924,7 +946,7 @@ button[hidden] {
 }
 .replay-inline span {
   margin-left: 14px;
-  color: #6f95a1;
+  color: var(--hud-accent);
 }
 .phase-skip-hint {
   position: fixed;
@@ -934,13 +956,13 @@ button[hidden] {
   font:
     7px var(--lg-mono);
   letter-spacing: .15em;
-  color: #a9c6cf;
+  color: var(--hud-text);
   opacity: .62;
   pointer-events: none;
 }
 .phase-skip-hint span {
   margin: 0 7px;
-  color: #6f95a1;
+  color: var(--hud-accent);
 }
 @media (prefers-reduced-motion:reduce) {
   .diagnostic p,.handoff {
@@ -950,7 +972,7 @@ button[hidden] {
 .signature small {
   font-size: inherit;
   letter-spacing: inherit;
-  color: #7f9187;
+  color: var(--hud-dim);
   margin: 0 2px 0 6px;
 }
 .zoom-hint {
@@ -961,14 +983,14 @@ button[hidden] {
   z-index: 13;
   font-size: 7px;
   letter-spacing: .2em;
-  color: #b9c5bd;
+  color: var(--hud-text);
   opacity: .5;
   animation: fade-in 1.4s 1.2s both;
   pointer-events: none;
 }
 .zoom-hint span {
   margin: 0 6px;
-  color: #7f9187;
+  color: var(--hud-accent);
 }
 
 /* The aperture is needed only during awakening. */
@@ -1002,7 +1024,7 @@ button[hidden] {
   opacity: 1;
   font-size: 10px;
   letter-spacing: .16em;
-  color: #F3E6D8;
+  color: var(--hud-ink);
   gap: 14px;
 }
 .phase-chip-focus .interaction-ring,.phase-chest-focus .interaction-ring {
@@ -1011,12 +1033,12 @@ button[hidden] {
 }
 .phase-chip-focus .interaction-ring:after,.phase-chest-focus .interaction-ring:after {
   inset: 17px !important;
-  background: #F08A3C;
-  box-shadow: 0 0 14px #F08A3C;
+  background: var(--hud-accent);
+  box-shadow: 0 0 14px rgba(240,138,60,.7);
 }
 .phase-chip-focus .interaction-ring:before,.phase-chest-focus .interaction-ring:before {
   inset: -8px;
-  border: 2px solid #F08A3Ccc;
+  border: 2px solid var(--hud-accent);
   animation: focus-pulse 1.6s ease-in-out infinite;
 }
 .phase-chip-focus .interaction-label,.phase-chest-focus .interaction-label {
@@ -1029,8 +1051,8 @@ button[hidden] {
   opacity: 1;
   animation: none;
   font-size: 8px;
-  color: #1F2326;
-  background: #F08A3C;
+  color: var(--lg-ink-strong);
+  background: var(--hud-accent);
   border: 0;
   border-radius: 5px;
   padding: 3px 6px;
