@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { BAYMAX_SCALE as BS } from './baymax';
 import { SceneKit, seeded, type ScenePlacement } from '../phase2/SceneKit';
 import { buildSanFransokyo } from '../environment/SanFransokyoSkyline';
+import { dressHome } from './homeDressing';
 import { chipOutline } from '../characters/RedChip.js';
 import type { BaymaxPose as BaymaxPose } from './baymax';
 import type { HiroPose } from '../characters/HiroModel';
@@ -185,11 +186,22 @@ export function createHome() {
         rail,
       );
   }
-  // A cherry tree on the lawn, and petals in the air.
-  sceneKit.box(
-    { p: [-6.5, 1.4, 4], s: [0.3, 2.8, 0.3], r: [0, 0, 0.08] },
-    sceneKit.standard('#4a3a32', 0.9, 0),
+  // A cherry tree on the lawn, and petals in the air: a tapered trunk that forks into the crown.
+  const cherryBark = sceneKit.standard('#4a3a32', 0.9, 0);
+  const limb = sceneKit.ownGeometry(
+    new THREE.CylinderGeometry(0.09, 0.17, 1, 8).translate(0, 0.5, 0),
   );
+  for (const [height, tiltX, tiltZ, scale] of [
+    [2.5, 0, 0.08, 1],
+    [1.5, 0.5, -0.45, 0.62],
+    [1.4, -0.55, 0.35, 0.58],
+    [1.3, 0.1, 0.7, 0.55],
+  ])
+    sceneKit.mesh(limb, cherryBark, {
+      p: [-6.5 + (scale < 1 ? 0.1 : 0), scale < 1 ? 2.1 : 0, 4],
+      s: [scale, height, scale],
+      r: [tiltX, 0, tiltZ],
+    });
   const blossom: ScenePlacement[] = [];
   for (let index = 0; index < 26; index++) {
     const firstValue = random() * Math.PI * 2,
@@ -232,6 +244,8 @@ export function createHome() {
     ),
   );
   sceneKit.root.add(petals);
+  // Around the edges: the street, houses, trees and furniture of a lived-in waterfront (homeDressing.ts).
+  dressHome(sceneKit, { lawn, path });
   // Across the water: San Fransokyo at sunset (environment/SanFransokyoSkyline.ts).
   const sf = buildSanFransokyo(sceneKit, new THREE.Vector3(-0.25, 0.06, -1));
   // A tram line pole and overhead wire running along the promenade.
