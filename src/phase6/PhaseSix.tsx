@@ -297,6 +297,11 @@ export function PhaseSix({ initial }: { initial: PhaseSixStep }) {
                                     pulled >= 3.4 &&
                                     state.cart !== 'slot'
                                   ? 'It needs somewhere to go. Where his healthcare chip went.'
+                                  : // The payoff to the Phase 1 FLIGHT LOG line: the chip logs every
+                                    // flight, so it carries the crossing the reader rebuilds the way home from.
+                                    (st === 'carry' && state.cart === 'slot') ||
+                                      (st === 'bloom' && easedProgress <= 2)
+                                    ? 'Every flight logged… even the crossing.'
                                   : st === 'bloom' &&
                                       easedProgress > 2 &&
                                       easedProgress < 6

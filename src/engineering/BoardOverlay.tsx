@@ -836,6 +836,10 @@ function ChipTask() {
                 <dd className="tone-red">SEATED · ACTIVE</dd>
               </div>
               <div>
+                <dt>FLIGHT / NAV LOG</dt>
+                <dd>CONTINUOUS · 1 BOUNDARY CROSSING</dd>
+              </div>
+              <div>
                 <dt>COMBAT SLOT</dt>
                 <dd className="tone-red">OVERRIDE · WON'T RELEASE</dd>
               </div>

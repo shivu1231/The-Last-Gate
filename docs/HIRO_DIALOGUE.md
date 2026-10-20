@@ -172,6 +172,10 @@ Collected from the current website source. Exact subtitle wording; repeated line
 50. “It needs somewhere to go. Where his healthcare chip went.”
    Source: src/phase6/PhaseSix.tsx:301
 
+50a. “Every flight logged… even the crossing.”
+   Source: src/phase6/PhaseSix.tsx:304
+   (Payoff to the Phase 1 diagnostic line FLIGHT LOG · RECORDING and the board's FLIGHT / NAV LOG reading.)
+
 51. “There you are.”
    Source: src/phase6/PhaseSix.tsx:305
 

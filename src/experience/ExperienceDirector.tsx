@@ -1170,7 +1170,7 @@ const PHASE_LINES: Partial<
   ignition: [[0.35, 'No—stay with me!']],
   fracture: [[2.6, 'We’re going home, Baymax!']],
 };
-const LINE_TIMES = [0.5, 1.55, 2.45, 3.35, 4.55];
+const LINE_TIMES = [0.5, 1.3, 2.05, 2.8, 3.55, 4.55];
 const SCRAMBLE = '▚▞░▒/\\#*+=_';
 
 /**

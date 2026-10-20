@@ -51,6 +51,9 @@ export const DIAGNOSTIC_LINES: {
   tone: 'ok' | 'fault' | 'red';
 }[] = [
   { key: 'CORE SYSTEMS', value: 'ONLINE', tone: 'ok' },
+  // Hiro built the combat chip to log every flight. It records from the moment it seats, and that
+  // log of the crossing is what the old gate's reader reconstructs the way home from (Phase 6).
+  { key: 'FLIGHT LOG', value: 'RECORDING', tone: 'ok' },
   { key: 'HEALTHCARE DIRECTIVE', value: 'MISSING', tone: 'fault' },
   { key: 'PATIENT PROTOCOL', value: 'NOT FOUND', tone: 'fault' },
   { key: 'CARE SYSTEM', value: 'UNAVAILABLE', tone: 'fault' },
