@@ -46,8 +46,9 @@ export class AudioDirector {
     if (enabled && !this.ctx) this.create();
     if (!this.ctx || !this.master) return;
     if (enabled) await this.ctx.resume();
+    // The resume can wait for the first gesture; a mute in the meantime wins.
     this.master.gain.setTargetAtTime(
-      enabled ? 0.34 : 0,
+      this.enabled ? 0.34 : 0,
       this.ctx.currentTime,
       0.25,
     );

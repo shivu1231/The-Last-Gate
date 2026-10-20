@@ -76,7 +76,7 @@ export function PhaseTwoExperience({ entry }: { entry: EntryStage }) {
     if (snapshot.stage === 'fracture') experience.observe('FRACTURE');
     if (snapshot.stage === 'afterimage') experience.observe('AFTERIMAGE');
   }, [snapshot.stage]);
-  const [sound, setSound] = useState(false),
+  const [sound, setSound] = useState(true),
     [audioError, setAudioError] = useState(false),
     [error, setError] = useState('');
   useEffect(
@@ -86,6 +86,10 @@ export function PhaseTwoExperience({ entry }: { entry: EntryStage }) {
     },
     [audio, director],
   );
+  // Sound is on from the start; the player has already interacted by this chapter, so it can play.
+  useEffect(() => {
+    audio.setEnabled(true).catch(() => setAudioError(true));
+  }, [audio]);
   const toggleSound = async () => {
     try {
       await audio.setEnabled(!sound);

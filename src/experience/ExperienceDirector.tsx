@@ -54,6 +54,7 @@ import { BaymaxController } from '../characters/BaymaxController';
 import { pinLights } from '../systems/lightPins';
 import { ChipController } from '../characters/ChipController';
 import { AudioDirector } from '../audio/AudioDirector';
+import { sfx } from '../audio/sfx';
 import { TransitionDirector } from '../transitions/TransitionDirector';
 import {
   HOLD_PHASES,
@@ -1241,9 +1242,29 @@ export function ExperienceDirector() {
       targetProgress: 0,
       subtitle: '',
       error: null,
-      sound: false,
+      sound: true,
     });
-  }, []);
+    // Sound starts on. Browsers allow audio only after the first click or key press, so it starts
+    // then (or now, if the page has already had one); the later chapters follow suit.
+    sfx.setMuted(false);
+    const start = () => {
+      if (!useSceneState.getState().sound) return;
+      audio.setEnabled(true).then(
+        () => setAudioError(false),
+        () => setAudioError(true),
+      );
+    };
+    const activation = (
+      navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }
+    ).userActivation;
+    if (activation?.hasBeenActive) start();
+    window.addEventListener('pointerdown', start, { capture: true, once: true });
+    window.addEventListener('keydown', start, { capture: true, once: true });
+    return () => {
+      window.removeEventListener('pointerdown', start, { capture: true });
+      window.removeEventListener('keydown', start, { capture: true });
+    };
+  }, [audio]);
   useEffect(() => {
     setIdleHint(false);
     setRunHint(false);
@@ -1626,7 +1647,7 @@ export function ExperienceDirector() {
           {audioError ? 'UNAVAILABLE' : sound ? 'SOUND ON' : 'SOUND OFF'}
         </span>
       </button>
-      {audioHint && !sound && (
+      {audioHint && (
         <span className="audio-hint">HEADPHONES RECOMMENDED</span>
       )}
       <div className="suit-readout" aria-label="Suit location status">

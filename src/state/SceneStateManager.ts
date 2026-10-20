@@ -130,7 +130,7 @@ export const useSceneState = create<ExperienceState>((set, get) => ({
   targetProgress: 0,
   subtitle: '',
   speaker: 'HIRO',
-  sound: false,
+  sound: true,
   error: null,
   replay: 0,
   started: false,
