@@ -96,6 +96,23 @@ export const now = () => performance.now() / 1000;
 export const START_ANGLES = [215, 40, 300];
 
 /**
+ * The home beat, seen through Hiro's eyes: kneeling as they arrive, walking to the bin, at it,
+ * walking back, kneeling at Baymax, watching the boot, waiting on the fist bump, after it, walking
+ * to the rail, at the rail.
+ */
+export type HomeStep =
+  | 'arrive'
+  | 'toBin'
+  | 'atBin'
+  | 'back'
+  | 'atBaymax'
+  | 'boot'
+  | 'bump'
+  | 'bumped'
+  | 'rail'
+  | 'atRail';
+
+/**
  * Shared state for the final pursuit, portal and home sequence.
  */
 type PhaseSixState = {
@@ -105,9 +122,13 @@ type PhaseSixState = {
   angles: number[];
   chip: 'bay' | 'held' | 'out';
   cart: 'hand' | 'held' | 'slot';
-  care: 'ground' | 'fetch' | 'hand' | 'open' | 'seated';
-  /** When Hiro set off for the bin with the healthcare chip in it (care: 'fetch'). */
+  care: 'ground' | 'hand' | 'open' | 'seated';
+  /** When Hiro took the healthcare chip out of the bin (care: 'hand'). */
   fetchAt: number;
+  /** Where the first-person home beat has got to, for its prompts (World sets it as it changes). */
+  homeStep: HomeStep;
+  /** When the player bumped Baymax's fist (0 = not yet); the boot waits on his raised fist till then. */
+  bumpAt: number;
   /** When the combat chip came out (Hiro then walks to the gate's reader). */
   pulledAt: number;
   /** Phase 5 decoded the healthcare chip's last transmission: outbound, last fixed at the old portal site. */
@@ -138,6 +159,8 @@ function stateFor(stage: Stage): PhaseSixState {
     caught: false,
     care: atLeast(stage, 'seated') ? 'seated' : 'ground',
     fetchAt: 0,
+    homeStep: 'arrive',
+    bumpAt: 0,
   };
 }
 

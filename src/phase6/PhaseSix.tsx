@@ -10,7 +10,6 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { reducedMotion } from '../config/experience';
 import { World, EMERGE, CLUE_AT, CLUE_END, type RunState } from './World';
-import { FETCH_PICK } from './home';
 import { PhaseSixAudio } from './audio';
 import {
   FadeIn,
@@ -250,7 +249,7 @@ export function PhaseSix({ initial }: { initial: PhaseSixStep }) {
   };
   const metres = Math.max(0, Math.round((1 - live.p) * ROUTE_LENGTH + 14));
   const pulled = state.chip === 'out' ? now() - state.pulledAt : 0;
-  const fetched = state.care === 'fetch' ? now() - state.fetchAt : 0;
+  const fetched = state.care === 'hand' ? now() - state.fetchAt : 99;
   const homeUi = state.stage !== 'home' || easedProgress > EMERGE + 1.2;
 
   const st = state.stage;
@@ -317,8 +316,8 @@ export function PhaseSix({ initial }: { initial: PhaseSixStep }) {
                                             state.care === 'ground'
                                           ? 'That green light… over by the bin?'
                                           : st === 'home' &&
-                                              state.care === 'fetch' &&
-                                              fetched > FETCH_PICK
+                                              state.care === 'hand' &&
+                                              fetched < 3.4
                                             ? 'It crossed all that way… to land in a bin.'
                                             : null;
 
@@ -666,10 +665,7 @@ export function PhaseSix({ initial }: { initial: PhaseSixStep }) {
               rows={[
                 [
                   'Healthcare chip',
-                  state.care === 'ground' ||
-                  (state.care === 'fetch' && fetched < FETCH_PICK)
-                    ? 'In a litter bin'
-                    : 'In your hand',
+                  state.care === 'ground' ? 'In a litter bin' : 'In your hand',
                   'ok',
                 ],
                 [
@@ -679,17 +675,19 @@ export function PhaseSix({ initial }: { initial: PhaseSixStep }) {
                 ],
                 ['Combat chip', 'Removed', 'dim'],
               ]}
-              action={
-                state.care === 'fetch'
-                  ? undefined
-                  : drag(
-                      state.care === 'ground'
-                        ? 'Click and hold the chip to go and get it.'
-                        : state.care === 'hand'
-                          ? 'Click and hold his chest to open the bay.'
-                          : 'Guide the chip into the socket, or hold E.',
-                    )
-              }
+              action={drag(
+                state.care === 'open'
+                  ? 'Guide the chip into the socket, or hold E.'
+                  : state.homeStep === 'toBin'
+                    ? 'Hold W or scroll to walk over to the bin.'
+                    : state.homeStep === 'atBin'
+                      ? 'Click and hold the chip, or hold E, to take it.'
+                      : state.homeStep === 'back'
+                        ? 'Hold W or scroll to walk back to him.'
+                        : state.homeStep === 'atBaymax'
+                          ? 'Click and hold his chest, or hold E, to open the bay.'
+                          : 'Look around with the mouse.',
+              )}
             />
           )}
           {st === 'seated' && (
@@ -720,6 +718,16 @@ export function PhaseSix({ initial }: { initial: PhaseSixStep }) {
         </div>
       )}
 
+      {ready && st === 'boot' && state.homeStep === 'bump' && (
+        <FadeIn className="p6-hint-line" delay={0.4}>
+          He's holding out his fist · <kbd>E</kbd> or click to bump it
+        </FadeIn>
+      )}
+      {ready && st === 'boot' && state.homeStep === 'rail' && (
+        <FadeIn className="p6-hint-line" delay={0.8}>
+          Hold <kbd>W</kbd> or scroll to walk to the rail with him
+        </FadeIn>
+      )}
       {ready && st === 'escape' && !moved && (
         <FadeIn className="p6-hint-line" delay={0.6}>
           Hold <kbd>W</kbd> or the mouse to run · move the mouse to look

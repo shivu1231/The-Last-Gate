@@ -3,10 +3,16 @@ import { BAYMAX_SCALE as BS } from './baymax';
 import { SceneKit, seeded, type ScenePlacement } from '../phase2/SceneKit';
 import { buildSanFransokyo } from '../environment/SanFransokyoSkyline';
 import { dressHome } from './homeDressing';
+import {
+  buildLitterBin,
+  buildParkBench,
+  furnitureMaterials,
+} from './streetFurniture';
 import { worldSurfaces, worldMapped } from '../presentation/WorldSurfaces';
 import { chipOutline } from '../characters/RedChip.js';
 import type { BaymaxPose as BaymaxPose } from './baymax';
 import type { HiroPose } from '../characters/HiroModel';
+import type { HandPose } from '../characters/RegulatorController';
 
 /**
  * The other side: San Fransokyo as it should be, quiet at dusk. A small lawn on the waterfront,
@@ -24,8 +30,8 @@ export const HOME_BAYMAX = new THREE.Vector3(-0.6, 0, 2.4);
  * over to it (tracker: the bin shouldn't sit right beside him as if put there for him).
  */
 export const CARE_BIN_AT = new THREE.Vector3(3.4, 0, -2);
-export const CARE_CHIP_AT = new THREE.Vector3(3.4, 0.9, -2);
-const CARE_CHIP_TILT = new THREE.Euler(-0.35, 0, 0.5);
+export const CARE_CHIP_AT = new THREE.Vector3(3.4, 0.8, -2);
+const CARE_CHIP_TILT = new THREE.Euler(-0.95, 0.3, 0.42);
 
 const SKY_FS = `varying vec3 vDir;void main(){float h=normalize(vDir).y;
 vec3 top=vec3(.085,.12,.23);vec3 mid=vec3(.27,.33,.49);vec3 low=vec3(.80,.68,.60);vec3 glow=vec3(1.,.88,.76);
@@ -121,7 +127,8 @@ export function createHome() {
     path = sceneKit.standard('#9b8f84', 0.9, 0.02);
   const surface = worldSurfaces(sceneKit);
   worldMapped(warmStone, surface.stone, 2);
-  const benchWood = worldMapped(sceneKit.standard('#7a5a44', 0.8, 0), surface.wood, 1);
+  const furniture = furnitureMaterials(sceneKit, surface),
+    furnitureRandom = seeded(7741);
   const rail = sceneKit.standard('#2f3640', 0.5, 0.6),
     vermilion = sceneKit.standard('#a8443a', 0.6, 0.2),
     city = sceneKit.standard('#5d6175', 0.9, 0.05);
@@ -175,20 +182,17 @@ export function createHome() {
     );
     lamps.push(new THREE.Vector3(xPosition2, 3.8, -4.6));
   }
+  // Park benches facing the water (streetFurniture.ts). The one nearer the bin carries a plate.
   for (const xPosition3 of [-8, 10]) {
-    sceneKit.box(
-      { p: [xPosition3, 0.45, -3.4], s: [1.8, 0.08, 0.5] },
-      benchWood,
+    const bench = buildParkBench(
+      sceneKit,
+      furniture,
+      furnitureRandom,
+      xPosition3 > 0 ? ['IN MEMORY OF TADASHI HAMADA', 'HE LOVED THIS VIEW'] : undefined,
     );
-    sceneKit.box(
-      { p: [xPosition3, 0.75, -3.62], s: [1.8, 0.45, 0.06] },
-      benchWood,
-    );
-    for (const deltaX of [-0.75, 0.75])
-      sceneKit.box(
-        { p: [xPosition3 + deltaX, 0.22, -3.4], s: [0.06, 0.44, 0.45] },
-        rail,
-      );
+    bench.position.set(xPosition3, 0, -3.4);
+    bench.rotation.y = Math.PI;
+    sceneKit.root.add(bench);
   }
   // A cherry tree on the lawn, and petals in the air: a tapered trunk that forks into the crown.
   const cherryBark = sceneKit.standard('#4a3a32', 0.9, 0);
@@ -311,33 +315,15 @@ export function createHome() {
   sceneKit.root.add(gateLight);
 
   const care = createCareChip(sceneKit);
-  // The bin: a slatted harbour litter bin with a lid ring; the chip sticks up out of the rubbish.
-  const binMat = sceneKit.ownMaterial(
-    new THREE.MeshStandardMaterial({
-      color: '#2f4a44',
-      roughness: 0.6,
-      metalness: 0.4,
-    }),
+  // The bin: a harbour litter bin (streetFurniture.ts), its plate turned to the way Hiro comes from;
+  // the chip sticks up out of the rubbish in the middle.
+  const { bin } = buildLitterBin(sceneKit, furniture, furnitureRandom);
+  bin.position.set(CARE_BIN_AT.x, 0, CARE_BIN_AT.z);
+  bin.rotation.y = Math.atan2(
+    HIRO_KNEEL.x - CARE_BIN_AT.x,
+    HIRO_KNEEL.z - CARE_BIN_AT.z,
   );
-  sceneKit.mesh(
-    sceneKit.ownGeometry(
-      new THREE.CylinderGeometry(0.3, 0.26, 0.82, 16, 1, true),
-    ),
-    binMat,
-    { p: [CARE_BIN_AT.x, 0.41, CARE_BIN_AT.z] },
-  );
-  sceneKit.mesh(
-    sceneKit.ownGeometry(new THREE.TorusGeometry(0.3, 0.025, 8, 24)),
-    binMat,
-    { p: [CARE_BIN_AT.x, 0.83, CARE_BIN_AT.z], r: [Math.PI / 2, 0, 0] },
-  );
-  sceneKit.mesh(
-    sceneKit.ownGeometry(new THREE.CircleGeometry(0.29, 16)),
-    sceneKit.ownMaterial(
-      new THREE.MeshStandardMaterial({ color: '#3b3226', roughness: 1 }),
-    ),
-    { p: [CARE_BIN_AT.x, 0.78, CARE_BIN_AT.z], r: [-Math.PI / 2, 0, 0] },
-  );
+  sceneKit.root.add(bin);
   care.chip.position.copy(CARE_CHIP_AT);
   care.chip.rotation.copy(CARE_CHIP_TILT);
   care.chip.scale.setScalar(1);
@@ -404,43 +390,48 @@ const sm = (easedProgress: number, firstValue: number, secondValue: number) =>
   THREE.MathUtils.smoothstep(easedProgress, firstValue, secondValue);
 const vector = (xPosition: number, yPosition: number, zPosition: number) =>
   new THREE.Vector3(xPosition, yPosition, zPosition);
-/** Where Hiro kneels at Baymax's side (clear of his arm), and where he steps back to as he gets up. */
+/** Where Hiro kneels at Baymax's side (clear of his arm). */
 export const HIRO_KNEEL = new THREE.Vector3(
   HOME_BAYMAX.x + 2.5 * BS + 0.25,
   0,
   HOME_BAYMAX.z + 0.35 * BS,
 );
 /** Where Hiro stands at the bin, on his side of it. */
-const BIN_SPOT = CARE_BIN_AT.clone().add(
+export const BIN_SPOT = CARE_BIN_AT.clone().add(
   HIRO_KNEEL.clone().sub(CARE_BIN_AT).setY(0).setLength(0.6),
 );
-/** The fetch (care 'fetch'): up off his knee, over to the bin, the chip out of it, and a jog back to him. */
-const F_RISE = 0.6,
-  F_OUT = 2.8,
-  F_PICK = 0.9,
-  F_BACK = 2,
-  F_KNEEL = 0.6,
-  F_HOME = F_RISE + F_OUT + F_PICK;
-export const FETCH_PICK = F_RISE + F_OUT + 0.45,
-  FETCH_END = F_HOME + F_BACK + F_KNEEL;
-/** Turn from heading a to b by k, the short way round. */
-const turn = (firstValue: number, secondValue: number, blendFactor: number) =>
-  firstValue +
-  (((((secondValue - firstValue + Math.PI * 3) % (Math.PI * 2)) + Math.PI * 2) %
-    (Math.PI * 2)) -
-    Math.PI) *
-    blendFactor;
+/** Where Hiro steps back to, out of reach, as Baymax gets up. */
 export const HIRO_STAND = new THREE.Vector3(
   HOME_BAYMAX.x + 2.75 * BS + 0.45,
   0,
   HOME_BAYMAX.z - 1.05 * BS,
 );
-/** Where Hiro steps in to for the fist bump. */
-export const HIRO_BUMP = new THREE.Vector3(
-  HOME_BAYMAX.x + 1.65 * BS + 0.3,
-  0,
-  HOME_BAYMAX.z - 1.55 * BS,
+/** First-person kneel and step-back spots: the eye sits further out than the old third-person body
+ * did, so kneeling beside him frames his chest and face instead of filling the lens with his arm. */
+const FP_KNEEL = HIRO_KNEEL.clone().add(new THREE.Vector3(0.7, 0, 0.1));
+const FP_STAND = new THREE.Vector3(HOME_BAYMAX.x + 2.3, 0, HOME_BAYMAX.z - 2.1);
+/** From his offered fist, the way Hiro stands to bump it: in front of him and to his right. */
+const BUMP_FROM = new THREE.Vector3(0.55, 0, -0.85).normalize();
+/** Where Hiro stands at the bin in first person: far enough back to see into it, not down a well. */
+const BIN_EYE_SPOT = CARE_BIN_AT.clone().add(
+  HIRO_KNEEL.clone().sub(CARE_BIN_AT).setY(0).setLength(0.78),
 );
+/** At the rail after the bump: Hiro at the railing, Baymax a step back on his left, both facing the water. */
+export const RAIL_HIRO = new THREE.Vector3(HOME_BAYMAX.x + 1.9, 0, -5.45);
+export const RAIL_BAYMAX = new THREE.Vector3(HOME_BAYMAX.x, 0, -4.7);
+/** The railing's top bar, where Hiro's hand comes to rest. */
+const RAIL_TOP = new THREE.Vector3(RAIL_HIRO.x - 0.12, 1.1, -6.1);
+/** Kneeling and standing eye heights. */
+const EYE_KNEEL = 0.95,
+  EYE_STAND = 1.56;
+/** The boot waits on Baymax's raised fist (his hold peaks here) until the player bumps it. */
+export const BUMP_WAIT = 13.8;
+/**
+ * Boot time with the bump gate in it: it runs to BUMP_WAIT and holds there on his offered fist
+ * until the bump, then carries on from the moment of the bump.
+ */
+export const bootTime = (since: number, bumpT: number) =>
+  bumpT < 0 ? Math.min(since, BUMP_WAIT) : BUMP_WAIT + bumpT;
 
 /**
  * Data contract used by the final pursuit and restoration.
@@ -467,92 +458,38 @@ export type HomeShot = {
   e: number;
   t: number;
   dt: number;
-  care: 'ground' | 'fetch' | 'hand' | 'open' | 'seated';
-  fetch: number;
+  care: 'ground' | 'hand' | 'open' | 'seated';
   dragPos: THREE.Vector3;
+  /** Where the healthcare chip sits in Hiro's pinch (first person) while he carries it. */
+  heldPos: THREE.Vector3;
   returning: number;
   camera: THREE.Camera;
   bayOpen: number;
+  /** Seconds since the bump (-1 before it). */
+  bumpT: number;
+  /** 0..1 along the walk to the rail, and whether Hiro is walking right now. */
+  rail: number;
+  railMoving: boolean;
 };
 
 /**
- * Everything the home set does each frame: the gate closing, the healthcare chip on the grass (or
- * in the hand, or seated in his dock), Baymax and Hiro, and where the camera wants to be.
+ * Everything the home set does each frame for Baymax, the healthcare chip and (for the closing
+ * credits only) Hiro's body and the camera. Otherwise Hiro is the camera: see directHomeEyes.
  *
- *   home    Baymax on his back, Hiro kneeling at his side; the chip waits on the grass.
- *   seated  the chip is in; Hiro waits with a hand on him.
- *   boot    the bay closes; his eyes come on with the chime; Hiro gets up and steps back; Baymax
- *           gets up in stages (sits up, settles, leans over his feet, pushes up, wobbles still);
- *           he looks down at Hiro; fist bump.
- *   end     the two of them at the rail, the city across the water at sunset.
+ *   home    Baymax on his back; the chip waits in the bin, then is in Hiro's hand, then the socket.
+ *   seated  the chip is in.
+ *   boot    the bay closes; his eyes come on with the chime; he gets up in stages (sits up,
+ *           settles, leans over his feet, pushes up, wobbles still); he looks down at Hiro and
+ *           offers his fist, and holds it there until the bump; then he walks to the rail with him.
+ *   end     the credits: behind the two of them at the rail, the city across the water at sunset.
  *
- * Returns the camera target and lens; `cue` fires the sounds the moment they happen.
- */
-const bumpFix = new THREE.Vector3();
-/** Hiro over to the bin and back: walks out, reaches in for the chip, jogs back and kneels again. */
-function fetchWalk(
-  factor: number,
-  hiro: HomeCast['hiro'],
-  pose: HomeCast['hiro']['pose'],
-  look: THREE.Vector3,
-  deltaSeconds: number,
-  cue: { step(level: number): void },
-) {
-  const out = sm(factor, F_RISE, F_RISE + F_OUT),
-    back = sm(factor, F_HOME, F_HOME + F_BACK);
-  const at = HIRO_KNEEL.clone().lerp(BIN_SPOT, out).lerp(HIRO_KNEEL, back);
-  hiro.root.position.copy(at);
-  const going = out > 0 && out < 1,
-    coming = back > 0 && back < 1,
-    rate = going ? 8.5 : 12;
-  pose.kneel =
-    1 - sm(factor, 0, F_RISE) + sm(factor, FETCH_END - F_KNEEL, FETCH_END);
-  pose.stride = going ? 0.55 : coming ? 0.75 : 0;
-  pose.walk = going
-    ? (factor - F_RISE) * rate
-    : coming
-      ? (factor - F_HOME) * rate
-      : 0;
-  if (
-    (going || coming) &&
-    Math.floor(pose.walk / Math.PI) !==
-      Math.floor((pose.walk - deltaSeconds * rate) / Math.PI)
-  )
-    cue.step(0.15);
-  // Facing: round to the bin, at it, then back the way he came, and round to Baymax as he kneels.
-  const toBin = Math.atan2(CARE_BIN_AT.x - at.x, CARE_BIN_AT.z - at.z),
-    toHim = Math.atan2(HIRO_KNEEL.x - BIN_SPOT.x, HIRO_KNEEL.z - BIN_SPOT.z);
-  pose.yaw =
-    factor < F_HOME - 0.1
-      ? turn(-Math.PI / 2, toBin, sm(factor, 0.2, F_RISE + 0.4))
-      : turn(toBin, toHim, sm(factor, F_HOME - 0.1, F_HOME + 0.3));
-  if (factor > FETCH_END - F_KNEEL - 0.3)
-    pose.yaw = turn(
-      toHim,
-      -Math.PI / 2,
-      sm(factor, FETCH_END - F_KNEEL - 0.3, FETCH_END),
-    );
-  // At the bin: a look down into it and a reach in; then the chip held in front of him on the way back.
-  const dip =
-    sm(factor, F_RISE + F_OUT - 0.1, FETCH_PICK) *
-    (1 - sm(factor, FETCH_PICK + 0.15, F_HOME));
-  pose.reach = Math.max(dip * 0.9, factor > FETCH_PICK ? 0.35 : 0);
-  pose.lookUp = -0.1 - 0.35 * dip;
-  pose.look = 0;
-  // The camera keeps him in view.
-  look.lerp(
-    at.setY(0.8),
-    0.45 * sm(factor, 0, 1) * (1 - sm(factor, FETCH_END - 1, FETCH_END)),
-  );
-}
-/**
- * Stage the home sequence by updating its existing actor poses and camera targets.
+ * Returns the third-person lens for the credits shot; `cue` fires the chime.
  */
 export function directHome(
   home: Home,
   cast: HomeCast,
   state: HomeShot,
-  cue: { chime(): void; step(level: number): void; done(): void },
+  cue: { chime(): void },
   camPos: THREE.Vector3,
   look: THREE.Vector3,
 ) {
@@ -575,81 +512,25 @@ export function directHome(
     chipInBay: false,
     eyeGlow: 0,
     careSeated: state.care === 'seated',
+    stride: 0,
   });
   pose.eyes.copy(RED_OFF);
-  hiro.root.position.copy(HIRO_KNEEL);
-  Object.assign(pose2, {
-    yaw: -Math.PI / 2,
-    kneel: 1,
-    look: -0.15,
-    lookUp: -0.25,
-    reach: 0,
-    walk: 0,
-    stride: 0,
-    bump: 0,
-  });
-  camPos.set(6.4, 3.5, 5.2);
-  look.set(-0.7, 0.8, 2.9);
   let fov = 44,
     shot = stage;
 
-  // The healthcare chip: on the grass, in the hand, sliding back, or seated in his dock.
+  // The healthcare chip: in the bin, in Hiro's pinch, following the pointer, or seated in his dock.
   const care = home.care.chip;
   if (state.care !== 'seated') {
-    // In Hiro's hand once he's taken it out of the bin; then following the pointer to the open socket.
-    if (
-      state.care === 'hand' ||
-      (state.care === 'fetch' && state.fetch >= FETCH_PICK)
-    ) {
-      hiro.handWorld(care.position);
+    if (state.care === 'hand' || state.care === 'open') {
+      care.position.copy(state.care === 'hand' ? state.heldPos : state.dragPos);
       care.lookAt(state.camera.position);
-      care.scale.setScalar(1.3);
-    } else if (state.care === 'open') {
-      care.position.copy(state.dragPos);
-      care.lookAt(state.camera.position);
-      care.scale.setScalar(1.3);
+      care.scale.setScalar(1);
     } else {
       care.position.copy(CARE_CHIP_AT);
       care.rotation.copy(CARE_CHIP_TILT);
       care.scale.setScalar(1);
     }
     home.careLight.position.copy(care.position).add(vector(0, 0.25, 0));
-    if (stage === 'home') {
-      // Coming through: the camera settles as Hiro drops to his knee beside him.
-      camPos
-        .set(3, 3.8, 11.5)
-        .lerp(vector(6.4, 3.5, 5.2), sm(easedProgress, 0, 3.5));
-      look
-        .set(-0.5, 0.8, 1.5)
-        .lerp(vector(-0.7, 0.8, 2.9), sm(easedProgress, 0, 3.5));
-      pose2.kneel = sm(easedProgress, 0.8, 2.4);
-      pose2.reach =
-        state.care === 'ground'
-          ? 0.35 * sm(easedProgress, 2, 3)
-          : state.care === 'hand'
-            ? 0.55
-            : 0.7;
-      pose2.lookUp = -0.3;
-      // Until he has it, a wider shot that takes in the bin by the path as well.
-      if (state.care === 'ground' || state.care === 'fetch') {
-        camPos
-          .set(3, 3.8, 11.5)
-          .lerp(vector(7.4, 3.6, 5.4), sm(easedProgress, 0, 3.5));
-        look
-          .set(-0.5, 0.8, 1.5)
-          .lerp(vector(0.9, 0.7, 1), sm(easedProgress, 0, 3.5));
-      }
-      if (state.care === 'fetch') {
-        fetchWalk(state.fetch, hiro, pose2, look, deltaSeconds, cue);
-        // Placed again now he's moved: the chip goes where his hand is, not where he knelt.
-        if (state.fetch >= FETCH_PICK) {
-          hiro.root.updateMatrixWorld(true);
-          hiro.handWorld(care.position);
-          care.lookAt(state.camera.position);
-          home.careLight.position.copy(care.position).add(vector(0, 0.25, 0));
-        }
-      }
-    }
     return { fov, shot };
   }
   if (care.parent !== baymax.dock) {
@@ -659,14 +540,10 @@ export function directHome(
     care.scale.setScalar(1);
   }
   pose.careSeated = true;
-  if (stage === 'seated') {
-    pose2.reach = 0.55;
-    pose2.lookUp = -0.2;
-    return { fov, shot };
-  }
+  if (stage === 'seated') return { fov, shot };
 
-  // boot / end. `be` runs on past the end of boot so the end holds the final pose.
-  const be = stage === 'end' ? 40 : easedProgress;
+  // boot / end. `be` holds on his offered fist until the bump, and runs on into the end.
+  const be = stage === 'end' ? 40 : bootTime(easedProgress, state.bumpT);
   // 0–1.6 the bay closes. 1.9 eyes on, chime.
   pose.open = 4.6 * (1 - sm(be, 0.2, 1.6));
   const eyesOn = sm(be, 1.9, 2.9);
@@ -687,98 +564,223 @@ export function directHome(
     pose.getUp = 0;
     pose.lean = 0;
   }
-  // 10.6–12 he looks down at Hiro, head tilted. 12.4–14.2 the fist bump.
+  // 10.6–12 he looks down at Hiro, head tilted. 12.6–13.8 he holds out his fist, and keeps it there.
+  // After the bump: a little wiggle of the fist (his ba-la-la-la), then it comes down.
   const lookDown = sm(be, 10.6, 12);
   pose.head[0] += 0.22 * lookDown;
   pose.head[1] -= 0.38 * lookDown;
   pose.head[2] = -0.22 * lookDown * (1 - sm(be, 13.5, 14.5) * 0.5);
-  const bump = sm(be, 12.6, 13.8) * (1 - sm(be, 15.2, 16.4) * 0.7);
-  pose.hold = bump * 0.68;
+  const wiggle =
+    state.bumpT > 0.45 && state.bumpT < 1.45
+      ? Math.sin((state.bumpT - 0.45) * 26) * 0.07 * (1.45 - state.bumpT)
+      : 0;
+  pose.hold = sm(be, 12.6, 13.8) * (1 - sm(be, 15.2, 16.4)) * 0.68 + wiggle;
 
-  // Hiro: kneeling with a hand on his shell; at the chime he sits back; 3.0–4.2 he gets up and
-  // 3.6–5.2 walks back out of reach as Baymax starts to move; watches him rise; steps in for
-  // the bump.
-  const getUpH = sm(be, 3, 4.2),
-    back = sm(be, 3.6, 5.2),
-    stepIn = sm(be, 12, 13.2);
-  pose2.kneel = 1 - getUpH;
-  pose2.reach = 0.4 * (1 - sm(be, 1.2, 2.2));
-  const at = HIRO_KNEEL.clone().lerp(HIRO_STAND, back).lerp(HIRO_BUMP, stepIn);
-  // The bump: Hiro's fist is steered onto Baymax's (measured last frame), so the two actually meet.
-  const bumpK = sm(be, 12.9, 13.7) * (1 - sm(be, 15.2, 16.4));
-  if (bumpK > 0.05 || bumpFix.lengthSq() > 0) {
-    const gap = baymax.handWorld().sub(hiro.handWorld());
-    gap.y = 0;
-    bumpFix
-      .addScaledVector(
-        gap,
-        Math.min(1, deltaSeconds * 6) * Math.min(1, bumpK * 2),
-      )
-      .clampLength(0, 0.8);
-    if (be < 12) bumpFix.set(0, 0, 0);
+  // The walk to the rail: he goes with Hiro, a step behind on his left, at Hiro's pace.
+  if (state.rail > 0) {
+    const along = sm(state.rail, 0, 1);
+    baymax.root.position.copy(HOME_BAYMAX).lerp(RAIL_BAYMAX, along);
+    pose.stride = state.railMoving && along < 1 ? 0.5 : 0;
+    pose.gait = along * HOME_BAYMAX.distanceTo(RAIL_BAYMAX) * 3.4;
+    pose.head[0] = THREE.MathUtils.lerp(pose.head[0], 0.04, along);
+    pose.head[1] = THREE.MathUtils.lerp(pose.head[1], -0.28, along);
+    pose.head[2] = THREE.MathUtils.lerp(pose.head[2], -0.1, along);
   }
-  at.add(bumpFix);
-  hiro.root.position.copy(at);
-  // Walking: legs move only while he is actually travelling.
-  const moving = (back > 0 && back < 1) || (stepIn > 0 && stepIn < 1);
-  pose2.stride = moving ? 0.55 : 0;
-  pose2.walk = (be - 3.6) * 6.5;
-  // Facing: toward Baymax's middle (or his fist for the bump).
-  const target =
-    stepIn > 0
-      ? baymax.handWorld()
-      : baymax.root.position.clone().add(vector(0, 0, -0.4));
-  pose2.yaw =
-    Math.atan2(target.x - at.x, target.z - at.z) -
-    (back > 0 && back < 1 ? 0.5 * Math.sin(Math.PI * back) : 0);
-  pose2.lookUp =
-    THREE.MathUtils.lerp(-0.2, 0.15, sm(be, 1.9, 2.6)) +
-    0.7 * sm(be, 5, 8) -
-    0.2 * stepIn;
-  pose2.bump = bumpK * 1.3;
-  if (
-    stage === 'boot' &&
-    Math.floor(pose2.walk / Math.PI) !==
-      Math.floor((pose2.walk - deltaSeconds * 6.5) / Math.PI) &&
-    moving
-  )
-    cue.step(0.15);
 
-  // Camera: in front, low, his face and Hiro beside him as he comes up; then wider for the bump.
-  camPos.set(3.4, 2.1, -7.6).lerp(vector(2.3, 2.7, -9.4), sm(be, 4, 10));
-  look.set(-1.2, 1.4, 2).lerp(vector(-1.3, 2, 2), sm(be, 4, 10));
-  if (be > 11.8) {
-    camPos.lerp(vector(0.9, 2, -6.9), sm(be, 11.8, 13.4));
-    look.lerp(vector(-1.7, 1.8, 1.2), sm(be, 11.8, 13.4));
-  }
-  fov = 40;
   if (stage === 'end') {
-    // Behind the two of them, high and wide: side by side, looking out over the rail at the city.
-    hiro.root.position.set(
-      HOME_BAYMAX.x + 1.75 * BS + 0.3,
-      0,
-      HOME_BAYMAX.z - 0.5 * BS,
-    );
-    Object.assign(pose2, {
-      yaw: Math.PI,
-      stride: 0,
-      bump: 0,
-      lookUp: 0.05,
-      look: 0.25,
-      kneel: 0,
-      reach: 0,
-    });
+    // The credits: behind the two of them, high, side by side at the rail, the city beyond.
+    baymax.root.position.copy(RAIL_BAYMAX);
     pose.hold = 0;
     pose.head[0] = 0.08;
     pose.head[1] = -0.3;
     pose.head[2] = -0.12;
+    hiro.root.position.copy(RAIL_HIRO);
+    Object.assign(pose2, {
+      yaw: Math.PI,
+      kneel: 0,
+      walk: 0,
+      stride: 0,
+      bump: 0,
+      lookUp: 0.05,
+      look: 0.25,
+      reach: 0.25,
+    });
     camPos
-      .set(5.2, 4.6, 15.5)
-      .lerp(vector(4.4, 5.6, 17.5), sm(easedProgress, 0, 20));
+      .set(4.8, 4.2, 6.8)
+      .lerp(vector(4.1, 5, 8.8), sm(easedProgress, 0, 20));
     look.set(-6, 7, -60);
     fov = 46;
     shot = 'end';
   }
-  if (stage === 'boot' && be > 17) cue.done();
   return { fov, shot };
+}
+
+/** What Hiro's right hand does this frame (see FirstPersonHands): a pose, a point to reach for, how far. */
+export type HomeHand = {
+  pose: HandPose | null;
+  track: THREE.Vector3 | null;
+  k: number;
+  reach: number;
+};
+/**
+ * Inputs to Hiro's eyes on the home set. Progress values are the player's own walking (0..1 along
+ * each leg) and the eased stand/kneel; positions are this frame's live world points.
+ */
+export type HomeEyesIn = {
+  stage: string;
+  /** home: seconds since he came clear of the gate; seated/boot: seconds into the stage. */
+  e: number;
+  care: HomeShot['care'];
+  /** Where his feet were when the crossing ended. */
+  from: THREE.Vector3;
+  stand: number;
+  out: number;
+  back: number;
+  kneel: number;
+  rail: number;
+  bumpT: number;
+  /** Seconds at the rail (-1 before). */
+  railT: number;
+  /** Where he stood when he bumped (the rail walk starts there). */
+  bumpFeet: THREE.Vector3 | null;
+  /** 0..1 of a hold on the chip or his chest. */
+  hold: number;
+  chip: THREE.Vector3;
+  dock: THREE.Vector3;
+  head: THREE.Vector3;
+  fist: THREE.Vector3;
+  guide: THREE.Vector3;
+};
+/**
+ * Hiro's eyes after the crossing: where his feet are, his eye height, what he looks at and how much
+ * the player may look around it, and what his right hand does. The camera rig (fp.ts) adds the
+ * walk, the breath and the free look on top.
+ */
+export function directHomeEyes(input: HomeEyesIn) {
+  const feet = new THREE.Vector3(),
+    look = new THREE.Vector3(),
+    hand: HomeHand = { pose: null, track: null, k: 0, reach: 0 };
+  let eye = EYE_KNEEL,
+    lookRate = 3,
+    freeLook = 0.55;
+  const level = (point: THREE.Vector3, height: number) =>
+    point.clone().setY(height);
+
+  if (input.stage === 'home') {
+    const he = input.e;
+    if (input.care === 'ground') {
+      // Out of the gate and down on one knee beside him; then up and over to the bin.
+      feet
+        .copy(input.from)
+        .lerp(FP_KNEEL, sm(he, 0, 1.8))
+        .lerp(BIN_EYE_SPOT, input.out)
+        // Leaning in over the rim as he reaches.
+        .lerp(BIN_SPOT, 0.35 * input.hold);
+      eye = THREE.MathUtils.lerp(
+        THREE.MathUtils.lerp(1.46, EYE_KNEEL, sm(he, 1.2, 2.4)),
+        EYE_STAND,
+        input.stand,
+      ) -
+        0.18 * input.hold;
+      // His face first; at Hiro's line, the green light over by the bin; walking, the bin itself.
+      look
+        .copy(input.head)
+        .lerp(level(input.chip, 0.7), sm(he, 2.6, 3.6))
+        .lerp(
+          input.chip.clone().add(vector(0, 0.12 * (1 - input.hold), 0)),
+          sm(input.out, 0.7, 1),
+        );
+      if (input.hold > 0 && input.out > 0.98) {
+        hand.pose = 'pinch';
+        hand.track = input.chip;
+        hand.k = input.hold;
+        hand.reach = input.hold;
+        freeLook = 0.2;
+      }
+    } else {
+      // Chip in hand: back to him, down on one knee, a hand on his chest, then the socket.
+      feet.copy(BIN_EYE_SPOT).lerp(FP_KNEEL, input.back);
+      eye = THREE.MathUtils.lerp(EYE_STAND, EYE_KNEEL, input.kneel);
+      look.copy(input.dock).lerp(input.head, 0.25 * (1 - input.kneel));
+      hand.pose = 'pinch';
+      hand.reach = 0.85;
+      if (input.care === 'hand' && input.hold > 0 && input.kneel > 0.9) {
+        hand.pose = 'press';
+        hand.track = input.dock;
+        hand.k = input.hold;
+        hand.reach = 0.55 + 0.45 * input.hold;
+      }
+      if (input.care === 'open') {
+        hand.track = input.guide;
+        hand.k = 1;
+        hand.reach = 1;
+        look.copy(input.dock);
+        freeLook = 0.15;
+      }
+    }
+    return { feet, eye, look, lookRate, freeLook, hand };
+  }
+
+  if (input.stage === 'seated') {
+    feet.copy(FP_KNEEL);
+    look.copy(input.dock).lerp(input.head, 0.4);
+    hand.pose = 'press';
+    hand.track = input.dock;
+    hand.k = 0.8;
+    hand.reach = 0.8;
+    return { feet, eye, look, lookRate, freeLook, hand };
+  }
+
+  // boot: a hand on his shell as the bay closes; up and back as he starts to move; watching him
+  // rise; stepping in to his fist; the bump; then the walk to the rail beside him.
+  const be = bootTime(input.e, input.bumpT);
+  const resting = 1 - sm(be, 1.2, 2.2);
+  if (resting > 0) {
+    hand.pose = 'press';
+    hand.track = input.dock;
+    hand.k = resting * 0.8;
+    hand.reach = resting * 0.8;
+  }
+  eye = THREE.MathUtils.lerp(EYE_KNEEL, EYE_STAND, sm(be, 3, 4.2));
+  feet.copy(FP_KNEEL).lerp(FP_STAND, sm(be, 3.6, 5.2));
+  // In for the bump: in front of him and to his right, a long arm's length off his fist, so his
+  // arm, his fist and his face are all in view; Hiro leans in to meet it.
+  const bumpSpot = level(input.fist, 0).addScaledVector(BUMP_FROM, 1.2);
+  const standing = input.bumpFeet ?? bumpSpot;
+  feet.lerp(standing, sm(be, 12, 13.2));
+  if (input.bumpT >= 0)
+    feet.lerp(
+      level(input.fist, 0),
+      0.42 * sm(input.bumpT, 0, 0.4) * (1 - sm(input.bumpT, 0.6, 1.4)),
+    );
+  look.copy(input.dock).lerp(input.head, sm(be, 1.6, 2.6));
+  look.lerp(input.fist.clone().lerp(input.head, 0.3), sm(be, 12.4, 13.4));
+  lookRate = 2.6;
+  if (input.bumpT >= 0) {
+    const t = input.bumpT;
+    hand.pose = t < 0.55 ? 'fist' : t < 1.4 ? 'open' : null;
+    hand.track = input.fist;
+    hand.k = sm(t, 0, 0.42) * (1 - sm(t, 0.6, 1.3));
+    hand.reach = hand.k;
+    look.lerp(input.head, sm(t, 0.8, 1.8));
+  }
+  if (input.rail > 0) {
+    // Walking to the rail beside him: eyes on the water and the city, a glance at him going.
+    feet.copy(standing).lerp(RAIL_HIRO, input.rail);
+    look
+      .copy(input.head)
+      .lerp(vector(RAIL_HIRO.x - 3, 3, -60), sm(input.rail, 0, 0.35));
+    eye = EYE_STAND;
+    lookRate = 2.2;
+    freeLook = 0.7;
+  }
+  if (input.railT >= 0) {
+    look.set(-6, 7, -60).lerp(input.head, 0.18 * sm(input.railT, 1.2, 2.4));
+    hand.pose = 'grip';
+    hand.track = RAIL_TOP;
+    hand.k = sm(input.railT, 0.2, 1);
+    hand.reach = hand.k;
+    freeLook = 0.85;
+  }
+  return { feet, eye, look, lookRate, freeLook, hand };
 }

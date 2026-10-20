@@ -33,9 +33,14 @@ import {
   HOME_GATE,
   HOME_BAYMAX,
   CARE_CHIP_AT,
-  FETCH_PICK,
-  FETCH_END,
+  BIN_SPOT,
+  HIRO_KNEEL,
+  RAIL_HIRO,
+  BUMP_WAIT,
+  bootTime,
+  directHomeEyes,
   type Home,
+  type HomeHand,
 } from './home';
 import {
   useP6,
@@ -946,6 +951,22 @@ export function World({
 
   // Tracker R-07: the healthcare chip goes in the way the combat chip did in Phase 1. Hold on the chip
   // to take it, hold on his chest to open the bay, then guide the chip into the socket (or hold E).
+  // The home beat in first person: the player's own walking (0..1 along each leg), Hiro getting up
+  // off his knee and back down, the walk to the rail, and the moment of the fist bump.
+  const homeWalk = useRef({
+    from: null as THREE.Vector3 | null,
+    forward: false,
+    impulse: 0,
+    speed: 0,
+    stand: 0,
+    out: 0,
+    back: 0,
+    kneel: 0,
+    rail: 0,
+    railAt: -1,
+    bumpFeet: null as THREE.Vector3 | null,
+    hand: { pose: null, track: null, k: 0, reach: 0 } as HomeHand,
+  });
   const care = useRef({
     target: null as 'chip' | 'chest' | null,
     at: 0,
@@ -975,16 +996,27 @@ export function World({
     };
     const live = () => {
       const state = useP6.getState();
-      return state.stage === 'home' && now() - state.since > EMERGE + 2.4
+      return (state.stage === 'home' && now() - state.since > EMERGE + 2.4) ||
+        state.stage === 'boot'
         ? state
         : null;
+    };
+    const walk = homeWalk.current;
+    const bump = () => {
+      const state = live();
+      if (state?.homeStep !== 'bump' || state.bumpAt) return false;
+      audio.unlock();
+      useP6.setState({ bumpAt: now() });
+      return true;
     };
     const down = (event: PointerEvent) => {
       const state = live();
       if (!state || event.button !== 0 || !baymax) return;
+      if (bump()) return;
       const screenPoint = at(event);
       if (
         state.care === 'ground' &&
+        state.homeStep === 'atBin' &&
         screen(home.care.chip.getWorldPosition(new THREE.Vector3())).distanceTo(
           screenPoint,
         ) < 90
@@ -994,6 +1026,7 @@ export function World({
         vector.at = now();
       } else if (
         state.care === 'hand' &&
+        state.homeStep === 'atBaymax' &&
         screen(baymax.dockWorld()).distanceTo(screenPoint) < 120
       ) {
         audio.unlock();
@@ -1007,27 +1040,47 @@ export function World({
     const move = (event: PointerEvent) => {
       vector.aim = at(event);
     };
+    const forwardKeys = ['KeyW', 'ArrowUp', 'Space'];
     const kd = (event: KeyboardEvent) => {
       if (event.code === 'KeyE' && live() && !vector.key) {
+        if (bump()) return;
         audio.unlock();
         vector.key = true;
         vector.keyAt = now();
       }
+      if (forwardKeys.includes(event.code) && !event.ctrlKey && live()) {
+        event.preventDefault();
+        audio.unlock();
+        walk.forward = true;
+      }
     };
     const ku = (event: KeyboardEvent) => {
       if (event.code === 'KeyE') vector.key = false;
+      if (forwardKeys.includes(event.code)) walk.forward = false;
+    };
+    const wheel = (event: WheelEvent) => {
+      if (!live()) return;
+      event.preventDefault();
+      if (event.deltaY > 0) walk.impulse = Math.min(1.4, walk.impulse + 0.45);
+    };
+    const blur = () => {
+      walk.forward = false;
     };
     el.addEventListener('pointerdown', down);
     el.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
     window.addEventListener('keydown', kd);
     window.addEventListener('keyup', ku);
+    window.addEventListener('wheel', wheel, { passive: false });
+    window.addEventListener('blur', blur);
     return () => {
       el.removeEventListener('pointerdown', down);
       el.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('keydown', kd);
       window.removeEventListener('keyup', ku);
+      window.removeEventListener('wheel', wheel);
+      window.removeEventListener('blur', blur);
     };
   }, [gl, cam, baymax, home, audio]);
 
@@ -2386,19 +2439,37 @@ export function World({
         warp = 1 - span(easedProgress, 0.1, 1.1);
         crossingFade = 1 - span(easedProgress, 0.2, 0.9);
         if (easedProgress > 0.1 && easedProgress < 1.3) pose.chipGlow = 0;
+        const fresh = homeWalk.current;
+        Object.assign(fresh, {
+          from: null,
+          stand: 0,
+          out: 0,
+          back: 0,
+          kneel: 0,
+          rail: 0,
+          railAt: -1,
+          bumpFeet: null,
+          speed: 0,
+          impulse: 0,
+        });
       } else {
-        first = false;
-        hiro.root.visible = true;
+        // Through Hiro's eyes from here to the credits (only the credits are a third-person shot).
+        first = state2.stage !== 'end';
+        hiro.root.visible = !first;
+        const hw = homeWalk.current;
+        if (!hw.from) hw.from = fp.feet.clone();
         // The healthcare chip (tracker R-07). Holds: on the chip, then on his chest (E works for both).
         const vector8 = care.current,
           HOLD = 0.8;
         const holding =
           vector8.target ??
-          (vector8.key && (state2.care === 'ground' || state2.care === 'hand')
-            ? state2.care === 'ground'
-              ? 'chip'
-              : 'chest'
-            : null);
+          (vector8.key && state2.care === 'ground' && state2.homeStep === 'atBin'
+            ? 'chip'
+            : vector8.key &&
+                state2.care === 'hand' &&
+                state2.homeStep === 'atBaymax'
+              ? 'chest'
+              : null);
         vector8.progress =
           holding && state2.stage === 'home'
             ? clamp01(
@@ -2409,21 +2480,69 @@ export function World({
           vector8.target = null;
           vector8.key = false;
           vector8.progress = 0;
-          // He gets up and goes over to the bin for it (home.ts directs the walk).
-          if (holding === 'chip' && state2.care === 'ground')
-            useP6.setState({ care: 'fetch', fetchAt: now() });
-          else if (holding === 'chest' && state2.care === 'hand') {
+          // His hand comes out of the bin with it.
+          if (holding === 'chip' && state2.care === 'ground') {
+            useP6.setState({ care: 'hand', fetchAt: now() });
+            audio.snap();
+          } else if (holding === 'chest' && state2.care === 'hand') {
             useP6.setState({ care: 'open' });
             audio.servo();
             hiro.handWorld(vector8.guide);
           }
         }
-        if (state2.care === 'fetch') {
-          const factor2 = now() - state2.fetchAt;
-          if (factor2 >= FETCH_PICK && factor2 - deltaSeconds < FETCH_PICK)
-            audio.snap();
-          if (factor2 >= FETCH_END) useP6.setState({ care: 'hand' });
+        // Walking is the player's: hold W / Space / up, or scroll a step at a time.
+        hw.impulse = Math.max(0, hw.impulse - deltaSeconds * 2.2);
+        hw.speed = THREE.MathUtils.damp(
+          hw.speed,
+          (hw.forward ? 1.6 : 0) + hw.impulse * 2,
+          4,
+          deltaSeconds,
+        );
+        const stride = hw.speed * deltaSeconds;
+        const bumpT = state2.bumpAt ? now() - state2.bumpAt : -1;
+        if (state2.stage === 'home' && state2.care === 'ground' && he > 2.4) {
+          if (hw.speed > 0.05 || hw.stand > 0)
+            hw.stand = Math.min(1, hw.stand + deltaSeconds * 1.8);
+          if (hw.stand > 0.6)
+            hw.out = Math.min(1, hw.out + stride / HIRO_KNEEL.distanceTo(BIN_SPOT));
+        } else if (state2.stage === 'home' && state2.care !== 'ground') {
+          hw.back = Math.min(1, hw.back + stride / HIRO_KNEEL.distanceTo(BIN_SPOT));
+          if (hw.back >= 1) hw.kneel = Math.min(1, hw.kneel + deltaSeconds * 1.6);
+        } else if (state2.stage === 'boot' && bumpT > 2.4) {
+          if (!hw.bumpFeet) hw.bumpFeet = fp.feet.clone().setY(0);
+          hw.rail = Math.min(1, hw.rail + stride / hw.bumpFeet.distanceTo(RAIL_HIRO));
+          if (hw.rail >= 1 && hw.railAt < 0) hw.railAt = now();
         }
+        if (state2.stage === 'boot' && bumpT >= 0 && !hw.bumpFeet)
+          hw.bumpFeet = fp.feet.clone().setY(0);
+        if (state2.stage === 'boot' && bumpT > 0.42 && bumpT - deltaSeconds <= 0.42)
+          audio.bump();
+        const railT = hw.railAt < 0 ? -1 : now() - hw.railAt;
+        if (state2.stage === 'boot' && railT > 3.6) go('end');
+        // The step the prompts read.
+        const step =
+          state2.stage === 'home'
+            ? state2.care === 'ground'
+              ? he <= 2.4
+                ? 'arrive'
+                : hw.out < 1
+                  ? 'toBin'
+                  : 'atBin'
+              : hw.kneel < 0.9
+                ? 'back'
+                : 'atBaymax'
+            : state2.stage === 'boot'
+              ? bumpT < 0
+                ? bootTime(easedProgress, -1) >= BUMP_WAIT
+                  ? 'bump'
+                  : 'boot'
+                : bumpT <= 2.4
+                  ? 'bumped'
+                  : railT < 0
+                    ? 'rail'
+                    : 'atRail'
+              : state2.homeStep;
+        if (step !== state2.homeStep) useP6.setState({ homeStep: step });
         // The bay opens as it did in Phase 1, and stays open until the boot closes it.
         vector8.open = THREE.MathUtils.clamp(
           vector8.open +
@@ -2482,21 +2601,53 @@ export function World({
             t: elapsedSeconds,
             dt: deltaSeconds,
             care: state2.care,
-            fetch: state2.care === 'fetch' ? now() - state2.fetchAt : -1,
             dragPos: drag.current.pos,
+            heldPos: hands.rightSocket.getWorldPosition(new THREE.Vector3()),
+            bumpT,
+            rail: hw.rail,
+            railMoving: hw.speed > 0.1,
             returning: drag.current.returning,
             camera,
             bayOpen: care.current.open,
           },
-          {
-            chime: () => audio.chime(),
-            step: (level) => audio.step(level),
-            done: () => go('end'),
-          },
+          { chime: () => audio.chime() },
           camPos,
           look,
         );
         fov = homeShot.fov;
+        if (first) {
+          baymax.root.updateMatrixWorld(true);
+          const eyes = directHomeEyes({
+            stage: state2.stage,
+            e: state2.stage === 'home' ? Math.max(0, he) : easedProgress,
+            care: state2.care,
+            from: hw.from,
+            stand: hw.stand,
+            out: hw.out,
+            back: hw.back,
+            kneel: hw.kneel,
+            rail: hw.rail,
+            bumpT,
+            railT,
+            bumpFeet: hw.bumpFeet,
+            hold: vector8.progress,
+            chip: home.care.chip.getWorldPosition(new THREE.Vector3()),
+            dock: baymax.dockWorld(new THREE.Vector3()),
+            head: baymax.headWorld(new THREE.Vector3()),
+            fist: baymax.handWorld(new THREE.Vector3()),
+            guide: vector8.guide,
+          });
+          feet.copy(eyes.feet);
+          feet.y = 0;
+          eye = eyes.eye;
+          look.copy(eyes.look);
+          lookRate = eyes.lookRate;
+          freeLook = eyes.freeLook;
+          hw.hand = eyes.hand;
+          reach = eyes.hand.reach;
+          raise = 0;
+          fov = 58;
+        }
       }
     }
 
@@ -2693,6 +2844,10 @@ export function World({
         hands.pose('right', draggingCard || carryingCard ? 'pinch' : null);
         hands.track(draggingCard ? drag.current.pos : null);
         if (carryingCard) reach = 1;
+      } else if (set === 'home' && grip === 0) {
+        const hand = homeWalk.current.hand;
+        hands.pose('right', hand.pose);
+        hands.track(hand.track, hand.k);
       } else if (grip === 0) {
         hands.pose('right', null);
         hands.track(null);
@@ -2887,13 +3042,15 @@ export function World({
             : null,
       (pulling && state2.chip === 'bay' && easedProgress > CLUE_END) ||
         (slotting && state2.cart === 'hand') ||
-        (homing && state2.care === 'ground'),
+        (homing && state2.care === 'ground' && state2.homeStep === 'atBin'),
     );
     hint(
       hints.drop.current,
       slotting ? st?.readerWorld() : homing ? baymax.dockWorld() : null,
       (slotting && state2.cart === 'held') ||
-        (homing && (state2.care === 'hand' || state2.care === 'open')),
+        (homing &&
+          ((state2.care === 'hand' && state2.homeStep === 'atBaymax') ||
+            state2.care === 'open')),
     );
     // The hold steps show their progress in the ring and say what to do (as in Phase 1).
     for (const el of [hints.grab.current, hints.drop.current])
@@ -2903,10 +3060,12 @@ export function World({
       );
     if (hints.grab.current)
       hints.grab.current.dataset.label =
-        homing && state2.care === 'ground' ? 'CLICK + HOLD' : '';
+        homing && state2.care === 'ground' && state2.homeStep === 'atBin'
+          ? 'CLICK + HOLD'
+          : '';
     if (hints.drop.current)
       hints.drop.current.dataset.label = homing
-        ? state2.care === 'hand'
+        ? state2.care === 'hand' && state2.homeStep === 'atBaymax'
           ? 'CLICK + HOLD'
           : state2.care === 'open'
             ? 'GUIDE IT IN · OR HOLD E'

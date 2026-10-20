@@ -302,6 +302,14 @@ export class PhaseSixAudio {
     this.tone('sine', 520, 760, 0.25, 0.12);
     this.burst(3000, 2, 0.03, 0.3, 'highpass');
   }
+  /** Fist bump: a soft knock of knuckles on vinyl, then Baymax's little falling ba-la-la-la. */
+  bump() {
+    this.tone('sine', 140, 70, 0.16, 0.22);
+    this.burst(700, 1.2, 0.07, 0.22, 'lowpass');
+    [880, 784, 698, 587].forEach((hz, index) =>
+      this.tone('triangle', hz, hz * 0.97, 0.11, 0.05, 0.28 + index * 0.12),
+    );
+  }
   contact() {
     this.burst(5200, 3, 0.08, 0.25, 'highpass');
     this.tone('sine', 660, 990, 0.18, 0.06);

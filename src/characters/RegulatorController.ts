@@ -629,6 +629,7 @@ export type HandSide = 'left' | 'right';
  * - grip: a closed wrap round something about 3 cm thick (the cartridge, a handle, a rail).
  * - press: flat palm, fingers together; pushing on a plate, a hatch, Baymax's chest.
  * - hook: fingers bent hard at the middle joints; hauling on an edge or a strap.
+ * - fist: closed tight, thumb across the fingers; a fist bump.
  */
 export type HandPose =
   | 'hold'
@@ -638,7 +639,8 @@ export type HandPose =
   | 'pinch'
   | 'grip'
   | 'press'
-  | 'hook';
+  | 'hook'
+  | 'fist';
 
 /**
  * Data contract used by character geometry and posing.
@@ -778,6 +780,17 @@ const SHAPES: Record<Exclude<HandPose, 'hold'>, Shape> = {
     spread: 0.15,
     thumb: [-0.3, -0.3, 0.12, 0.08],
     at: [0, -0.02, -0.07],
+  },
+  fist: {
+    f: [
+      [1.45, 1.6, 1.05],
+      [1.5, 1.65, 1.05],
+      [1.5, 1.65, 1.0],
+      [1.45, 1.6, 0.95],
+    ],
+    spread: -0.35,
+    thumb: [0.95, -1.15, 0.95, 0.7],
+    at: [-0.01, 0, -0.1],
   },
   hook: {
     f: [
