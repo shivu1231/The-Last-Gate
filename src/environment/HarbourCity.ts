@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { SceneKit, seeded, type ScenePlacement } from '../phase2/SceneKit';
 import { batchStaticGeometry } from '../phase4/environmentDetail';
 import { buildSanFransokyo } from './SanFransokyoSkyline';
+import { worldMapped, worldSurfaces } from '../presentation/WorldSurfaces';
 
 /** A complete inhabited waterfront, built once and batched by surface material. */
 export function createSanFransokyo() {
@@ -27,6 +28,12 @@ export function createSanFransokyo() {
     sceneKit.standard(colorValue, 0.82, 0.15),
   );
   const ownTextures: THREE.Texture[] = [];
+  // Surface detail in world space: stucco on the walls, slabs on the quay, tile on the roofs.
+  const surface = worldSurfaces(sceneKit);
+  for (const wall of walls) worldMapped(wall, surface.stucco, 4);
+  worldMapped(cream, surface.stucco, 3);
+  worldMapped(stone, surface.slabs, 3);
+  worldMapped(tile, surface.tile, 1.2);
 
   // Broad, quiet sky; the moon and hills establish scale rather than a dense star field.
   const canvas = document.createElement('canvas');

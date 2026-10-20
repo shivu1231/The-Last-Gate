@@ -3,6 +3,7 @@ import { BAYMAX_SCALE as BS } from './baymax';
 import { SceneKit, seeded, type ScenePlacement } from '../phase2/SceneKit';
 import { buildSanFransokyo } from '../environment/SanFransokyoSkyline';
 import { dressHome } from './homeDressing';
+import { worldSurfaces, worldMapped } from '../presentation/WorldSurfaces';
 import { chipOutline } from '../characters/RedChip.js';
 import type { BaymaxPose as BaymaxPose } from './baymax';
 import type { HiroPose } from '../characters/HiroModel';
@@ -118,6 +119,9 @@ export function createHome() {
   const warmStone = sceneKit.standard('#b8a690', 0.85, 0.02),
     lawn = sceneKit.standard('#4f6a4c', 0.95, 0),
     path = sceneKit.standard('#9b8f84', 0.9, 0.02);
+  const surface = worldSurfaces(sceneKit);
+  worldMapped(warmStone, surface.stone, 2);
+  const benchWood = worldMapped(sceneKit.standard('#7a5a44', 0.8, 0), surface.wood, 1);
   const rail = sceneKit.standard('#2f3640', 0.5, 0.6),
     vermilion = sceneKit.standard('#a8443a', 0.6, 0.2),
     city = sceneKit.standard('#5d6175', 0.9, 0.05);
@@ -174,11 +178,11 @@ export function createHome() {
   for (const xPosition3 of [-8, 10]) {
     sceneKit.box(
       { p: [xPosition3, 0.45, -3.4], s: [1.8, 0.08, 0.5] },
-      sceneKit.standard('#7a5a44', 0.8, 0),
+      benchWood,
     );
     sceneKit.box(
       { p: [xPosition3, 0.75, -3.62], s: [1.8, 0.45, 0.06] },
-      sceneKit.standard('#7a5a44', 0.8, 0),
+      benchWood,
     );
     for (const deltaX of [-0.75, 0.75])
       sceneKit.box(

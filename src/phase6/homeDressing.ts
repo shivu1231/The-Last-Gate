@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { SceneKit, seeded } from '../phase2/SceneKit';
 import { concreteTexture } from '../presentation/Surfaces';
+import { worldSurfaces, worldMapped } from '../presentation/WorldSurfaces';
 
 /**
  * Background dressing for the home waterfront: the street behind the lawn with its row of San
@@ -200,7 +201,29 @@ export function dressHome(
     distant = kit.standard('#ffffff', 0.95, 0);
   const asphaltMap = asphaltTexture();
   own(kit, asphaltMap);
-  asphalt.map = asphaltMap;
+  // Surfaces in world space, so detail keeps its real size on every scaled box (presentation/WorldSurfaces.ts).
+  const surface = worldSurfaces(kit);
+  worldMapped(asphalt, asphaltMap, 8);
+  worldMapped(stone, surface.stone, 2);
+  worldMapped(roofTile, surface.tile, 1);
+  worldMapped(leaves, surface.leaves, 2);
+  worldMapped(bark, surface.bark, 1);
+  const siding = worldMapped(kit.standard('#ffffff', 0.84, 0.02), surface.siding, 1),
+    stucco = worldMapped(kit.standard('#ffffff', 0.9, 0.02), surface.stucco, 3),
+    slab = worldMapped(kit.standard('#ffffff', 0.92, 0.02), surface.slabs, 3);
+  // A ridge roof: a triangular prism along x, eaves at y 0, ridge at y 1.
+  const gable = kit.ownGeometry(
+    new THREE.BufferGeometry().setFromPoints(
+      [
+        [-0.5, 0, -0.5], [0.5, 0, -0.5], [0.5, 1, 0], [-0.5, 0, -0.5], [0.5, 1, 0], [-0.5, 1, 0],
+        [0.5, 0, 0.5], [-0.5, 0, 0.5], [-0.5, 1, 0], [0.5, 0, 0.5], [-0.5, 1, 0], [0.5, 1, 0],
+        [-0.5, 0, 0.5], [-0.5, 0, -0.5], [-0.5, 1, 0],
+        [0.5, 0, -0.5], [0.5, 0, 0.5], [0.5, 1, 0],
+      ].map(([x, y, z]) => new THREE.Vector3(x, y, z)),
+    ),
+  );
+  gable.computeVertexNormals();
+  gable.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(18 * 2), 2));
 
   const b = new Batch();
 
@@ -209,7 +232,7 @@ export function dressHome(
   // walk path changes), the sidewalk, the street with its tram rails, the far sidewalk.
   b.add(box, stone, [0, 0.035, -2.42], [60, 0.05, 0.22], [0, 0, 0], color('#b9b2a6'));
   b.add(box, stone, [0, 0.05, 12.1], [180, 0.1, 0.3], [0, 0, 0], color('#b9b2a6'));
-  b.add(box, painted, [0, 0.03, 13.6], [180, 0.06, 2.7], [0, 0, 0], color('#a49d94'));
+  b.add(box, slab, [0, 0.03, 13.6], [180, 0.06, 2.7], [0, 0, 0], color('#a49d94'));
   b.add(box, stone, [0, 0.07, 15.05], [180, 0.14, 0.24], [0, 0, 0], color('#bab4a8'));
   b.add(box, asphalt, [0, -0.02, 19], [180, 0.06, 7.8], [0, 0, 0]);
   for (const z of [17.6, 18.9, 20.1, 21.4])
@@ -217,12 +240,12 @@ export function dressHome(
   for (let x = -86; x <= 86; x += 6)
     b.add(box, trim, [x, 0.015, 19.75], [2.6, 0.02, 0.1], [0, 0, 0], color('#d8d2c6'));
   b.add(box, stone, [0, 0.07, 22.95], [180, 0.14, 0.24], [0, 0, 0], color('#bab4a8'));
-  b.add(box, painted, [0, 0.03, 24.6], [180, 0.06, 3.1], [0, 0, 0], color('#a49d94'));
+  b.add(box, slab, [0, 0.03, 24.6], [180, 0.06, 3.1], [0, 0, 0], color('#a49d94'));
   // The ground block under the street and houses (the set's own stone ends at z 19).
   b.add(box, stone, [0, -0.62, 45], [180, 1.2, 56], [0, 0, 0], color('#6b6862'));
   // The waterfront continues west and east past the lawn: paving, sea wall, rail.
   for (const side of [-1, 1]) {
-    b.add(box, painted, [side * 60, -0.01, 3], [60, 0.04, 18], [0, 0, 0], color('#a8a197'));
+    b.add(box, slab, [side * 60, -0.01, 3], [60, 0.04, 18], [0, 0, 0], color('#a8a197'));
     b.add(box, stone, [side * 60, -0.6, 3], [60, 1.2, 18.6], [0, 0, 0], color('#b8a690', 0.02));
     b.add(box, stone, [side * 60, -0.7, -6.3], [60, 1.4, 0.6], [0, 0, 0], color('#b8a690', 0.02));
     b.add(box, metal, [side * 60, 1.1, -6.1], [60, 0.06, 0.08]);
@@ -341,7 +364,7 @@ export function dressHome(
       face = frontZ + setback,
       tint = color(pick(FACADES), 0.03);
     x += width + (random() < 0.12 ? between(1.5, 3) : 0);
-    b.add(box, painted, [cx, height / 2, face + 6], [width, height, 12], [0, 0, 0], tint);
+    b.add(box, siding, [cx, height / 2, face + 6], [width, height, 12], [0, 0, 0], tint);
     // Cornice and floor bands.
     b.add(box, trim, [cx, height - 0.2, face - 0.18], [width + 0.2, 0.42, 0.42]);
     for (let s = 1; s < storeys; s++)
@@ -349,7 +372,7 @@ export function dressHome(
     // A bay window up the upper floors on one side, and plain windows beside it.
     const bayX = cx + (random() < 0.5 ? -1 : 1) * (width / 2 - 1.7);
     const bayH = (storeys - 1) * storeyH - 0.4;
-    b.add(box, painted, [bayX, storeyH + bayH / 2 + 0.2, face - 0.45], [2.6, bayH, 0.9], [0, 0, 0], tint);
+    b.add(box, siding, [bayX, storeyH + bayH / 2 + 0.2, face - 0.45], [2.6, bayH, 0.9], [0, 0, 0], tint);
     for (let s = 1; s < storeys; s++) {
       const y = s * storeyH + 1.55;
       for (const dx of [-0.85, 0, 0.85]) {
@@ -378,11 +401,35 @@ export function dressHome(
       for (let step = 0; step < 3; step++)
         b.add(box, stone, [doorX, 0.12 + step * 0.22, face - 1.15 + step * 0.32], [1.4, 0.24, 0.34], [0, 0, 0], color('#b4ada1'));
     }
+    // About a third carry a ridge roof over the cornice; the rest stay flat-roofed behind it.
+    if (storeys === 3 && random() < 0.4)
+      b.add(gable, roofTile, [cx, height, face + 6], [width + 0.3, between(2.2, 3), 12.4]);
     // Rooftop: a vent, a small plant box or a water tank on the taller ones.
     if (random() < 0.5)
       b.add(box, metal, [cx + between(-1.5, 1.5), height + 0.35, face + between(3, 8)], [1.2, 0.7, 0.9]);
     if (storeys === 4 && random() < 0.5)
       b.add(cyl, painted, [cx + between(-1, 1), height + 1.2, face + 7], [1.6, 2.2, 1.6], [0, 0, 0], color('#7d6b5a'));
+  }
+
+  // ---- Apartment blocks behind the houses ----------------------------------------------------
+  // A taller layer between the street and the hills, so the skyline steps up instead of jumping
+  // from three storeys straight to hills: stucco blocks, banded floors, a few lit windows.
+  for (let ax = -88; ax < 70; ) {
+    const width = between(14, 22),
+      height = between(15, 25),
+      cx = ax + width / 2,
+      face = between(40, 46),
+      tint = color(pick(['#b9b0a2', '#a7aaa4', '#c2b6a6', '#9fa6ab']), 0.03);
+    ax += width + between(2, 6);
+    b.add(box, stucco, [cx, height / 2, face + 7], [width, height, 14], [0, 0, 0], tint);
+    b.add(box, trim, [cx, height + 0.25, face - 0.1], [width + 0.3, 0.5, 0.4]);
+    for (let y = 3.4; y < height - 1.5; y += 3.1) {
+      b.add(box, trim, [cx, y - 0.4, face - 0.05], [width, 0.12, 0.12]);
+      for (let wx = -width / 2 + 1.4; wx < width / 2 - 1; wx += 2.2)
+        b.add(pane, random() < 0.14 ? lit : glass, [cx + wx, y + 1, face - 0.01], [1.2, 1.5, 1], [0, Math.PI, 0]);
+    }
+    if (random() < 0.5)
+      b.add(cyl, painted, [cx + between(-3, 3), height + 1.3, face + 8], [2, 2.6, 2], [0, 0, 0], color('#7d6b5a'));
   }
 
   // ---- The waterfront block to the west -----------------------------------------------------
@@ -398,7 +445,7 @@ export function dressHome(
   for (const [cz, length, height, depth, hex] of westBlocks) {
     const tint = color(hex, 0.02),
       cx = westFace - depth / 2;
-    b.add(box, painted, [cx, height / 2, cz], [depth, height, length], [0, 0, 0], tint);
+    b.add(box, stucco, [cx, height / 2, cz], [depth, height, length], [0, 0, 0], tint);
     b.add(box, trim, [westFace + 0.18, height - 0.25, cz], [0.42, 0.5, length + 0.2]);
     const floors = Math.floor((height - 1) / 3.4);
     for (let f = 1; f < floors; f++) {
