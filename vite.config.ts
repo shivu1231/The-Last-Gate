@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite';
 
 // Production hardening: no debug logging or debugger statements ship, three.js is split
-// into its own long-cached chunk, and dev-only modules are tree-shaken by import.meta.env.
+// into its own long-cached chunk, Firebase (analytics, loaded after start) into another, and
+// dev-only modules are tree-shaken by import.meta.env.
 export default defineConfig(({ command }) => ({
   esbuild:
     command === 'build'
@@ -24,7 +25,9 @@ export default defineConfig(({ command }) => ({
         manualChunks: (id) =>
           id.includes('node_modules/three/')
             ? 'three'
-            : id.includes('node_modules/')
+            : /node_modules\/(@firebase|firebase)\//.test(id)
+              ? 'firebase'
+              : id.includes('node_modules/')
               ? 'vendor'
               : undefined,
       },

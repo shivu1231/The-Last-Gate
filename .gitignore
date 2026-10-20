@@ -4,3 +4,4 @@ node_modules/
 
 # Test screenshots and results (scripts/recovery-*.mjs)
 artifacts/
+.firebase/

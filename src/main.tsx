@@ -200,3 +200,9 @@ void Promise.race([
 ])
   .catch(() => {})
   .then(() => createRoot(document.getElementById('root')!).render(<App />));
+
+// Analytics only on the deployed build, and only after the app is up.
+if (import.meta.env.PROD)
+  void import('./analytics')
+    .then(({ startAnalytics }) => startAnalytics())
+    .catch(() => {});
