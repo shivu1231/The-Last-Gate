@@ -1,4 +1,4 @@
-# The Last Gate — website context
+# The Last Gate — Developer Info
 
 ## What the website is
 
