@@ -2,7 +2,9 @@
 
 Collected from the current website source.
 
-Lore canon the lines follow: Baymax flew into the portal dimension on his combat chip before the game starts; the chip logs every flight, so it holds that one crossing. The crash knocked it loose onto the street, and his healthcare chip went back out through the boundary, ending up in San Fransokyo (Phase 5 traces it). Hiro wakes on the far side, escapes alone, turns back for Baymax, re-seats the combat chip to get him moving, and at the end the old gate's reader rebuilds the way home from the chip's logged crossing. Exact subtitle wording; repeated lines listed once. Scene headings group dialogue, with conditional lines included. Excludes interface instructions, debug messages and other characters. Phase 5 fitting/telemetry has interface copy rather than Hiro-labelled dialogue.
+Lore canon the lines follow: Baymax flew into the portal dimension on his combat chip before the game starts; the chip logs every flight, so it holds that one crossing. The crash knocked it loose onto the street, and his healthcare chip went back out through the boundary, ending up in San Fransokyo (Phase 5 traces it). Hiro wakes on the far side, escapes alone, turns back for Baymax, re-seats the combat chip to get him moving, and at the end the old gate's reader rebuilds the way home from the chip's logged crossing.
+
+Exact subtitle wording; repeated lines listed once. Scene headings group dialogue, with conditional lines included. Excludes interface instructions, debug messages and other characters. Phase 5 fitting/telemetry has interface copy rather than Hiro-labelled dialogue.
 
 ## Opening and discovering Baymax
 

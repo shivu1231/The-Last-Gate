@@ -20,6 +20,14 @@ Source: `THE_LAST_GATE_DEEP_CODEX_FIXES.docx` (9 issues). Each fixed issue is it
 
 All commits: `npx tsc --noEmit` clean; `npm run build` succeeds; `scripts/later-refinement-check.mjs` (later + opening) pass.
 
+## Follow-ups after the fix sheet
+
+| Change | What | Commit |
+| --- | --- | --- |
+| Flight-log lore | Canon: the combat chip logs every flight; it logged Baymax's inbound crossing before the game. Planted in the Phase 1 diagnostic (`FLIGHT LOG · RECORDING`, `src/config/shell.ts`), the board's chip bay (`FLIGHT / NAV LOG: CONTINUOUS · 1 BOUNDARY CROSSING`), and paid off at the reader ("Every flight logged… even the crossing.", `src/phase6/PhaseSix.tsx`). | `4783fb2` |
+| Surface textures | `src/presentation/WorldSurfaces.ts`: canvas siding/stucco/stone/slabs/tile/bark/leaves/wood and `worldMapped()` (world-space planar sampling, instancing-aware). Used on the home set and the opening city. Home set also gets ridge roofs and an apartment row behind the houses. | `d0a9f88` |
+| Dialogue audit | Fixed "The combat chip is still in you." (it lies on the street) and "Where… am I?" after a deliberate return. Canon written at the top of `docs/HIRO_DIALOGUE.md`. | `f08869a` |
+
 ## Verification (this pass)
 
 Checked at 1920×1080 in a second dev server on the side branch (port 4174):
