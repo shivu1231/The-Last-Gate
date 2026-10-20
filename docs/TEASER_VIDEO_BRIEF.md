@@ -65,7 +65,7 @@ Useful existing dialogue: “Come on. We’re going home.” / “Almost. Almost
 | 74–81 | Hauling toward the gate and waterfront glimpse | “Come on. We’re going home.” |
 | 81–85 | THE LAST GATE end title | Let the final note decay; no invented release date |
 
-## Editing instructions for Claude
+## Editing instructions
 Use this brief and the recorded footage to build an edit decision list before assembling. Preserve spatial continuity and chip/regulator causality. Prefer motivated cuts, short dissolves across quiet locations and sound bridges over unrelated transition effects. Avoid full-screen white flashes, long black loading frames, exaggerated camera shake and repetitive impact loops. Keep subtitle placement clear of the interaction panels. Use only dialogue actually present in the game; the complete source-derived transcript is docs/HIRO_DIALOGUE.md. Music must be original or appropriately licensed; do not assume permission to reuse the film soundtrack. Do not describe static GLB exports as containing the website's gameplay animations.
 
 ## Local recording shortcuts (development only)
