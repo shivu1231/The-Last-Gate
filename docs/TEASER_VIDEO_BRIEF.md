@@ -24,7 +24,7 @@ Useful existing dialogue: “Baymax? …Baymax!” / “He’s not moving.” / 
 
 ### Phase 1 / combat activation and fight
 Start with silent white Baymax. Show the red chip, the chest bay opening and the chip seating. Let the armour change and eyes wake register before cutting to danger. Select a close fly-by, charged ranged misses striking the environment and the heavy landing. Cut on acceleration, discharge and impact; retain enough wide footage to understand Baymax's direction and weight. Finish with the fracture pulling Hiro and Baymax away and one believable structural collision.
-Useful existing dialogue: “The combat chip is still in you.” / “The combat chip is taking over.” / “That’s not him.”
+Useful existing dialogue: “Your combat chip… it came loose.” / “The combat chip is taking over.” / “That’s not him.”
 
 ### Phase 2 / fracture and trace, where available
 The standalone legacy fracture/afterimage route shows the broken dimension and a scan of a still trace. It remains a development/legacy route, rather than a required extra chapter in the current normal playthrough. If this footage is included, treat it as a brief image of dimensional instability; do not claim the normal player must complete an additional level.

@@ -51,7 +51,7 @@ export class TransitionDirector {
         { open: 1, duration: 3.9, ease: 'power2.inOut', onUpdate: update },
         5.6,
       )
-      .call(() => useSceneState.getState().say('Where… am I?'), [], 8.1)
+      .call(() => useSceneState.getState().say('Okay… I’m back in.'), [], 8.1)
       .call(() => useSceneState.getState().finishAwakening(), [], 10.7);
   }
   skip(path: HTMLElement) {

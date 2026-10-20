@@ -1,10 +1,12 @@
 # Hiro Hamada — website dialogue
 
-Collected from the current website source. Exact subtitle wording; repeated lines listed once. Scene headings group dialogue, with conditional lines included. Excludes interface instructions, debug messages and other characters. Phase 5 fitting/telemetry has interface copy rather than Hiro-labelled dialogue.
+Collected from the current website source.
+
+Lore canon the lines follow: Baymax flew into the portal dimension on his combat chip before the game starts; the chip logs every flight, so it holds that one crossing. The crash knocked it loose onto the street, and his healthcare chip went back out through the boundary, ending up in San Fransokyo (Phase 5 traces it). Hiro wakes on the far side, escapes alone, turns back for Baymax, re-seats the combat chip to get him moving, and at the end the old gate's reader rebuilds the way home from the chip's logged crossing. Exact subtitle wording; repeated lines listed once. Scene headings group dialogue, with conditional lines included. Excludes interface instructions, debug messages and other characters. Phase 5 fitting/telemetry has interface copy rather than Hiro-labelled dialogue.
 
 ## Opening and discovering Baymax
 
-1. “Where… am I?”
+1. “Okay… I’m back in.”
    Source: src/transitions/OrganicBlink.ts:54
 
 2. “The portal — it’s still open.”
@@ -43,7 +45,7 @@ Collected from the current website source. Exact subtitle wording; repeated line
 12. “No— the way home…”
    Source: src/experience/ExperienceDirector.tsx:1162
 
-13. “The combat chip is still in you.”
+13. “Your combat chip… it came loose.”
    Source: src/experience/ExperienceDirector.tsx:1163
 
 14. “Healthcare chip is gone… but I can get you running.”
@@ -129,9 +131,6 @@ Collected from the current website source. Exact subtitle wording; repeated line
 
 36. “Baymax? Hey, buddy. It’s me.”
    Source: src/phase6/PhaseSix.tsx:261
-
-37. “The capture. That comes with me.”
-   Source: src/phase6/PhaseSix.tsx:263
 
 38. “The trace went to the old gate. That’s where it ends.”
    Source: src/phase6/PhaseSix.tsx:265

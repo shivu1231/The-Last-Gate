@@ -1161,7 +1161,7 @@ const PHASE_LINES: Partial<
   'back-decision': [[0.4, 'I’m not leaving you.']],
   'back-through': [[0.2, 'Hold on—']],
   reentry: [[1.5, 'No— the way home…']],
-  'chip-focus': [[1.4, 'The combat chip is still in you.']],
+  'chip-focus': [[1.4, 'Your combat chip… it came loose.']],
   'socket-ready': [
     [0.6, 'Healthcare chip is gone… but I can get you running.'],
   ],
