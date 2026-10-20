@@ -16,7 +16,7 @@ export const cinematicSignals = {
 export type CinematicSignals = typeof cinematicSignals;
 
 /**
- * Reset the mutable cinematic presentation signals to their existing defaults.
+ * Reset the mutable cinematic presentation signals to their defaults.
  */
 export function resetSignals() {
   cinematicSignals.exposure = 0;

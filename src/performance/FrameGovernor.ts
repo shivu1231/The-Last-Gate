@@ -10,9 +10,6 @@ const WINDOW_SECONDS = 2.5;
 const BUDGET = 1 / 44; // sustained average worse than ~44fps steps down a tier
 const GRACE_AFTER_CHANGE = 3; // seconds
 
-/**
- * Owns rendering and resource policy state and its existing runtime lifecycle.
- */
 class FrameGovernor {
   private elapsed = 0;
   private frames = 0;

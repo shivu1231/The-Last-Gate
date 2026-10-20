@@ -17,9 +17,6 @@ type FrameTask = {
   acc: number;
 };
 
-/**
- * Owns rendering and resource policy state and its existing runtime lifecycle.
- */
 class FrameScheduler {
   private tasks = new Map<string, FrameTask>();
   private elapsed = 0;

@@ -482,7 +482,4 @@ export async function createBay() {
     },
   };
 }
-/**
- * Data contract used by regulator fitting and telemetry.
- */
 export type Bay = Awaited<ReturnType<typeof createBay>>;

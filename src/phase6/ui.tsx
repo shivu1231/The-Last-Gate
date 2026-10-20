@@ -160,9 +160,6 @@ export function DragHand() {
   );
 }
 
-/**
- * Data contract used by the final pursuit and restoration.
- */
 export type Row = [
   label: string,
   value: string,

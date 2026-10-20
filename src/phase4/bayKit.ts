@@ -33,9 +33,9 @@ export class BayKit {
     this.geometries.add(group);
     return group;
   }
-  tex<X extends THREE.Texture>(timeSeconds: X): X {
-    this.textures.add(timeSeconds);
-    return timeSeconds;
+  tex<X extends THREE.Texture>(texture: X): X {
+    this.textures.add(texture);
+    return texture;
   }
   own<M extends THREE.Material>(mesh: M): M {
     this.materials.add(mesh);
@@ -57,8 +57,8 @@ export class BayKit {
     this.noShadow.add(mesh);
     return mesh;
   }
-  repeat(timeSeconds: THREE.Texture, xPosition: number, yPosition: number) {
-    const texture = timeSeconds.clone();
+  repeat(source: THREE.Texture, xPosition: number, yPosition: number) {
+    const texture = source.clone();
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(xPosition, yPosition);
     texture.needsUpdate = true;
@@ -242,13 +242,13 @@ export class BayKit {
     parent: THREE.Object3D = this.root,
     vector?: Vector3Tuple,
   ) {
-    const material2 = new THREE.Mesh(this.geo(geometry), material);
-    material2.position.set(...point);
-    if (vector) material2.rotation.set(...vector);
-    material2.castShadow = !this.noShadow.has(material);
-    material2.receiveShadow = true;
-    parent.add(material2);
-    return material2;
+    const mesh = new THREE.Mesh(this.geo(geometry), material);
+    mesh.position.set(...point);
+    if (vector) mesh.rotation.set(...vector);
+    mesh.castShadow = !this.noShadow.has(material);
+    mesh.receiveShadow = true;
+    parent.add(mesh);
+    return mesh;
   }
 
   /** Merges every batch into one mesh per material. Call once after building. */
@@ -258,12 +258,12 @@ export class BayKit {
       list.forEach((geometry) => geometry.dispose());
       if (!merged) continue;
       merged.computeBoundingSphere();
-      const material2 = new THREE.Mesh(this.geo(merged), material);
-      material2.castShadow = !this.noShadow.has(material);
-      material2.receiveShadow = true;
-      material2.matrixAutoUpdate = false;
-      material2.updateMatrix();
-      parent.add(material2);
+      const mesh = new THREE.Mesh(this.geo(merged), material);
+      mesh.castShadow = !this.noShadow.has(material);
+      mesh.receiveShadow = true;
+      mesh.matrixAutoUpdate = false;
+      mesh.updateMatrix();
+      parent.add(mesh);
     }
     this.buckets.clear();
   }
@@ -273,7 +273,7 @@ export class BayKit {
     this.unit.dispose();
     this.geometries.forEach((geometry) => geometry.dispose());
     this.materials.forEach((material) => material.dispose());
-    this.textures.forEach((timeSeconds) => timeSeconds.dispose());
+    this.textures.forEach((texture) => texture.dispose());
     this.root.clear();
   }
 }

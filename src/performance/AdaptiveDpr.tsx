@@ -31,7 +31,7 @@ function range() {
 }
 
 /**
- * Adjust the canvas render scale from sustained frame timing without changing scene effects.
+ * Adjust the canvas render scale from sustained frame timing.
  */
 export function AdaptiveDpr({
   onChange: setDpr,
@@ -71,7 +71,7 @@ export function AdaptiveDpr({
     };
   }, [setDpr]);
 
-  useFrame((unusedValue, deltaSeconds) => {
+  useFrame((_, deltaSeconds) => {
     const scaleFactor = frameSamples.current;
     if (
       document.visibilityState !== 'visible' ||

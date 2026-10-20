@@ -75,7 +75,7 @@ function transmissionTexture() {
 }
 
 /**
- * Paint the telemetry console display in its existing layout.
+ * Paint the telemetry console display.
  */
 function consoleTexture() {
   const canvas = document.createElement('canvas');
@@ -1083,7 +1083,4 @@ export function createFacility() {
     },
   };
 }
-/**
- * Data contract used by regulator fitting and telemetry.
- */
 export type Facility = ReturnType<typeof createFacility>;

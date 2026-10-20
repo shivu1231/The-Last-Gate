@@ -16,9 +16,6 @@ export type RailTask = {
   state: 'locked' | 'open' | 'done';
   action?: { label: string; onClick: () => void; disabled?: boolean };
 };
-/**
- * Data contract used by shared interface presentation.
- */
 export type RailNotes = { title: string; items: string[]; max?: number };
 
 /**
@@ -38,7 +35,7 @@ export function TaskRail({
   className?: string;
 }) {
   const done = tasks.filter(
-    (timeSeconds) => timeSeconds.state === 'done',
+    (task) => task.state === 'done',
   ).length;
   const shown = notes ? notes.items.slice(-(notes.max ?? 4)) : [];
   return (

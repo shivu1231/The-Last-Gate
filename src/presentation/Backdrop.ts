@@ -18,7 +18,7 @@ import { createPortalDimension } from '../environment/PortalDimension.js';
 let skyCanvas: HTMLCanvasElement | null = null;
 // Bake the existing sky's t=0 shader once. It has no moving role in these inspection chapters.
 /**
- * Create the existing baked sky presentation for the scene backdrop.
+ * Create the baked sky presentation for the scene backdrop.
  */
 function bakedSky() {
   if (!skyCanvas) {

@@ -97,7 +97,7 @@ export function SceneQuality({
       cancelAnimationFrame(frame);
     };
   }, [ready, gl, scene, camera, prepare, onReady, onError]);
-  useFrame((unusedValue, deltaSeconds) => {
+  useFrame((_, deltaSeconds) => {
     if (
       import.meta.env.DEV &&
       ready &&
@@ -141,9 +141,6 @@ export function SceneQuality({
   return manageDpr ? <CanvasBudget ready={ready} /> : null;
 }
 
-/**
- * Compute the existing canvas budget result for shared presentation.
- */
 function CanvasBudget({ ready }: { ready: boolean }) {
   useCanvasBudget(ready);
   return null;

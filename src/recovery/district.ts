@@ -36,7 +36,6 @@ export function createDistrict() {
   group.add(sceneKit.root);
 
   // Warmer practical materials layered onto the Phase 1 slate palette.
-  const warm = sceneKit.basic('#ffb25e', 1.3);
   const warmDim = sceneKit.basic('#c9772f', 1);
   const sign = sceneKit.basic('#7fe6ff', 1.4);
   const signWarm = sceneKit.basic('#ff8a53', 1.2);
@@ -392,7 +391,4 @@ export function createDistrict() {
     },
   };
 }
-/**
- * Data contract used by the recovery journey.
- */
 export type District = ReturnType<typeof createDistrict>;

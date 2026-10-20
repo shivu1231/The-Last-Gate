@@ -36,7 +36,7 @@ const SUBS: Record<SystemId, string> = {
 };
 
 /**
- * Resolve the existing engineering status label for a system.
+ * Resolve the engineering status label for a system.
  */
 function statusOf(
   system: SystemId,
@@ -736,7 +736,7 @@ function PlugTask() {
 }
 
 /**
- * Render the sensor repair controls and their existing calibration feedback.
+ * Render the sensor repair controls and their calibration feedback.
  */
 function SensorTask() {
   const tested = useBoard((state) => state.sensorsTested);
@@ -801,9 +801,6 @@ function SensorTask() {
   );
 }
 
-/**
- * Render the existing chip inspection and diagnostic details.
- */
 function ChipTask() {
   const open = useBoard((state) => state.bayOpen);
   return (

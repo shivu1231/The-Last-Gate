@@ -76,7 +76,7 @@ function reaches(light: THREE.Light, boxes: THREE.Box3[]) {
 }
 
 /**
- * Clone a reaching light for the existing multi-pass bay renderer.
+ * Clone a reaching light for the multi-pass bay renderer.
  */
 function copyOf(src: THREE.Light): THREE.Light | null {
   if ((src as THREE.HemisphereLight).isHemisphereLight)
@@ -113,7 +113,7 @@ function sync({ src, copy }: LightCopyPair) {
 }
 
 /**
- * Create the existing bay depth, opaque and transparent rendering passes.
+ * Create the bay depth, opaque and transparent rendering passes.
  */
 export function createBayRender(
   scene: THREE.Scene,
@@ -221,7 +221,7 @@ export function createBayRender(
                 if ((value as THREE.Texture)?.isTexture)
                   textures.add(value as THREE.Texture);
           });
-        textures.forEach((timeSeconds) => gl.initTexture(timeSeconds));
+        textures.forEach((texture) => gl.initTexture(texture));
       });
     },
     /** Draws the frame. `shadows`: a shadow caster moved since the last frame. */
@@ -278,7 +278,4 @@ export function createBayRender(
   };
 }
 
-/**
- * Data contract used by Bay 6 and its city approach.
- */
 export type BayRender = ReturnType<typeof createBayRender>;

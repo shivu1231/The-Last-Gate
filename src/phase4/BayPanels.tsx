@@ -27,9 +27,6 @@ const box = (x0: number, z0: number, x1: number, z1: number) => {
   };
 };
 
-/**
- * Data contract used by Bay 6 and its city approach.
- */
 export type PlanMark = {
   id: string;
   x: number;
@@ -38,7 +35,7 @@ export type PlanMark = {
 };
 
 /**
- * Render the service-bay plan with its existing equipment markers and location feedback.
+ * Render the service-bay plan with its equipment markers and location feedback.
  */
 export function BayPlan({
   marks,
@@ -134,7 +131,7 @@ export function BayPlan({
           />
         ))}
         <rect {...box(-9.85, -30, -8.55, -24)} className="bay-plan-stairs" />
-        {Array.from({ length: 9 }, (unusedValue, index) => (
+        {Array.from({ length: 9 }, (_, index) => (
           <line
             key={index}
             x1={plan(-9.85, 0)[0]}

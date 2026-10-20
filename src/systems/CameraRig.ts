@@ -8,9 +8,6 @@ import type { CameraMode } from '../core/ExperienceStates';
 // look limits, head motion and motivated shake. Call `cameraRig.apply()` once per
 // frame after the shot has set position + lookAt and before updateProjectionMatrix.
 
-/**
- * Data contract used by shared runtime services.
- */
 export type CameraProfile = {
   /** Damping (1/s) applied to pointer look — lower is heavier. */
   lookDamping: number;
@@ -93,13 +90,7 @@ export const CAMERA_PROFILES: Record<CameraMode, CameraProfile> = {
   },
 };
 
-/**
- * Data contract used by shared runtime services.
- */
 export type ShakeSource = 'impact' | 'baymax-attack' | 'structure' | 'portal';
-/**
- * Data contract used by shared runtime services.
- */
 type Impulse = {
   amp: number;
   decay: number;
@@ -114,9 +105,6 @@ const SOURCE_SHAPE: Record<ShakeSource, { decay: number; freq: number }> = {
   portal: { decay: 2.6, freq: 9 },
 };
 
-/**
- * Owns shared runtime services state and its existing runtime lifecycle.
- */
 class CameraRig {
   mode: CameraMode = 'RECOVERY';
   /** Blended live profile; read this from shot code instead of hard-coded constants. */

@@ -468,15 +468,9 @@ export async function createBaymax() {
     velocity.squash += amount * 6;
   };
   const mode = { tense: 0, slug: 0 };
-  const shell = meshes.filter((material) => {
-    material.geometry.computeBoundingBox();
-    return !!material.geometry.boundingBox;
-  });
+  meshes.forEach((mesh) => mesh.geometry.computeBoundingBox());
   // While he's armoured: the white body hides (the chest bay stays), and his torso plus the suit's feet ground him.
   const whiteParts = meshes.filter((material) => !under(material, [bay.root]));
-  const whiteTorso = shell.filter(
-    (material) => !under(material, [...hips, ...shoulders]),
-  );
   const qA = new THREE.Quaternion(),
     qB = new THREE.Quaternion(),
     qC = new THREE.Quaternion(),
@@ -943,11 +937,6 @@ export async function createBaymax() {
           cur.bank,
       );
       body.position.set(shift * (1 - lie), 0, lie * 0.9);
-      // Combat: a coiled, ready bounce, sunk a little lower. Sluggish: a periodic hitch.
-      const bounce =
-        tense * (Math.sin(timeSeconds * 5.2) * 0.012 - 0.05) * (1 - stride);
-      const hitch =
-        slug * Math.pow(Math.max(0, Math.sin(timeSeconds * 2.7)), 18) * -0.035;
       const sq = cur.squash;
       body.scale.set(1 + sq * 0.03, 1 - sq * 0.045, 1 + sq * 0.03);
       // Find the lowest point of the shell (not the jets or the bay) and sit it on the ground.
@@ -1116,7 +1105,4 @@ export async function createBaymax() {
     },
   };
 }
-/**
- * Data contract used by the final pursuit and restoration.
- */
 export type Baymax = Awaited<ReturnType<typeof createBaymax>>;

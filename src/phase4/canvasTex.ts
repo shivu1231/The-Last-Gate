@@ -3,9 +3,6 @@ import * as THREE from 'three';
 /** Small canvas-texture toolkit for Bay 6: every surface is painted in code, nothing is loaded. */
 
 export type RandomSource = () => number;
-/**
- * Return a deterministic random source so rebuilding preserves the authored layout.
- */
 export function seeded(seed: number): RandomSource {
   return () => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
@@ -14,7 +11,7 @@ export function seeded(seed: number): RandomSource {
 }
 
 /**
- * Draw a procedural canvas texture and retain the existing color-space settings.
+ * Draw a procedural canvas texture.
  */
 export function paint(
   width: number,
@@ -30,10 +27,10 @@ export function paint(
   canvas.width = width;
   canvas.height = height;
   draw(canvas.getContext('2d')!, width, height);
-  const timeSeconds = new THREE.CanvasTexture(canvas);
-  if (srgb) timeSeconds.colorSpace = THREE.SRGBColorSpace;
-  timeSeconds.anisotropy = 8;
-  return timeSeconds;
+  const texture = new THREE.CanvasTexture(canvas);
+  if (srgb) texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  return texture;
 }
 
 /** Fine grain: thousands of light and dark flecks so no surface reads as flat colour. */
@@ -80,7 +77,7 @@ export function grime(
 }
 
 /**
- * Paint the existing seeded surface-wear details into the supplied canvas.
+ * Paint the seeded surface-wear details into the supplied canvas.
  */
 export function scratches(
   drawingContext: CanvasRenderingContext2D,
@@ -161,7 +158,7 @@ export function edgeWear(
 }
 
 /**
- * Paint the existing seeded surface-wear details into the supplied canvas.
+ * Paint the seeded surface-wear details into the supplied canvas.
  */
 export function rust(
   drawingContext: CanvasRenderingContext2D,

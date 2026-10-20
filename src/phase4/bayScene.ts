@@ -27,9 +27,6 @@ import { createLimiter, type Limiter } from './limiter';
  */
 
 export const EYE = 1.62;
-/**
- * Data contract used by Bay 6 and its city approach.
- */
 export type BayCameraView = { pos: Vector3Tuple; look: Vector3Tuple };
 export const VIEWS = {
   gate: { pos: [4.7, EYE, -0.75], look: [1.5, 2.1, -11] },
@@ -67,9 +64,6 @@ export const CABLE_PATH: Vector3Tuple[] = [
   [-8.9, 0.22, -26.75],
 ];
 
-/**
- * Data contract used by Bay 6 and its city approach.
- */
 export type BayState = {
   cleared: number;
   latches: [boolean, boolean];
@@ -260,12 +254,12 @@ export function createServiceBay() {
     material: THREE.MeshStandardMaterialParameters = {},
     metal = '#c9c6bd',
   ) => {
-    const timeSeconds = sceneKit.tex(
+    const texture = sceneKit.tex(
       wornPaint(base, seed, { metal, size: 256 }),
     );
     return sceneKit.std({
-      map: timeSeconds,
-      bumpMap: timeSeconds,
+      map: texture,
+      bumpMap: texture,
       bumpScale: 0.8,
       roughness: 0.6,
       metalness: 0.45,
@@ -369,8 +363,7 @@ export function createServiceBay() {
     ),
   );
   const skyGlass = sceneKit.flat(sceneKit.glow('#2f6c8f', 0.8));
-  const warmBar = sceneKit.flat(sceneKit.glow('#ffd59a', 2.2)),
-    coolBar = sceneKit.flat(sceneKit.glow('#bfeaff', 1.6));
+  const warmBar = sceneKit.flat(sceneKit.glow('#ffd59a', 2.2));
   const hazardMat = sceneKit.std({
     map: sceneKit.tex(hazard(512, 64)),
     roughness: 0.7,
@@ -956,8 +949,8 @@ export function createServiceBay() {
       drawingContext.font = '22px "IBM Plex Mono", monospace';
       drawingContext.fillStyle = 'rgba(159,230,255,.7)';
       ['NO UNIT', 'LAST JOB  03:12', 'PWR REG  ON CHARGE'].forEach(
-        (timeSeconds, index7) =>
-          drawingContext.fillText(timeSeconds, width * 0.58, 120 + index7 * 36),
+        (line, index7) =>
+          drawingContext.fillText(line, width * 0.58, 120 + index7 * 36),
       );
       drawingContext.fillStyle = '#ffb35c';
       drawingContext.fillText('● STANDBY', width * 0.58, 270);
@@ -1269,8 +1262,8 @@ export function createServiceBay() {
         '03:09  PR-6 TO CHARGE',
         '03:10  CASE UNDER STAIRS',
         '03:12  EVACUATE BAY',
-      ].forEach((timeSeconds, index) =>
-        drawingContext.fillText(timeSeconds, 24, 96 + index * 38),
+      ].forEach((line, index) =>
+        drawingContext.fillText(line, 24, 96 + index * 38),
       );
       drawingContext.fillStyle = '#ffb35c';
       drawingContext.fillRect(24, 286, 140, 6);
@@ -1313,8 +1306,8 @@ export function createServiceBay() {
         'STATUS  on charge',
         'NOTE  do not unplug!',
         '       spare is boxed',
-      ].forEach((timeSeconds, index) =>
-        drawingContext.fillText(timeSeconds, 18, 90 + index * 44),
+      ].forEach((line, index) =>
+        drawingContext.fillText(line, 18, 90 + index * 44),
       );
       drawingContext.strokeStyle = '#2a2e33';
       drawingContext.lineWidth = 3;
@@ -2593,7 +2586,7 @@ export function createServiceBay() {
 }
 
 /**
- * Generate the existing service-bay paint wear texture.
+ * Generate the service-bay paint wear texture.
  */
 function wornPaintTex(sceneKit: BayKit, base: string, seed: number) {
   return sceneKit.tex(
@@ -2618,7 +2611,7 @@ function wornPaintTex(sceneKit: BayKit, base: string, seed: number) {
 }
 
 /**
- * Compose Bay 6 world interactions, inspection panels and existing storage-case progression.
+ * Compose Bay 6 world interactions, inspection panels and storage-case progression.
  */
 export type ServiceBay = ReturnType<typeof createServiceBay>;
 

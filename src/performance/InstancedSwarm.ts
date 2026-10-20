@@ -23,9 +23,6 @@ import { quality } from './Quality';
 //   scene.add(swarm.mesh); gsap.to(swarm.uniforms.uMorph, { value: 1, duration: 2.4 });
 //   each frame: swarm.update(elapsed, camera)  // time + distance-based density
 
-/**
- * Data contract used by rendering and resource policy.
- */
 export type SwarmOptions = {
   count: number;
   /** xyz per instance (length = count*3). Defaults to a loose cloud. */
@@ -44,9 +41,6 @@ export type SwarmOptions = {
 
 const botGeometry = new BoxGeometry(1, 0.38, 0.62);
 
-/**
- * Owns rendering and resource policy state and its existing runtime lifecycle.
- */
 export class InstancedSwarm {
   readonly mesh: InstancedMesh;
   readonly uniforms = {
@@ -81,26 +75,26 @@ export class InstancedSwarm {
     // Shuffle so that drawing the first N instances (density LOD) keeps an even spread.
     const order = Array.from(
       { length: count },
-      (unusedValue, index) => index,
+      (_, index) => index,
     ).sort(() => Math.random() - 0.5);
-    const height = new Float32Array(count * 3),
-      timeSeconds = new Float32Array(count * 3);
+    const homes = new Float32Array(count * 3),
+      targets = new Float32Array(count * 3);
     order.forEach((source, index) => {
-      height.set(home.subarray(source * 3, source * 3 + 3), index * 3);
-      timeSeconds.set(target.subarray(source * 3, source * 3 + 3), index * 3);
+      homes.set(home.subarray(source * 3, source * 3 + 3), index * 3);
+      targets.set(target.subarray(source * 3, source * 3 + 3), index * 3);
       seeds[index] = Math.random();
     });
-    geometry.setAttribute('aHome', new InstancedBufferAttribute(height, 3));
+    geometry.setAttribute('aHome', new InstancedBufferAttribute(homes, 3));
     geometry.setAttribute(
       'aTarget',
-      new InstancedBufferAttribute(timeSeconds, 3),
+      new InstancedBufferAttribute(targets, 3),
     );
     geometry.setAttribute('aSeed', new InstancedBufferAttribute(seeds, 1));
     const scale = new Matrix4().makeScale(size, size, size);
     for (let index2 = 0; index2 < count; index2++)
       this.mesh.setMatrixAt(index2, scale);
     this.mesh.instanceMatrix.setUsage(DynamicDrawUsage);
-    this.computeBounds(height, timeSeconds);
+    this.computeBounds(homes, targets);
 
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);

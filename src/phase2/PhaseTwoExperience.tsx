@@ -56,14 +56,14 @@ function PhaseScene({
     runtime.current?.resize(size.width, size.height);
   }, [size]);
   useFrame(
-    (unusedValue, deltaSeconds) => runtime.current?.update(deltaSeconds),
+    (_, deltaSeconds) => runtime.current?.update(deltaSeconds),
     1,
   );
   return null;
 }
 
 /**
- * Compose the retained fracture/afterimage chapter and its existing interaction overlay.
+ * Compose the retained fracture/afterimage chapter and its interaction overlay.
  */
 export function PhaseTwoExperience({ entry }: { entry: EntryStage }) {
   const director = useMemo(() => new PhaseTwoDirector(entry), [entry]);

@@ -13,7 +13,7 @@ import type {
 // oversized textures and dense meshes.
 
 /**
- * Collect scene/rendering diagnostics without changing the scene.
+ * Collect scene/rendering diagnostics.
  */
 export function auditScene(root: Object3D) {
   let meshes = 0,

@@ -48,9 +48,6 @@ function supportsWebGL() {
   }
 }
 
-/**
- * Render the existing failure screen when the application subtree throws.
- */
 class AppBoundary extends Component<
   { children: ReactNode },
   { error: boolean }
@@ -175,7 +172,7 @@ function ExperienceRoot() {
 }
 
 /**
- * Mount the supported browser experience or its existing compatibility fallback.
+ * Mount the supported browser experience or its compatibility fallback.
  */
 function App() {
   if (!supportsWebGL()) {

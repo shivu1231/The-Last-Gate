@@ -227,12 +227,9 @@ export async function createArmouredBaymax({ shell }: SolidArmourOptions) {
   api.set(0);
   return api;
 }
-/**
- * Data contract used by character geometry and posing.
- */
 export type ArmouredBaymax = Awaited<ReturnType<typeof createArmouredBaymax>>;
 /**
- * Attach the combat presentation using the existing shared-rig mounting contract.
+ * Attach the combat presentation on the shared rig.
  */
 export function mountArmour(
   _armour: ArmouredBaymax,

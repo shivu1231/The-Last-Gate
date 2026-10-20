@@ -16,9 +16,6 @@ export function haulProgress(progress: number, pulls: number) {
     phase = xPosition - whole;
   return Math.min(1, (whole + smooth((phase - 0.18) / 0.54)) / pulls);
 }
-/**
- * Compute the existing haul effort result for the final pursuit and restoration.
- */
 export function haulEffort(progress: number, pulls: number) {
   if (progress <= 0 || progress >= 1) return 0;
   const phase = (progress * pulls) % 1;

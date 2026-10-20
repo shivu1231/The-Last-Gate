@@ -85,12 +85,12 @@ export function createCareChip(sceneKit: SceneKit) {
     [0.05, 0.014],
     [0.014, 0.05],
   ]) {
-    const material = new THREE.Mesh(
+    const mesh = new THREE.Mesh(
       sceneKit.ownGeometry(new THREE.PlaneGeometry(width, height)),
       white,
     );
-    material.position.set(-0.012, 0.03, 0.0095);
-    chip.add(material);
+    mesh.position.set(-0.012, 0.03, 0.0095);
+    chip.add(mesh);
   }
   const line = new THREE.Mesh(
     sceneKit.ownGeometry(new THREE.PlaneGeometry(0.0042, 0.15)),
@@ -106,10 +106,10 @@ export function createCareChip(sceneKit: SceneKit) {
     }),
   );
   for (let index = 0; index < 7; index++) {
-    const material2 = new THREE.Mesh(sceneKit.boxGeo, gold);
-    material2.scale.set(0.011, 0.026, 0.0016);
-    material2.position.set(-0.054 + index * 0.018, -0.088, 0.0088);
-    chip.add(material2);
+    const part = new THREE.Mesh(sceneKit.boxGeo, gold);
+    part.scale.set(0.011, 0.026, 0.0016);
+    part.position.set(-0.054 + index * 0.018, -0.088, 0.0088);
+    chip.add(part);
   }
   return { chip, glow, body };
 }
@@ -129,9 +129,7 @@ export function createHome() {
   worldMapped(warmStone, surface.stone, 2);
   const furniture = furnitureMaterials(sceneKit, surface),
     furnitureRandom = seeded(7741);
-  const rail = sceneKit.standard('#2f3640', 0.5, 0.6),
-    vermilion = sceneKit.standard('#a8443a', 0.6, 0.2),
-    city = sceneKit.standard('#5d6175', 0.9, 0.05);
+  const rail = sceneKit.standard('#2f3640', 0.5, 0.6);
   // Sky and water.
   const sky = sceneKit.mesh(
     sceneKit.ownGeometry(new THREE.SphereGeometry(400, 32, 16)),
@@ -377,9 +375,6 @@ export function createHome() {
     },
   };
 }
-/**
- * Data contract used by the final pursuit and restoration.
- */
 export type Home = ReturnType<typeof createHome>;
 
 // ─────────────────────────────────────────────────────────────── directing the home beat
@@ -433,9 +428,6 @@ export const BUMP_WAIT = 13.8;
 export const bootTime = (since: number, bumpT: number) =>
   bumpT < 0 ? Math.min(since, BUMP_WAIT) : BUMP_WAIT + bumpT;
 
-/**
- * Data contract used by the final pursuit and restoration.
- */
 export type HomeCast = {
   baymax: {
     root: THREE.Object3D;
@@ -450,9 +442,6 @@ export type HomeCast = {
     handWorld(out?: THREE.Vector3): THREE.Vector3;
   };
 };
-/**
- * Data contract used by the final pursuit and restoration.
- */
 export type HomeShot = {
   stage: string;
   e: number;

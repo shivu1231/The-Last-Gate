@@ -24,9 +24,6 @@ import { reducedMotion } from '../config/experience';
 import { cinematicSignals } from './CinematicSignals';
 import { useQuality, type QualityPreset } from '../performance/Quality';
 
-/**
- * Owns cinematic rendering state and its existing runtime lifecycle.
- */
 export class CinematicPost {
   readonly composer: EffectComposer;
   private bokeh: BokehPass;

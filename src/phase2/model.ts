@@ -1,7 +1,4 @@
 import { enterRecovery } from '../recovery/state';
-/**
- * Data contract used by the retained fracture sequence.
- */
 export type EntryStage = 'fracture' | 'afterimage';
 /**
  * Retained legacy fracture/afterimage stage identifier.

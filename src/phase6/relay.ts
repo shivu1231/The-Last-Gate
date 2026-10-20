@@ -118,7 +118,4 @@ export function createRelay() {
     },
   };
 }
-/**
- * Data contract used by the final pursuit and restoration.
- */
 export type Relay = ReturnType<typeof createRelay>;

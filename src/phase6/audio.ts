@@ -9,9 +9,6 @@
  */
 import { sfx } from '../audio/sfx';
 
-/**
- * Owns the final pursuit and restoration state and its existing runtime lifecycle.
- */
 export class PhaseSixAudio {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;

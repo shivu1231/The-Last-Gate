@@ -112,9 +112,6 @@ export type HomeStep =
   | 'rail'
   | 'atRail';
 
-/**
- * Shared state for the final pursuit, portal and home sequence.
- */
 type PhaseSixState = {
   stage: Stage;
   since: number;
@@ -142,9 +139,6 @@ const regulatorFor = (state: Stage) =>
   (atLeast(state, 'limited') && !atLeast(state, 'flyin')) ||
   atLeast(state, 'drop');
 
-/**
- * Compute the existing state for result for the final pursuit and restoration.
- */
 function stateFor(stage: Stage): PhaseSixState {
   return {
     stage,

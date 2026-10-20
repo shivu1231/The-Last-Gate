@@ -1,9 +1,6 @@
 import * as THREE from 'three';
 import type { PhaseTwoDirector } from './model';
 
-/**
- * Owns the retained fracture sequence state and its existing runtime lifecycle.
- */
 export class PhaseTwoCamera {
   pointer = new THREE.Vector2();
   private smooth = new THREE.Vector2();

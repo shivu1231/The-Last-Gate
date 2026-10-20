@@ -105,7 +105,4 @@ export function createPortalGate(zPosition = 24) {
     },
   };
 }
-/**
- * Data contract used by environment construction.
- */
 export type PortalGate = ReturnType<typeof createPortalGate>;

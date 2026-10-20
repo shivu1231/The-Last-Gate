@@ -7,9 +7,6 @@ import type { QualityPreset } from './Quality';
 //  - texture anisotropy capped
 // Safe to run repeatedly (idempotent) — called on chapter change and quality change.
 
-/**
- * Data contract used by rendering and resource policy.
- */
 type ShadowLight = Light & {
   shadow: {
     mapSize: {

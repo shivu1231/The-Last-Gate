@@ -139,12 +139,12 @@ export function createRedChip() {
     metalness: 0.6,
   });
   for (const yPosition of [0.088, -0.058]) {
-    const material = new THREE.Mesh(
+    const mesh = new THREE.Mesh(
       new THREE.BoxGeometry(0.124, 0.0022, 0.002),
       groove,
     );
-    material.position.set(-0.004, yPosition, 0.0092);
-    chip.add(material);
+    mesh.position.set(-0.004, yPosition, 0.0092);
+    chip.add(mesh);
   }
   const gold = new THREE.MeshStandardMaterial({
     color: '#d3a55c',
@@ -154,9 +154,9 @@ export function createRedChip() {
   });
   const contact = new THREE.BoxGeometry(0.011, 0.026, 0.0016);
   for (let index3 = 0; index3 < 7; index3++) {
-    const material2 = new THREE.Mesh(contact, gold);
-    material2.position.set(-0.054 + index3 * 0.018, -0.088, 0.0088);
-    chip.add(material2);
+    const part = new THREE.Mesh(contact, gold);
+    part.position.set(-0.054 + index3 * 0.018, -0.088, 0.0088);
+    chip.add(part);
   }
   chip.traverse((sceneObject) => {
     if (sceneObject.isMesh) {

@@ -380,9 +380,6 @@ export const TRANSITION_TYPES = Object.keys(SPECS) as Exclude<
   'CUT'
 >[];
 
-/**
- * Owns covered scene transitions state and its existing runtime lifecycle.
- */
 export class CinematicTransitions implements TransitionPlayer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -565,9 +562,6 @@ export class CinematicTransitions implements TransitionPlayer {
   }
 }
 
-/**
- * Compute the existing make particles result for covered scene transitions.
- */
 function makeParticles(count: number): TransitionParticle[] {
   const list: TransitionParticle[] = [];
   for (let index = 0; index < count; index++) {

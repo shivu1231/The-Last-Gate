@@ -75,7 +75,7 @@ import { useQuality } from '../performance/Quality';
 import { LoadingBaymax } from '../presentation/LoadingBaymax';
 
 /**
- * Contain opening-scene rendering failures and present the existing fallback.
+ * Contain opening-scene rendering failures and present the fallback.
  */
 class RenderBoundary extends Component<
   { children: ReactNode },
@@ -89,9 +89,6 @@ class RenderBoundary extends Component<
     return this.state.error ? <Failure /> : this.props.children;
   }
 }
-/**
- * Render the existing browser/rendering failure message and recovery action.
- */
 function Failure() {
   return (
     <div className="failure">
@@ -146,9 +143,6 @@ const ROCK_AT = 2.95,
  */
 const HIDDEN = new Matrix4().makeScale(0, 0, 0),
   TINT = new Color();
-/**
- * Data contract used by the opening sequence.
- */
 type DebrisPiece = {
   at: number;
   p: Vector3;
@@ -164,7 +158,7 @@ type DebrisPiece = {
 };
 const DEBRIS_G = 12;
 /**
- * Build the existing opening debris pool and its per-piece motion state.
+ * Build the opening debris pool and its per-piece motion state.
  */
 function createDebris(geometry: DodecahedronGeometry) {
   let seed = 11;
@@ -318,15 +312,15 @@ function createDebris(geometry: DodecahedronGeometry) {
     flatShading: true,
   });
   const build = (list: DebrisPiece[]) => {
-    const material2 = new InstancedMesh(geometry, material, list.length);
-    material2.frustumCulled = false;
-    material2.visible = false;
+    const mesh = new InstancedMesh(geometry, material, list.length);
+    mesh.frustumCulled = false;
+    mesh.visible = false;
     list.forEach((point, index7) => {
-      material2.setMatrixAt(index7, HIDDEN);
-      material2.setColorAt(index7, TINT.setScalar(point.tint));
+      mesh.setMatrixAt(index7, HIDDEN);
+      mesh.setColorAt(index7, TINT.setScalar(point.tint));
     });
-    material2.instanceMatrix.setUsage(DynamicDrawUsage);
-    return material2;
+    mesh.instanceMatrix.setUsage(DynamicDrawUsage);
+    return mesh;
   };
   const chunkMesh = build(chunks),
     gritMesh = build(grit),
@@ -408,9 +402,6 @@ function createDebris(geometry: DodecahedronGeometry) {
   };
 }
 
-/**
- * Data contract used by the opening sequence.
- */
 type SceneProps = {
   director: CameraDirector;
   seq: SequenceDirector;
@@ -508,7 +499,7 @@ function AwakeScene({ director, seq, marker, readout, audio }: SceneProps) {
   const phaseT = useRef(0),
     prevPhaseRef = useRef<string>('');
   const rock = useMemo(() => {
-    const material = new Mesh(
+    const mesh = new Mesh(
       new DodecahedronGeometry(0.34, 0),
       new MeshStandardMaterial({
         color: '#5f6b6c',
@@ -516,9 +507,9 @@ function AwakeScene({ director, seq, marker, readout, audio }: SceneProps) {
         flatShading: true,
       }),
     );
-    material.visible = false;
-    material.scale.set(1, 0.8, 1.15);
-    return material;
+    mesh.visible = false;
+    mesh.scale.set(1, 0.8, 1.15);
+    return mesh;
   }, []);
   const rockFwd = useMemo(() => new Vector3(), []),
     rockSide = useMemo(() => new Vector3(), []);
@@ -802,7 +793,7 @@ function AwakeScene({ director, seq, marker, readout, audio }: SceneProps) {
       }),
     [seq, rupture, audio, camera, projection],
   );
-  useFrame((unusedValue, delta) => {
+  useFrame((_, delta) => {
     const deltaSeconds = Math.min(delta, 0.25);
     elapsed.current += deltaSeconds;
     const timeSeconds = elapsed.current;
@@ -1174,7 +1165,7 @@ const LINE_TIMES = [0.5, 1.3, 2.05, 2.8, 3.55, 4.55];
 const SCRAMBLE = '▚▞░▒/\\#*+=_';
 
 /**
- * Render one existing diagnostic readout line.
+ * Render one diagnostic readout line.
  */
 function DiagnosticLine({ text, delay }: { text: string; delay: number }) {
   // Reconstructed, not typed: glyphs resolve from noise left to right.

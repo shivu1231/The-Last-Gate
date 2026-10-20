@@ -935,7 +935,7 @@ export function createPortalDimension() {
         }
       });
       geometries.forEach((group3) => group3.dispose());
-      textures.forEach((timeSeconds) => timeSeconds.dispose());
+      textures.forEach((texture) => texture.dispose());
       materials2.forEach((mesh2) => mesh2.dispose());
     },
     /** @param {number} t @param {number} dt @param {boolean} reduced @param {number} [progress] @param {string} [phase] @param {any} [seq] @param {any} [focus] */

@@ -172,7 +172,7 @@ function useCentreBesidePanel() {
 }
 
 /**
- * Mount the regulator-fitting world and its existing camera/animation sequence.
+ * Mount the regulator-fitting world and its camera/animation sequence.
  */
 function BayScene({
   onReady,
@@ -364,7 +364,7 @@ function FacilityScene({
   onReady: () => void;
   onError: () => void;
 }) {
-  const { scene, camera, size } = useThree();
+  const { scene, camera } = useThree();
   const facility = useMemo(createFacility, []);
   const rig = useMemo(() => new CameraShot(), []);
   const position = useMemo(() => new THREE.Vector3(), []),
@@ -410,7 +410,6 @@ function FacilityScene({
     );
     const key =
       state.stage === 'found' ? 'done' : (TASKS[state.task] ?? 'done');
-    const [point, entry] = FACILITY_SHOTS[key];
     const radius = route.current;
     if (radius.key !== key) {
       radius.key = key;
@@ -635,7 +634,7 @@ const PEAKS = [28, 81],
 const cover = (notch: number, factor: number) =>
   Math.exp(-(((notch - factor) / 3) ** 2));
 /**
- * Calculate the existing signal-to-noise value from the two filter notches.
+ * Calculate the signal-to-noise value from the two filter notches.
  */
 function snrFor(entries: [number, number]) {
   return (
@@ -1147,9 +1146,9 @@ export function PhaseFive({ initial: from }: { initial: PhaseFiveStep }) {
                 <span>{String(state.task + 1).padStart(2, '0')} / 05</span>
               </p>
               <ol className="p5-steps">
-                {TASKS.map((timeSeconds, index) => (
+                {TASKS.map((item, index) => (
                   <li
-                    key={timeSeconds}
+                    key={item}
                     className={
                       index < state.task
                         ? 'done'
@@ -1158,7 +1157,7 @@ export function PhaseFive({ initial: from }: { initial: PhaseFiveStep }) {
                           : ''
                     }
                   >
-                    {TASK_NAMES[timeSeconds]}
+                    {TASK_NAMES[item]}
                   </li>
                 ))}
               </ol>
@@ -1194,9 +1193,9 @@ export function PhaseFive({ initial: from }: { initial: PhaseFiveStep }) {
                 TRACE COMPLETE <span>05 / 05</span>
               </p>
               <ol className="p5-steps">
-                {TASKS.map((timeSeconds) => (
-                  <li key={timeSeconds} className="done">
-                    {TASK_NAMES[timeSeconds]}
+                {TASKS.map((item) => (
+                  <li key={item} className="done">
+                    {TASK_NAMES[item]}
                   </li>
                 ))}
               </ol>

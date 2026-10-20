@@ -154,9 +154,9 @@ export function createSanFransokyo() {
   );
   const railGeo = own(new THREE.BoxGeometry(16, 0.12, 0.12));
   for (const yPosition2 of [0.55, 0.9]) {
-    const material = new THREE.Mesh(railGeo, railMat);
-    material.position.set(0, yPosition2, THRESHOLD + 12.9);
-    group.add(material);
+    const part = new THREE.Mesh(railGeo, railMat);
+    part.position.set(0, yPosition2, THRESHOLD + 12.9);
+    group.add(part);
   }
   const postGeo = own(new THREE.BoxGeometry(0.1, 1, 0.1));
   const posts = new THREE.InstancedMesh(postGeo, railMat, 9);
@@ -229,18 +229,18 @@ export function createSanFransokyo() {
     });
     void ring;
   }
-  const warmT = towers.filter((timeSeconds) => timeSeconds.warm),
-    coolT = towers.filter((timeSeconds) => !timeSeconds.warm);
+  const warmT = towers.filter((tower) => tower.warm),
+    coolT = towers.filter((tower) => !tower.warm);
   const buildCluster = (list: T[], material2: THREE.Material) => {
     const mesh = new THREE.InstancedMesh(bodyGeo, material2, list.length);
     const sceneObject2 = new THREE.Object3D();
-    list.forEach((timeSeconds, index4) => {
+    list.forEach((tower, index4) => {
       sceneObject2.position.set(
-        timeSeconds.x,
-        timeSeconds.h / 2 - 1.1,
-        timeSeconds.z,
+        tower.x,
+        tower.h / 2 - 1.1,
+        tower.z,
       );
-      sceneObject2.scale.set(timeSeconds.w, timeSeconds.h, timeSeconds.d);
+      sceneObject2.scale.set(tower.w, tower.h, tower.d);
       // Repeat the window texture per floor/column so the grid density reads at any height.
       sceneObject2.updateMatrix();
       mesh.setMatrixAt(index4, sceneObject2.matrix);
@@ -402,7 +402,4 @@ export function createSanFransokyo() {
     },
   };
 }
-/**
- * Data contract used by environment construction.
- */
 export type SanFransokyo = ReturnType<typeof createSanFransokyo>;

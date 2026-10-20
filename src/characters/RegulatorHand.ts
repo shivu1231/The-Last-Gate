@@ -103,7 +103,4 @@ export function createHandInsert() {
     },
   };
 }
-/**
- * Data contract used by character geometry and posing.
- */
 export type HandInsert = ReturnType<typeof createHandInsert>;

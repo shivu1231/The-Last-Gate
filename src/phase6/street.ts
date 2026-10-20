@@ -162,9 +162,9 @@ function crackTexture() {
     );
     drawingContext.stroke();
   }
-  const timeSeconds = new THREE.CanvasTexture(canvas);
-  timeSeconds.colorSpace = THREE.SRGBColorSpace;
-  return timeSeconds;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
 }
 
 /**
@@ -1512,9 +1512,6 @@ export function createStreet() {
     },
   };
 }
-/**
- * Data contract used by the final pursuit and restoration.
- */
 export type Street = ReturnType<typeof createStreet>;
 
 /**
@@ -1532,10 +1529,10 @@ export function createCartridge() {
     parent: THREE.Object3D = root,
   ) => {
     own.push(geometry, material);
-    const material2 = new THREE.Mesh(geometry, material);
-    material2.position.set(...points);
-    parent.add(material2);
-    return material2;
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(...points);
+    parent.add(mesh);
+    return mesh;
   };
   add(
     new THREE.BoxGeometry(0.06, 0.014, 0.085),

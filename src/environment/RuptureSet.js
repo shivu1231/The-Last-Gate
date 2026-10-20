@@ -20,7 +20,7 @@ const random = () => {
 const randomBetween = (startValue, endValue) =>
   startValue + random() * (endValue - startValue);
 /**
- * Paint a radial alpha falloff for the existing glow sprites.
+ * Paint a radial alpha falloff for the glow sprites.
  */
 function glowTexture() {
   const canvas = document.createElement('canvas');
@@ -375,7 +375,7 @@ export function createRuptureSet(environment) {
     );
   fragments.frustumCulled = false;
   corridor.add(fragments);
-  const fragState = Array.from({ length: FRAG }, (unusedValue, index) => ({
+  const fragState = Array.from({ length: FRAG }, (_, index) => ({
     a: randomBetween(0, Math.PI * 2),
     r: randomBetween(3.2, 7),
     z: -randomBetween(1, 38),
@@ -438,7 +438,7 @@ export function createRuptureSet(environment) {
   slabMesh.frustumCulled = false;
   slabMesh.visible = false;
   root.add(slabMesh);
-  const slabs = Array.from({ length: SLABS }, (unusedValue, index) => {
+  const slabs = Array.from({ length: SLABS }, (_, index) => {
     const xPosition = -4 + (index % 6) * 1.45 + randomBetween(-0.2, 0.2),
       zPosition =
         -23.2 - Math.floor(index / 6) * 1.32 + randomBetween(-0.15, 0.15);
@@ -611,17 +611,17 @@ export function createRuptureSet(environment) {
         tear,
       );
       if (tear) {
-        const timeSeconds = tears[tearIndex];
+        const piece = tears[tearIndex];
         tearIndex = (tearIndex + 1) % tears.length;
-        timeSeconds.age = 0;
-        timeSeconds.g.visible = true;
+        piece.age = 0;
+        piece.g.visible = true;
         const side = position.x >= 0 ? 1 : -1;
-        timeSeconds.g.position.copy(position);
+        piece.g.position.copy(position);
         if (position.y < 1) {
-          timeSeconds.g.position.x += side * 1.7;
-          timeSeconds.g.position.y = -0.14;
-        } else timeSeconds.g.position.y -= 2.6;
-        timeSeconds.g.rotation.set(
+          piece.g.position.x += side * 1.7;
+          piece.g.position.y = -0.14;
+        } else piece.g.position.y -= 2.6;
+        piece.g.rotation.set(
           randomBetween(-0.1, 0.1),
           randomBetween(0, 3),
           randomBetween(-0.18, 0.18),
@@ -901,7 +901,7 @@ export function createRuptureSet(environment) {
       pullSparks.visible = false;
       [
         ...scars.map((material2) => material2.g),
-        ...tears.map((timeSeconds) => timeSeconds.g),
+        ...tears.map((tear) => tear.g),
       ].forEach((group) => {
         group.visible = false;
       });
@@ -929,7 +929,7 @@ export function createRuptureSet(environment) {
         ...bolts.map((material2) => material2.g),
         ...impacts.map((index) => index.ring),
         ...scars.map((material2) => material2.g),
-        ...tears.map((timeSeconds) => timeSeconds.g),
+        ...tears.map((tear) => tear.g),
         corridor,
         slabMesh,
       ].forEach((material2) => {

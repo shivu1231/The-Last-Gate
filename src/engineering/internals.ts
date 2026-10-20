@@ -17,9 +17,6 @@ export const LOCAL_ANCHORS: Record<Exclude<SystemId, 'chip'>, THREE.Vector3> = {
 };
 const SHOULDER_L = new THREE.Vector3(-1.02, 2.26, 0.02);
 
-/**
- * Data contract used by engineering inspection and repairs.
- */
 type SystemMaterials = {
   body: THREE.MeshStandardMaterial;
   dark: THREE.MeshStandardMaterial;
@@ -510,7 +507,4 @@ export function createInternals(shell: THREE.Group) {
     },
   };
 }
-/**
- * Data contract used by engineering inspection and repairs.
- */
 export type Internals = ReturnType<typeof createInternals>;

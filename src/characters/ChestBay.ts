@@ -31,9 +31,6 @@ const BAY_QUAT = new Quaternion().setFromUnitVectors(
 const RIM = 0.235,
   SKIRT = 0.06;
 
-/**
- * Data contract used by character geometry and posing.
- */
 export type ChestBayState = {
   t: number;
   open: number;
@@ -144,9 +141,6 @@ export function mountChestBay(shell: Group) {
     },
   };
 }
-/**
- * Data contract used by character geometry and posing.
- */
 export type ChestBay = ReturnType<typeof mountChestBay>;
 
 /**
@@ -211,7 +205,4 @@ function seatOnSkin(shell: Group, bay: Group, skin: MeshPhysicalMaterialLike) {
   collar.receiveShadow = true;
   bay.add(collar);
 }
-/**
- * Data contract used by character geometry and posing.
- */
 type MeshPhysicalMaterialLike = ConstructorParameters<typeof Mesh>[1];

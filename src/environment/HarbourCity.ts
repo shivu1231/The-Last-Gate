@@ -542,7 +542,7 @@ export function createSanFransokyo() {
     );
   }
   const traffic = sceneKit.instances(
-    Array.from({ length: 24 }, (unusedValue, index6) => ({
+    Array.from({ length: 24 }, (_, index6) => ({
       p: [
         -76 + index6 * 6.5,
         7.7,
@@ -580,10 +580,10 @@ export function createSanFransokyo() {
     const material = (sceneObject as THREE.Mesh).material as
       | THREE.ShaderMaterial
       | undefined;
-    const textValue = material?.uniforms;
-    if (textValue?.uHaze && textValue.uBase) {
-      textValue.uBase.value.lerp(nightBase, 0.7);
-      textValue.uHaze.value.copy(nightHaze);
+    const uniforms = material?.uniforms;
+    if (uniforms?.uHaze && uniforms.uBase) {
+      uniforms.uBase.value.lerp(nightBase, 0.7);
+      uniforms.uHaze.value.copy(nightHaze);
     }
   });
   let lastT = -1;
@@ -615,14 +615,11 @@ export function createSanFransokyo() {
       }
     },
     dispose() {
-      ownTextures.forEach((timeSeconds) => timeSeconds.dispose());
+      ownTextures.forEach((texture) => texture.dispose());
       skyline.dispose();
       far.dispose();
       sceneKit.dispose();
     },
   };
 }
-/**
- * Data contract used by environment construction.
- */
 export type SanFransokyo = ReturnType<typeof createSanFransokyo>;

@@ -1,8 +1,5 @@
 import { create } from 'zustand';
 
-/**
- * Data contract used by opening state progression.
- */
 export type Chapter =
   | 'BOOT'
   | 'AWAKE'
@@ -10,9 +7,6 @@ export type Chapter =
   | 'THE_SHELL'
   | 'RED_WAKE'
   | 'THE_FRACTURE';
-/**
- * Data contract used by opening state progression.
- */
 export type Phase =
   | 'loading'
   // The escape attempt: Hiro comes to on the far side, tries to leave, turns back for Baymax,
@@ -47,9 +41,6 @@ export type Phase =
   | 'fracture'
   | 'pulled'
   | 'handoff';
-/**
- * Data contract used by opening state progression.
- */
 export type Speaker = 'HIRO' | 'BAYMAX';
 const next: Partial<Record<Phase, Phase>> = {
   'portal-sighted': 'call-baymax',
@@ -112,9 +103,6 @@ const chapterOf = (phase: Phase, current: Chapter): Chapter =>
 export const HOLD_PHASES: Phase[] = ['chip-focus', 'chest-focus'];
 /** Phases where the player walks forward along an authored line (scroll / hold / W). */
 export const WALK_PHASES: Phase[] = ['approaching'];
-/**
- * Data contract used by opening state progression.
- */
 type ExperienceState = {
   chapter: Chapter;
   phase: Phase;

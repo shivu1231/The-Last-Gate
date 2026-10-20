@@ -27,7 +27,7 @@ const ease = (xPosition: number) => xPosition * xPosition * (3 - 2 * xPosition);
 const clamp01 = (xPosition: number) => THREE.MathUtils.clamp(xPosition, 0, 1);
 
 /**
- * Build the portal frame and the existing presentation controls for its opening.
+ * Build the portal frame and the presentation controls for its opening.
  */
 export function createPortalGate(zPosition = 24) {
   const group = new THREE.Group();
@@ -45,10 +45,10 @@ export function createPortalGate(zPosition = 24) {
   ) => {
     geometries.push(geometry);
     materials.push(material);
-    const material2 = new THREE.Mesh(geometry, material);
-    material2.frustumCulled = false;
-    parent.add(material2);
-    return material2;
+    const part = new THREE.Mesh(geometry, material);
+    part.frustumCulled = false;
+    parent.add(part);
+    return part;
   };
 
   // Stencil aperture: a unit disc whose rim vertices follow the wobble every frame.
@@ -69,7 +69,7 @@ export function createPortalGate(zPosition = 24) {
   const maskPos = maskGeometry.attributes.position as THREE.BufferAttribute;
   const rimAngles = Array.from(
     { length: maskPos.count },
-    (unusedValue, index) =>
+    (_, index) =>
       Math.atan2(maskPos.getY(index), maskPos.getX(index)),
   );
 
@@ -133,7 +133,7 @@ export function createPortalGate(zPosition = 24) {
   fieldMesh.renderOrder = 5;
 
   // 3. Structure: the burning tube rim, and a broad soft fringe behind it.
-  const points = Array.from({ length: 129 }, (unusedValue, index) => {
+  const points = Array.from({ length: 129 }, (_, index) => {
     const firstValue = (index / 128) * Math.PI * 2,
       radius =
         value2 *
@@ -456,9 +456,6 @@ export function createPortalGate(zPosition = 24) {
     },
   };
 }
-/**
- * Data contract used by environment construction.
- */
 export type PortalGate = ReturnType<typeof createPortalGate>;
 /** Unstable rims shiver; a calm one only breathes. */
 function shiver(timeSeconds: number, instability: number) {

@@ -87,9 +87,6 @@ function mergeRigid(scene: THREE.Object3D) {
 const name = (name2: string) => THREE.PropertyBinding.sanitizeNodeName(name2);
 const RED = '#b0121c',
   PURPLE = '#5b2b8c';
-/**
- * Compute the existing material result for character geometry and posing.
- */
 function material(original: string, eye?: THREE.Material): THREE.Material {
   const phys = (
     color: string,
@@ -647,9 +644,6 @@ export async function createArmouredBaymax(
   api.set(0);
   return api;
 }
-/**
- * Data contract used by character geometry and posing.
- */
 export type ArmouredBaymax = Awaited<ReturnType<typeof createArmouredBaymax>>;
 
 /** Mount the suit inside a white rig: scale and place it so its hips and shoulders meet the white rig's. */

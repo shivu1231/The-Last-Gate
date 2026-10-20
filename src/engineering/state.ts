@@ -2,9 +2,6 @@ import { create } from 'zustand';
 
 /** The five systems Hiro can inspect on the board. */
 export type SystemId = 'power' | 'motor' | 'thrusters' | 'sensors' | 'chip';
-/**
- * Data contract used by engineering inspection and repairs.
- */
 export type ViewMode = 'exterior' | 'internal' | 'isolate';
 export const SYSTEMS: SystemId[] = [
   'power',

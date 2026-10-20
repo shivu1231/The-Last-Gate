@@ -1,6 +1,3 @@
-/**
- * Render the existing browser/rendering failure message and recovery action.
- */
 export function Failure({
   message,
   detail,

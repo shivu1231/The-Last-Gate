@@ -18,7 +18,7 @@ export const isShared = (resource: object) =>
   (resource as SharedResourceTag)[SHARED] === true;
 
 /**
- * Dispose a material and its owned textures using the existing shared-resource rules.
+ * Dispose a material and its owned textures.
  */
 function disposeMaterial(material: Material, seen: Set<object>) {
   if (seen.has(material) || isShared(material)) return;

@@ -61,9 +61,6 @@ const LINES: [number, string][] = [
   [0.93, 'Bay 6. Robotics maintenance.'],
 ];
 
-/**
- * Data contract used by Bay 6 and its city approach.
- */
 type WalkState = {
   p: number;
   speed: number;
@@ -74,7 +71,7 @@ type WalkState = {
 };
 
 /**
- * Build the city-walk environment and its existing entry landmarks.
+ * Build the city-walk environment and its entry landmarks.
  */
 function buildStreet() {
   const sceneKit = new SceneKit('walk-street');
@@ -568,7 +565,7 @@ function WalkWorld({
 }
 
 /**
- * Compose the city approach to Bay 6 with the existing movement and entry controls.
+ * Compose the city approach to Bay 6 with the movement and entry controls.
  */
 export function Walk() {
   const [dpr, setDpr] = useState(1);

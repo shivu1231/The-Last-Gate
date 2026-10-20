@@ -1,8 +1,5 @@
 import { MathUtils } from 'three';
 
-/**
- * Data contract used by shared runtime services.
- */
 export type ZoomLimits = { min: number; max: number; step?: number };
 
 /** Shared, damped zoom input for every 3D scene. */

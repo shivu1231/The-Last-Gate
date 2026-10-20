@@ -25,7 +25,6 @@ export class PhaseTwoRuntime {
   private statsTime = 0;
   private alive = true;
   private cleanup: (() => void)[] = [];
-  private reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   constructor(
     private gl: THREE.WebGLRenderer,

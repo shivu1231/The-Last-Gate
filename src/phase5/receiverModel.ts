@@ -47,7 +47,7 @@ export function batchSolids(root: THREE.Group, kit: SceneKit) {
 }
 
 /**
- * Build the existing connector/link geometry between the supplied endpoints.
+ * Build the connector/link geometry between the supplied endpoints.
  */
 export function link(
   kit: SceneKit,
@@ -249,7 +249,7 @@ export function createReceiver(kit: SceneKit, parent: THREE.Object3D) {
     const firstValue = (index3 / 12) * Math.PI * 2,
       ca = Math.cos(firstValue),
       sa = Math.sin(firstValue);
-    const points = Array.from({ length: 12 }, (unusedValue, segmentIndex) => {
+    const points = Array.from({ length: 12 }, (_, segmentIndex) => {
       const radius = 0.22 + (segmentIndex / 11) * 1.65;
       return new THREE.Vector3(ca * radius, sa * radius, depth(radius) - 0.09);
     });

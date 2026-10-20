@@ -26,9 +26,6 @@ const devStep: PhaseSixStep | null = param
     : 'wake'
   : null;
 
-/**
- * Data contract used by the final pursuit and restoration.
- */
 type PhaseSixEntry = { active: boolean; step: PhaseSixStep; run: number };
 export const usePhaseSixEntry = create<PhaseSixEntry>(() => ({
   active: !!devStep,

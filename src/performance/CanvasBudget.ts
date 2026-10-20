@@ -30,7 +30,7 @@ export function useCanvasBudget(ready = true, maxPixels = 5_000_000) {
         0;
     setDpr(scaleFactor.ceiling);
   }, [size.width, size.height, setDpr, maxPixels]);
-  useFrame((unusedValue, deltaSeconds) => {
+  useFrame((_, deltaSeconds) => {
     if (!ready) return;
     const scaleFactor = sampling.current;
     scaleFactor.warmup += deltaSeconds;

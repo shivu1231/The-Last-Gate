@@ -47,7 +47,7 @@ import { SceneCurtain } from '../presentation/SceneCurtain';
 
 type Stage = 'enter' | 'explore' | 'cable' | 'crates' | 'box' | 'taken';
 /**
- * Inspectable service-bay target and its existing world position.
+ * Inspectable service-bay target and its world position.
  */
 type BayHotspot = 'cradle' | 'toolwall' | 'jobcard';
 /**
@@ -436,7 +436,7 @@ function World({
 }
 
 /**
- * Compose Bay 6 world interactions, inspection panels and existing storage-case progression.
+ * Compose Bay 6 world interactions, inspection panels and storage-case progression.
  */
 export function ServiceBay({ start }: { start: BayStart }) {
   const [dpr, setDpr] = useState(1);

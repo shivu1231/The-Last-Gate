@@ -4,9 +4,6 @@ import { useSceneState } from '../state/SceneStateManager';
 import { HOLD_TIME } from '../config/shell';
 import { reducedMotion } from '../config/experience';
 
-/**
- * Data contract used by shared runtime services.
- */
 export type BeatId =
   | 'launch'
   | 'silhouette'
@@ -14,9 +11,6 @@ export type BeatId =
   | 'rooftop'
   | 'tear-pass'
   | 'final';
-/**
- * Data contract used by shared runtime services.
- */
 export type SequenceEvent =
   | { type: 'beat'; beat: BeatId }
   | { type: 'impact'; position: Vector3; power: number; tear: boolean }
@@ -52,9 +46,6 @@ const RUN_SECONDS = 9.5;
 export const SEAM_POSITION = new Vector3(1.8, 4.2, -34);
 /** Outer right shoulder meets this broken frame once, 1.45 seconds into displacement. */
 export const PULL_CONTACT_POSITION = new Vector3(2.7, 6.2, -46.54);
-/**
- * Data contract used by shared runtime services.
- */
 type Attack = {
   at: number;
   kind: 'charge' | 'discharge' | 'impact' | 'flyby';

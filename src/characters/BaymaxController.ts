@@ -67,8 +67,7 @@ const wrap = (firstValue: number) =>
 const HEAD_YAW = 1.05,
   HEAD_PITCH_UP = 0.45,
   HEAD_PITCH_DOWN = 0.6;
-const UP = new Vector3(0, 1, 0),
-  DOWN = new Vector3(0, -1, 0);
+const DOWN = new Vector3(0, -1, 0);
 const DORMANT_HEAD = { x: 0.24, y: 0, z: -0.12 };
 /**
  * Authored controls consumed by the opening Baymax rig.
@@ -90,7 +89,7 @@ type BaymaxMotionPose = {
 const LEG_SWING = 1.45;
 
 /**
- * Paint a radial alpha falloff for the existing glow sprites.
+ * Paint a radial alpha falloff for the glow sprites.
  */
 function glowTexture() {
   const canvas = document.createElement('canvas');
@@ -148,7 +147,6 @@ export class BaymaxController {
   private q = new Quaternion();
   private q2 = new Quaternion();
   private eyeColor = new Color();
-  private lastBeatTime = 0;
   private beatCamera = new Vector3();
   private beatOrigin = new Vector3();
   private passCurve = new CatmullRomCurve3([
@@ -1045,7 +1043,6 @@ export class BaymaxController {
     }
     if (secondEntry !== this.beat) {
       this.beat = secondEntry;
-      this.lastBeatTime = 0;
       this.beatCamera.copy(camera);
       this.beatOrigin.copy(this.pose.pos);
       if (secondEntry === 'overhead') {
@@ -1193,7 +1190,6 @@ export class BaymaxController {
     pose.aim.set(camera.x, camera.y + 2, camera.z);
   }
   /** Pose the suit from this rig, swap it in or out, and keep its feet on the white rig's ground line. */
-  private suitK = 0;
   /** Where the camera should look for his head: the helmet once the armour is mostly on (tracker N-02). */
   headFocus(out: Vector3) {
     if (this.head) this.head.getWorldPosition(out);
@@ -1202,7 +1198,6 @@ export class BaymaxController {
   private dressSuit(blendFactor: number, stand: number) {
     const group = this.suit!;
     group.set(blendFactor);
-    this.suitK = blendFactor;
     if (group.isSingleRig) return;
     const covered = group.covers(blendFactor);
     if (covered !== this.wasCovered) {

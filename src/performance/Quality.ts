@@ -4,14 +4,8 @@ import { create } from 'zustand';
 // same identity on weaker GPUs (integrated graphics) by trimming resolution and the
 // passes that re-render the whole scene (ambient occlusion, depth of field).
 
-/**
- * Data contract used by rendering and resource policy.
- */
 export type QualityName = 'HIGH' | 'BALANCED' | 'LOW';
 export const QUALITY_ORDER: QualityName[] = ['HIGH', 'BALANCED', 'LOW'];
-/**
- * Data contract used by rendering and resource policy.
- */
 export type QualityPreset = {
   /** Upper bound for renderer pixel ratio. Never blindly devicePixelRatio = 2. */
   dprCap: number;
@@ -105,7 +99,7 @@ function gpuTier(): QualityName {
 }
 
 /**
- * Resolve the initial quality tier from the existing URL and device policy.
+ * Resolve the initial quality tier from the URL and device policy.
  */
 function initialQuality(): QualityName {
   const forced = (
@@ -125,9 +119,6 @@ function initialQuality(): QualityName {
   return gpuTier();
 }
 
-/**
- * Data contract used by rendering and resource policy.
- */
 type QualityState = {
   name: QualityName;
   preset: QualityPreset;

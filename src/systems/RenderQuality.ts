@@ -1,10 +1,4 @@
-/**
- * Data contract used by shared runtime services.
- */
 export type Quality = 'HIGH' | 'MEDIUM' | 'LOW';
-/**
- * Owns shared runtime services state and its existing runtime lifecycle.
- */
 export class RenderQuality {
   level: Quality;
   private elapsed = 0;

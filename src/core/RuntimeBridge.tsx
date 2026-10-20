@@ -109,7 +109,7 @@ export function RuntimeBridge() {
     };
   }, [renderer, scene]);
 
-  useFrame((unusedFrameState, frameDeltaSeconds) => {
+  useFrame((_, frameDeltaSeconds) => {
     const rendererInfo = renderer.info;
     runtimeStats.drawCalls = rendererInfo.render.calls;
     runtimeStats.triangles = rendererInfo.render.triangles;

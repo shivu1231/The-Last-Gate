@@ -9,9 +9,6 @@ const param = import.meta.env.DEV
 const devStep: PhaseFiveStep | null =
   param === 'facility' ? 'facility' : param ? 'limiter' : null;
 
-/**
- * Data contract used by regulator fitting and telemetry.
- */
 type PhaseFiveEntry = { active: boolean; step: PhaseFiveStep; run: number };
 export const usePhaseFiveEntry = create<PhaseFiveEntry>(() => ({
   active: !!devStep,

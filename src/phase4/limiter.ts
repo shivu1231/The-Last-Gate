@@ -201,9 +201,9 @@ export function createLimiter(): Limiter {
     geometries.add(group),
     group
   );
-  const texture = (timeSeconds: THREE.Texture) => (
-    textures.add(timeSeconds),
-    timeSeconds
+  const ownTexture = (texture: THREE.Texture) => (
+    textures.add(texture),
+    texture
   );
   const std = (material: THREE.MeshStandardMaterialParameters) => {
     const material2 = new THREE.MeshStandardMaterial(material);
@@ -233,20 +233,20 @@ export function createLimiter(): Limiter {
     return mesh;
   };
 
-  const paintA = texture(
+  const paintA = ownTexture(
     wornPaint('#a59f92', 11, { rustSpots: 12, scratchCount: 110 }),
   );
-  const paintB = texture(
+  const paintB = ownTexture(
     wornPaint('#99938a', 23, { rustSpots: 14, scratchCount: 90 }),
   );
-  const paintDark = texture(
+  const paintDark = ownTexture(
     wornPaint('#3b3a38', 37, {
       metal: '#a9a8a2',
       rustSpots: 4,
       scratchCount: 80,
     }),
   );
-  const plateTex = texture(
+  const plateTex = ownTexture(
     paint(256, 256, (drawingContext, width, height) => {
       const result = seeded(77);
       drawingContext.fillStyle = '#202224';
@@ -285,17 +285,17 @@ export function createLimiter(): Limiter {
   const yellow = std({ color: '#e0b21c', roughness: 0.42, metalness: 0.05 });
   const red = std({ color: '#b51d18', roughness: 0.4, metalness: 0.2 });
   const face = std({
-    map: texture(gaugeFace()),
+    map: ownTexture(gaugeFace()),
     roughness: 0.55,
     metalness: 0,
   });
   const chevron = std({
-    map: texture(chevronPanel()),
+    map: ownTexture(chevronPanel()),
     roughness: 0.5,
     metalness: 0.25,
   });
   const spec = std({
-    map: texture(specPlate()),
+    map: ownTexture(specPlate()),
     roughness: 0.6,
     metalness: 0.1,
   });
@@ -781,7 +781,7 @@ export function createLimiter(): Limiter {
     root.removeFromParent();
     geometries.forEach((geometry) => geometry.dispose());
     materials.forEach((material) => material.dispose());
-    textures.forEach((timeSeconds) => timeSeconds.dispose());
+    textures.forEach((texture) => texture.dispose());
   };
   return root;
 }

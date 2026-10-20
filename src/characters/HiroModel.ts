@@ -81,11 +81,11 @@ function denimTexture() {
       1 + Math.random() * 2,
     );
   }
-  const timeSeconds = new THREE.CanvasTexture(canvas);
-  timeSeconds.wrapS = timeSeconds.wrapT = THREE.RepeatWrapping;
-  timeSeconds.repeat.set(3, 6);
-  timeSeconds.colorSpace = THREE.SRGBColorSpace;
-  return timeSeconds;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(3, 6);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
 }
 /** Knit: soft horizontal ribs for the hoodie's cuffs and hem, a faint fleece speckle elsewhere. */
 function knitTexture() {
@@ -98,11 +98,11 @@ function knitTexture() {
     drawingContext.fillStyle = `rgba(0,0,0,${Math.random() * 0.06})`;
     drawingContext.fillRect(Math.random() * 64, Math.random() * 64, 1.5, 1.5);
   }
-  const timeSeconds = new THREE.CanvasTexture(canvas);
-  timeSeconds.wrapS = timeSeconds.wrapT = THREE.RepeatWrapping;
-  timeSeconds.repeat.set(4, 4);
-  timeSeconds.colorSpace = THREE.SRGBColorSpace;
-  return timeSeconds;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(4, 4);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
 }
 
 /**
@@ -459,15 +459,15 @@ export function createHiro() {
     width: number,
     from: THREE.Vector3,
   ) => {
-    const material3 = new THREE.Mesh(tuft, hair);
-    material3.position.copy(from);
-    material3.quaternion.setFromUnitVectors(
+    const mesh = new THREE.Mesh(tuft, hair);
+    mesh.position.copy(from);
+    mesh.quaternion.setFromUnitVectors(
       new THREE.Vector3(0, 1, 0),
       dir.normalize(),
     );
-    material3.scale.set(width, len, width * 0.8);
-    head.add(material3);
-    return material3;
+    mesh.scale.set(width, len, width * 0.8);
+    head.add(mesh);
+    return mesh;
   };
   const random = (() => {
     let scaleFactor6 = 77;
@@ -801,7 +801,4 @@ export function createHiro() {
     },
   };
 }
-/**
- * Data contract used by character geometry and posing.
- */
 export type Hiro = ReturnType<typeof createHiro>;

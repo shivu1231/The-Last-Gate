@@ -8,9 +8,6 @@ export type ScenePlacement = {
   s?: [number, number, number];
   r?: [number, number, number];
 };
-/**
- * Data contract used by the retained fracture sequence.
- */
 export type ChapterWorld = {
   root: THREE.Group;
   update: (time: number, deltaSeconds: number) => void;
@@ -61,11 +58,11 @@ export class SceneKit {
     material: THREE.Material = this.concrete,
     parent: THREE.Object3D = this.root,
   ) {
-    const material2 = new THREE.Mesh(this.boxGeo, material);
-    this.pose(material2, point);
-    material2.receiveShadow = true;
-    parent.add(material2);
-    return material2;
+    const mesh = new THREE.Mesh(this.boxGeo, material);
+    this.pose(mesh, point);
+    mesh.receiveShadow = true;
+    parent.add(mesh);
+    return mesh;
   }
   mesh(
     geometry: THREE.BufferGeometry,
@@ -73,10 +70,10 @@ export class SceneKit {
     point: ScenePlacement,
     parent: THREE.Object3D = this.root,
   ) {
-    const material2 = new THREE.Mesh(this.ownGeometry(geometry), material);
-    this.pose(material2, point);
-    parent.add(material2);
-    return material2;
+    const mesh = new THREE.Mesh(this.ownGeometry(geometry), material);
+    this.pose(mesh, point);
+    parent.add(mesh);
+    return mesh;
   }
   pose(object: THREE.Object3D, placement: ScenePlacement) {
     object.position.set(...placement.p);
@@ -198,22 +195,16 @@ export class SceneKit {
     this.root.removeFromParent();
     this.geometries.forEach((geometry) => geometry.dispose());
     this.materials.forEach((material) => material.dispose());
-    this.textures.forEach((timeSeconds) => timeSeconds.dispose());
+    this.textures.forEach((texture) => texture.dispose());
     this.root.clear();
   }
 }
-/**
- * Return a deterministic random source so rebuilding preserves the authored layout.
- */
 export function seeded(seed: number) {
   return () => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     return seed / 4294967296;
   };
 }
-/**
- * Apply the existing interpolation curve without changing its timing or bounds.
- */
 export function ease(startValue: number, endValue: number, inputValue: number) {
   return THREE.MathUtils.smoothstep(inputValue, startValue, endValue);
 }

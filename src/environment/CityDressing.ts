@@ -12,13 +12,7 @@ import { concreteTexture } from '../presentation/Surfaces';
  */
 
 type Vector3Tuple = [number, number, number];
-/**
- * Seeded random-number source used by procedural construction.
- */
 export type RandomSource = () => number;
-/**
- * Building face selected for procedural facade dressing.
- */
 type FacadeFace = '+x' | '-x' | '+z' | '-z';
 
 const STOREY = 3.2;
@@ -163,9 +157,6 @@ export function cityMaterials(sceneKit: SceneKit) {
     ],
   };
 }
-/**
- * Data contract used by environment construction.
- */
 export type CityMaterials = ReturnType<typeof cityMaterials>;
 
 /** A building's local frame: centred on its footprint, base at y = 0. */
@@ -188,8 +179,8 @@ export function buildingFrame(
  * windows (frame, glass, sill), floor bands, AC units, balconies, a drain pipe, broken panes.
  */
 export function dressFacade(
-  depth2: Dressing,
-  material2: CityMaterials,
+  dressing: Dressing,
+  materials: CityMaterials,
   frame: THREE.Matrix4,
   width: number,
   height: number,
@@ -239,8 +230,8 @@ export function dressFacade(
       su: number,
       scaleY: number,
     ) =>
-      depth2.add(
-        depth2.pane,
+      dressing.add(
+        dressing.pane,
         material,
         frame,
         at(progress, yPosition, count),
@@ -257,17 +248,17 @@ export function dressFacade(
       yPosition2 += storey, row++
     ) {
       const cy = yPosition2 + 1.35 * blendFactor;
-      depth2.box(
-        material2.trim,
+      dressing.box(
+        materials.trim,
         frame,
         at(0, yPosition2 - 0.1, 0.06),
         size(span + 0.04, 0.16, 0.12),
       );
       if (style === 'office') {
-        pane(material2.glass, 0, cy, 0.05, span - 0.7, 1.7 * blendFactor);
+        pane(materials.glass, 0, cy, 0.05, span - 0.7, 1.7 * blendFactor);
         for (let componentValue = 0; componentValue <= cols; componentValue++)
           pane(
-            material2.frame,
+            materials.frame,
             scalarValue - bay / 2 + componentValue * bay,
             cy,
             0.07,
@@ -282,7 +273,7 @@ export function dressFacade(
           const radius = random();
           if (radius < lit)
             pane(
-              radius < lit * 0.7 ? material2.warm : material2.cool,
+              radius < lit * 0.7 ? materials.warm : materials.cool,
               scalarValue + componentValue2 * bay,
               cy,
               0.06,
@@ -297,29 +288,29 @@ export function dressFacade(
       for (let componentValue3 = 0; componentValue3 < cols; componentValue3++) {
         const progress2 = scalarValue + componentValue3 * bay,
           radius2 = random();
-        pane(material2.frame, progress2, cy, 0.035, ww + 0.18, wh + 0.18);
+        pane(materials.frame, progress2, cy, 0.035, ww + 0.18, wh + 0.18);
         const glass =
           radius2 < lit * 0.7
-            ? material2.warm
+            ? materials.warm
             : radius2 < lit
-              ? material2.curtain
+              ? materials.curtain
               : radius2 > 0.96
-                ? material2.frame
-                : material2.glass;
+                ? materials.frame
+                : materials.glass;
         pane(glass, progress2, cy, 0.065, ww, wh);
         if (style === 'works') {
-          pane(material2.frame, progress2, cy, 0.075, 0.05, wh);
-          pane(material2.frame, progress2, cy + 0.3, 0.075, ww, 0.05);
+          pane(materials.frame, progress2, cy, 0.075, 0.05, wh);
+          pane(materials.frame, progress2, cy + 0.3, 0.075, ww, 0.05);
         }
-        depth2.box(
-          material2.sill,
+        dressing.box(
+          materials.sill,
           frame,
           at(progress2, cy - wh / 2 - 0.1, 0.12),
           size(ww + 0.3, 0.08, 0.22),
         );
         if (style === 'apartment' && random() < 0.28)
-          depth2.box(
-            material2.unit,
+          dressing.box(
+            materials.unit,
             frame,
             at(progress2 + ww * 0.3, cy - wh / 2 - 0.45, 0.3),
             size(0.75, 0.48, 0.5),
@@ -328,20 +319,20 @@ export function dressFacade(
       // Every other storey of an apartment block carries a balcony run on one bay.
       if (style === 'apartment' && row % 2 === 1 && cols > 1) {
         const progress3 = scalarValue + Math.floor(random() * cols) * bay;
-        depth2.box(
-          material2.sill,
+        dressing.box(
+          materials.sill,
           frame,
           at(progress3, yPosition2 + 0.02, 0.55),
           size(bay - 0.2, 0.12, 1.1),
         );
-        depth2.box(
-          material2.steel,
+        dressing.box(
+          materials.steel,
           frame,
           at(progress3, yPosition2 + 0.55, 1.08),
           size(bay - 0.2, 0.05, 0.04),
         );
-        depth2.box(
-          material2.steel,
+        dressing.box(
+          materials.steel,
           frame,
           at(progress3, yPosition2 + 0.3, 1.08),
           size(bay - 0.2, 0.5, 0.015),
@@ -349,16 +340,16 @@ export function dressFacade(
       }
     }
     // A drain pipe on the wall's edge, and a vent stack near the top.
-    depth2.add(
-      depth2.cyl,
-      material2.steel,
+    dressing.add(
+      dressing.cyl,
+      materials.steel,
       frame,
       at(span / 2 - 0.35, height / 2, 0.14),
       [0.14, height, 0.14],
     );
     if (random() > 0.5)
-      depth2.box(
-        material2.unit,
+      dressing.box(
+        materials.unit,
         frame,
         at(-span / 2 + 1, height - 1.3, 0.2),
         size(0.9, 0.6, 0.35),
@@ -368,8 +359,8 @@ export function dressFacade(
 
 /** Parapet and roof clutter: tanks on legs, plant, a mast with its warning lamp, a sign frame. */
 export function dressRoof(
-  depth2: Dressing,
-  material: CityMaterials,
+  dressing: Dressing,
+  materials: CityMaterials,
   frame: THREE.Matrix4,
   width: number,
   height: number,
@@ -396,20 +387,20 @@ export function dressRoof(
         [0.2, 0.7, depth],
       ],
     ] as [Vector3Tuple, Vector3Tuple][])
-      depth2.box(material.trim, frame, point, scaleVector);
+      dressing.box(materials.trim, frame, point, scaleVector);
   if (random() > 0.45) {
     const xPosition = (random() - 0.5) * width * 0.5,
       zPosition = (random() - 0.5) * depth * 0.4;
-    depth2.add(
-      depth2.cyl,
-      material.rust,
+    dressing.add(
+      dressing.cyl,
+      materials.rust,
       frame,
       [xPosition, height + 2.3, zPosition],
       [1.6, 1.8, 1.6],
     );
-    depth2.add(
-      depth2.cone4,
-      material.trim,
+    dressing.add(
+      dressing.cone4,
+      materials.trim,
       frame,
       [xPosition, height + 3.45, zPosition],
       [1.55, 0.5, 1.55],
@@ -420,8 +411,8 @@ export function dressRoof(
       [-0.55, 0.55],
       [0.55, 0.55],
     ])
-      depth2.box(
-        material.steel,
+      dressing.box(
+        materials.steel,
         frame,
         [xPosition + deltaX, height + 0.7, zPosition + deltaZ],
         [0.08, 1.4, 0.08],
@@ -432,8 +423,8 @@ export function dressRoof(
     index < count;
     index++
   )
-    depth2.box(
-      material.unit,
+    dressing.box(
+      materials.unit,
       frame,
       [
         (random() - 0.5) * width * 0.6,
@@ -445,15 +436,15 @@ export function dressRoof(
   if (random() > 0.55) {
     const xPosition2 = (random() - 0.5) * width * 0.5,
       mast = 3 + random() * 4;
-    depth2.box(
-      material.steel,
+    dressing.box(
+      materials.steel,
       frame,
       [xPosition2, height + mast / 2, 0],
       [0.07, mast, 0.07],
     );
-    depth2.add(
-      depth2.cyl,
-      material.aviation,
+    dressing.add(
+      dressing.cyl,
+      materials.aviation,
       frame,
       [xPosition2, height + mast + 0.08, 0],
       [0.16, 0.16, 0.16],
@@ -461,74 +452,74 @@ export function dressRoof(
   }
   if (options.sign) {
     const material2 =
-        material.neon[Math.floor(random() * material.neon.length)],
+        materials.neon[Math.floor(random() * materials.neon.length)],
       sw = Math.min(width * 0.8, 4.5);
     for (const deltaX2 of [-sw / 3, sw / 3])
-      depth2.box(
-        material.steel,
+      dressing.box(
+        materials.steel,
         frame,
         [deltaX2, height + 1.1, depth / 2 - 0.6],
         [0.09, 2.2, 0.09],
       );
-    depth2.box(
-      material.frame,
+    dressing.box(
+      materials.frame,
       frame,
       [0, height + 2.4, depth / 2 - 0.6],
       [sw, 1.2, 0.12],
     );
-    depth2.box(
+    dressing.box(
       material2,
       frame,
       [0, height + 2.4, depth / 2 - 0.52],
       [sw * 0.9, 0.18, 0.02],
     );
-    depth2.box(
+    dressing.box(
       material2,
       frame,
       [0, height + 2.05, depth / 2 - 0.52],
       [sw * 0.6, 0.1, 0.02],
     );
   }
-  if (options.tower) towerCap(depth2, material, frame, width, height, depth);
+  if (options.tower) towerCap(dressing, materials, frame, width, height, depth);
 }
 
 /** San Fransokyo's tiered caps: two flared eaves and a pointed crown. */
 export function towerCap(
-  depth2: Dressing,
-  material2: CityMaterials,
+  dressing: Dressing,
+  materials: CityMaterials,
   frame: THREE.Matrix4,
   width: number,
   height: number,
   depth: number,
-  material: THREE.Material = material2.trim,
+  material: THREE.Material = materials.trim,
 ) {
-  depth2.box(
+  dressing.box(
     material,
     frame,
     [0, height + 0.12, 0],
     [width + 1.4, 0.24, depth + 1.4],
   );
-  depth2.add(
-    depth2.cone4,
+  dressing.add(
+    dressing.cone4,
     material,
     frame,
     [0, height + 0.7, 0],
     [width + 1.1, 0.9, depth + 1.1],
   );
-  depth2.box(
+  dressing.box(
     material,
     frame,
     [0, height + 1.6, 0],
     [width * 0.55, 1.4, depth * 0.55],
   );
-  depth2.box(
+  dressing.box(
     material,
     frame,
     [0, height + 2.4, 0],
     [width * 0.55 + 1, 0.18, depth * 0.55 + 1],
   );
-  depth2.add(
-    depth2.cone4,
+  dressing.add(
+    dressing.cone4,
     material,
     frame,
     [0, height + 3, 0],
@@ -541,8 +532,8 @@ export function towerCap(
  * the street, tiered caps on some, and a few with an upper section sheared off and hanging.
  */
 export function skyline(
-  depth: Dressing,
-  material: CityMaterials,
+  dressing: Dressing,
+  materials: CityMaterials,
   random: RandomSource,
   material2: {
     x: [number, number];
@@ -570,30 +561,30 @@ export function skyline(
       -1,
     );
     const tone = material2.tones[Math.floor(random() * material2.tones.length)];
-    depth.box(tone, frame, [0, height / 2, 0], [width, height, dd]);
+    dressing.box(tone, frame, [0, height / 2, 0], [width, height, dd]);
     // Window strips on the street-facing face, a few of them lit.
     const face = material2.facing ?? 1,
       fz = face * (dd / 2 + 0.05);
     for (let yPosition = 4; yPosition < height - 2; yPosition += STOREY) {
       const radius = random();
-      depth.add(
-        depth.pane,
+      dressing.add(
+        dressing.pane,
         radius < 0.12
-          ? material.warm
+          ? materials.warm
           : radius < 0.16
-            ? material.cool
-            : material.glass,
+            ? materials.cool
+            : materials.glass,
         frame,
         [0, yPosition, fz],
         [width - 1, 1.2, 1],
         [0, face > 0 ? 0 : Math.PI, 0],
       );
     }
-    if (random() < 0.35) towerCap(depth, material, frame, width, height, dd);
+    if (random() < 0.35) towerCap(dressing, materials, frame, width, height, dd);
     else if (random() < 0.4) {
       // Sheared off by the rupture: the top storeys hang offset, turned, with a gap below them.
       const top = 4 + random() * 6;
-      depth.box(
+      dressing.box(
         tone,
         frame,
         [(random() - 0.5) * 3, height + 1.5 + top / 2, (random() - 0.5) * 2],
@@ -605,15 +596,15 @@ export function skyline(
         ],
       );
     } else if (random() < 0.6) {
-      depth.box(
-        material.steel,
+      dressing.box(
+        materials.steel,
         frame,
         [width * 0.2, height + 3, 0],
         [0.12, 6, 0.12],
       );
-      depth.add(
-        depth.cyl,
-        material.aviation,
+      dressing.add(
+        dressing.cyl,
+        materials.aviation,
         frame,
         [width * 0.2, height + 6.1, 0],
         [0.3, 0.3, 0.3],
@@ -624,8 +615,8 @@ export function skyline(
 
 /** Patched asphalt, manholes, cracks and standing water across a stretch of road (y = surface). */
 export function roadBreakup(
-  depth: Dressing,
-  material: CityMaterials,
+  dressing: Dressing,
+  materials: CityMaterials,
   random: RandomSource,
   material2: {
     x: [number, number];
@@ -643,33 +634,33 @@ export function roadBreakup(
       zPosition = lerp(material2.z),
       kind = random();
     if (kind < 0.35)
-      depth.box(
-        material2.patch ?? material.patch,
+      dressing.box(
+        material2.patch ?? materials.patch,
         null,
         [xPosition, material2.y + 0.004, zPosition],
         [1 + random() * 1.8, 0.008, 1 + random() * 2.2],
         [0, (random() - 0.5) * 0.3, 0],
       );
     else if (kind < 0.5)
-      depth.add(
-        depth.disc,
-        material.puddle,
+      dressing.add(
+        dressing.disc,
+        materials.puddle,
         null,
         [xPosition, material2.y + 0.007, zPosition],
         [0.8 + random() * 1.4, 0.006, 0.5 + random() * 1],
         [0, random() * 3, 0],
       );
     else if (kind < 0.65) {
-      depth.add(
-        depth.disc,
-        material.steel,
+      dressing.add(
+        dressing.disc,
+        materials.steel,
         null,
         [xPosition, material2.y + 0.01, zPosition],
         [0.8, 0.02, 0.8],
       );
-      depth.add(
-        depth.disc,
-        material.crack,
+      dressing.add(
+        dressing.disc,
+        materials.crack,
         null,
         [xPosition, material2.y + 0.012, zPosition],
         [0.6, 0.02, 0.6],
@@ -680,8 +671,8 @@ export function roadBreakup(
         cz = zPosition;
       for (let segmentIndex = 0; segmentIndex < 4; segmentIndex++) {
         const len = 0.3 + random() * 0.7;
-        depth.box(
-          material.crack,
+        dressing.box(
+          materials.crack,
           null,
           [cx, material2.y + 0.009, cz],
           [0.016, 0.006, len],
@@ -700,8 +691,8 @@ export function roadBreakup(
  * the wires between them (sagging, merged into one mesh). `points` run down one side of the street.
  */
 export function utilityLines(
-  depth: Dressing,
-  material: CityMaterials,
+  dressing: Dressing,
+  materials: CityMaterials,
   random: RandomSource,
   points: [number, number][],
   offset: { height?: number; across?: number } = {},
@@ -710,44 +701,44 @@ export function utilityLines(
     tips: THREE.Vector3[][] = [];
   for (const [xPosition, zPosition] of points) {
     const lean = (random() - 0.5) * 0.06;
-    depth.add(
-      depth.cyl,
-      material.trim,
+    dressing.add(
+      dressing.cyl,
+      materials.trim,
       null,
       [xPosition, height / 2, zPosition],
       [0.24, height, 0.24],
       [lean, 0, lean],
     );
-    depth.box(
-      material.steel,
+    dressing.box(
+      materials.steel,
       null,
       [xPosition, height - 0.5, zPosition],
       [0.12, 0.12, 2.2],
     );
-    depth.box(
-      material.steel,
+    dressing.box(
+      materials.steel,
       null,
       [xPosition, height - 1.2, zPosition],
       [0.1, 0.1, 1.6],
     );
     for (const deltaZ of [-0.9, 0, 0.9])
-      depth.add(
-        depth.cyl,
-        material.unit,
+      dressing.add(
+        dressing.cyl,
+        materials.unit,
         null,
         [xPosition, height - 0.35, zPosition + deltaZ],
         [0.08, 0.2, 0.08],
       );
     if (random() > 0.6) {
-      depth.add(
-        depth.cyl,
-        material.unit,
+      dressing.add(
+        dressing.cyl,
+        materials.unit,
         null,
         [xPosition + Math.sign(xPosition) * 0.45, height - 2.4, zPosition],
         [0.55, 0.9, 0.55],
       );
-      depth.box(
-        material.steel,
+      dressing.box(
+        materials.steel,
         null,
         [xPosition + Math.sign(xPosition) * 0.2, height - 2.4, zPosition],
         [0.4, 0.08, 0.08],
@@ -787,14 +778,14 @@ export function utilityLines(
         0.6 + random() * 0.5,
       );
   if (offset.across)
-    tips.forEach((timeSeconds, index2) => {
+    tips.forEach((tip, index2) => {
       if (index2 % 2 === 0)
         sag(
-          timeSeconds[1],
+          tip[1],
           new THREE.Vector3(
             offset.across!,
             height - 1.6 - random(),
-            timeSeconds[1].z + (random() - 0.5) * 2,
+            tip[1].z + (random() - 0.5) * 2,
           ),
           1.2 + random(),
         );
@@ -803,7 +794,7 @@ export function utilityLines(
     const geometry = mergeGeometries(tubes, false);
     tubes.forEach((geometry2) => geometry2.dispose());
     if (geometry)
-      depth.k.mesh(geometry, material.cable, { p: [0, 0, 0] }).name =
+      dressing.k.mesh(geometry, materials.cable, { p: [0, 0, 0] }).name =
         'city-dressing';
   }
 }
@@ -814,8 +805,8 @@ export function utilityLines(
  * on any merged BoxGeometry set without touching the shared source. Boxes under `minHeight` are skipped.
  */
 export function skinMergedBoxes(
-  depth2: Dressing,
-  material: CityMaterials,
+  dressing: Dressing,
+  materials: CityMaterials,
   mesh: THREE.Mesh,
   relativeTo: THREE.Object3D,
   random: RandomSource,
@@ -854,8 +845,8 @@ export function skinMergedBoxes(
       .setPosition(base)
       .premultiply(toLocal);
     dressFacade(
-      depth2,
-      material,
+      dressing,
+      materials,
       frame,
       width,
       height,

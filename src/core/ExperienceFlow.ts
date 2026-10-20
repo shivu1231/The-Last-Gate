@@ -75,7 +75,7 @@ export const useExperienceFlow = create<ExperienceFlowSnapshot>(() => ({
 }));
 
 /**
- * Receives committed states, including changes mirrored from existing chapter stores.
+ * Receives committed states, including changes mirrored from chapter stores.
  */
 type ExperienceStateListener = (
   state: ExperienceState,

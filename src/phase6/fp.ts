@@ -12,9 +12,6 @@ export type Footstep = (side: -1 | 1, speed: number) => void;
 const WALK_STRIDE = 0.72,
   RUN_STRIDE = 1.35;
 
-/**
- * Owns the final pursuit and restoration state and its existing runtime lifecycle.
- */
 export class FirstPerson {
   readonly feet = new THREE.Vector3();
   /** Smoothed ground speed, m/s. */

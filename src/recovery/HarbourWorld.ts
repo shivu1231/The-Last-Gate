@@ -147,7 +147,7 @@ export function preloadHarbour() {
   return prepared;
 }
 /**
- * Return the prepared recovery world or start its existing build path.
+ * Return the prepared recovery world or start its build path.
  */
 export function takeHarbour() {
   const world = prepared ?? createHarbourWorld();

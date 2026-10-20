@@ -38,7 +38,7 @@ class InteractionLocks {
   }
 
   /**
-   * Check the guard against the current clock without changing its ownership.
+   * Check the guard against the current clock.
    */
   isLocked(key: string) {
     const existingLock = this.locks.get(key);

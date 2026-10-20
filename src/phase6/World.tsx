@@ -13,7 +13,6 @@ import {
 import { FirstPerson } from './fp';
 import { createRelay, BAYMAX_YARD, BAYMAX_REACH_Z } from './relay';
 import {
-  createStreet,
   createCartridge,
   ringLive,
   rampY,
@@ -28,11 +27,9 @@ import {
   type Street,
 } from './street';
 import {
-  createHome,
   directHome,
   HOME_GATE,
   HOME_BAYMAX,
-  CARE_CHIP_AT,
   BIN_SPOT,
   HIRO_KNEEL,
   RAIL_HIRO,
@@ -105,9 +102,8 @@ const backOut = (xPosition: number) => {
   );
 };
 const RED = new THREE.Color('#ff2414'),
-  DARK = new THREE.Color('#0b0f11'),
-  CARE = new THREE.Color('#f4f8ff');
-const tertiaryVector = (
+  DARK = new THREE.Color('#0b0f11');
+const vec3 = (
   xPosition: number,
   yPosition: number,
   zPosition: number,
@@ -122,16 +118,16 @@ const CHASE_SKY = new THREE.Color('#05090e'),
   CITY_SKY = new THREE.Color('#0a1622');
 
 /** Where Hiro stands for each piece of the gate site. */
-const GATE_SPOT = tertiaryVector(-0.6, 0, -83.8);
-const DECK_SPOT = tertiaryVector(DECK.x + 0.7, DECK.y, DECK.z + 0.45);
-const READER_SPOT = tertiaryVector(PEDESTAL.x - 0.1, 0, PEDESTAL.z + 1.02);
+const GATE_SPOT = vec3(-0.6, 0, -83.8);
+const DECK_SPOT = vec3(DECK.x + 0.7, DECK.y, DECK.z + 0.45);
+const READER_SPOT = vec3(PEDESTAL.x - 0.1, 0, PEDESTAL.z + 1.02);
 // Same eye position as telemetry's final rail, outside the roof and east of the receiver.
-const RELAY_SPOT = tertiaryVector(5, 0, -8.8);
+const RELAY_SPOT = vec3(5, 0, -8.8);
 /** The wake's dive: high behind the relay, down west of the receiver tower, then low under the dish into the yard. */
 const WAKE_PATH = new THREE.CubicBezierCurve3(
-  tertiaryVector(BAYMAX_YARD.x - 9, 17, BAYMAX_YARD.z - 26),
-  tertiaryVector(BAYMAX_YARD.x - 8.1, 12, BAYMAX_YARD.z - 6.5),
-  tertiaryVector(BAYMAX_YARD.x - 5.1, 1.6, BAYMAX_YARD.z - 0.1),
+  vec3(BAYMAX_YARD.x - 9, 17, BAYMAX_YARD.z - 26),
+  vec3(BAYMAX_YARD.x - 8.1, 12, BAYMAX_YARD.z - 6.5),
+  vec3(BAYMAX_YARD.x - 5.1, 1.6, BAYMAX_YARD.z - 0.1),
   BAYMAX_YARD.clone(),
 );
 /** Lying on his back (yaw π) his feet are 1.81 m toward the gate from his root, his head 2.76 m back (at full shell size). */
@@ -564,11 +560,11 @@ export function World({
       blending: THREE.AdditiveBlending,
       toneMapped: false,
     });
-    const material2 = new THREE.Mesh(geometry, material);
-    material2.frustumCulled = false;
-    material2.visible = false;
-    material2.renderOrder = 4;
-    return material2;
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.frustumCulled = false;
+    mesh.visible = false;
+    mesh.renderOrder = 4;
+    return mesh;
   }, []);
   // Coming through the far side: only the part of him already through is drawn.
   const crossing = useMemo(
@@ -1354,7 +1350,7 @@ export function World({
         look
           .copy(head())
           .lerp(
-            tertiaryVector(
+            vec3(
               baymax.root.position.x,
               1.15,
               baymax.root.position.z,
@@ -1378,7 +1374,7 @@ export function World({
         look
           .copy(head())
           .lerp(
-            tertiaryVector(
+            vec3(
               baymax.root.position.x,
               1.45,
               baymax.root.position.z,
@@ -1390,10 +1386,10 @@ export function World({
         if (easedProgress > 6.4)
           along(
             [
-              tertiaryVector(5.8, 0, -8.6),
-              tertiaryVector(3.6, 0, -8.4),
-              tertiaryVector(2.9, 0, -6.2),
-              tertiaryVector(2.55, 0, -3.1),
+              vec3(5.8, 0, -8.6),
+              vec3(3.6, 0, -8.4),
+              vec3(2.9, 0, -6.2),
+              vec3(2.55, 0, -3.1),
             ],
             span(easedProgress, 6.4, 9.6),
             feet,
@@ -1619,11 +1615,11 @@ export function World({
             // Clipping the facade: chunks come off where his shoulder meets the wall, sparks of dust at its foot.
             ch.done = true;
             const at = baymax.root.position.clone(),
-              wall = tertiaryVector(ch.side * 6.4, 3.4 + lift, at.z);
+              wall = vec3(ch.side * 6.4, 3.4 + lift, at.z);
             st.impact(wall, true);
             st.debris(
               wall,
-              tertiaryVector(-ch.side * 2.2, 1.2, -1.2),
+              vec3(-ch.side * 2.2, 1.2, -1.2),
               0.42,
               (hit) => {
                 const depth = hit.distanceTo(camera.position);
@@ -1632,8 +1628,8 @@ export function World({
               },
             );
             st.debris(
-              wall.clone().add(tertiaryVector(0, 0.8, 0.5)),
-              tertiaryVector(-ch.side * 1.6, 0.6, -0.6),
+              wall.clone().add(vec3(0, 0.8, 0.5)),
+              vec3(-ch.side * 1.6, 0.6, -0.6),
               0.2,
             );
             st.kickDust(wall.clone().setY(0), 0.6, 0.3);
@@ -1734,11 +1730,11 @@ export function World({
           )
             .setY(0)
             .add(
-              tertiaryVector(side * (1.5 + (vector.falls % 3) * 0.45), 0, 0),
+              vec3(side * (1.5 + (vector.falls % 3) * 0.45), 0, 0),
             );
-          const from = tertiaryVector(side * 7.6, 13.5, land.z + 1.5),
+          const from = vec3(side * 7.6, 13.5, land.z + 1.5),
             fall = Math.sqrt((2 * 13) / 15);
-          const push = tertiaryVector(
+          const push = vec3(
             (land.x - from.x) / fall,
             0,
             (land.z - from.z) / fall,
@@ -1751,7 +1747,7 @@ export function World({
               state.misses++;
             });
             st.debris(
-              from.clone().add(tertiaryVector(0, 1.2, -0.6)),
+              from.clone().add(vec3(0, 1.2, -0.6)),
               push.clone().multiplyScalar(1.08),
               0.22,
             );
@@ -1847,10 +1843,10 @@ export function World({
           // A last look at it humming, then across to the ladder, up, and out onto the deck.
           const path = [
             GATE_SPOT,
-            tertiaryVector(LADDER_X + 0.3, 0, -88.5),
-            tertiaryVector(LADDER_X, 0, -88.85),
-            tertiaryVector(LADDER_X, DECK.y, -88.85),
-            tertiaryVector(LADDER_X + 0.4, DECK.y, -89.7),
+            vec3(LADDER_X + 0.3, 0, -88.5),
+            vec3(LADDER_X, 0, -88.85),
+            vec3(LADDER_X, DECK.y, -88.85),
+            vec3(LADDER_X + 0.4, DECK.y, -89.7),
             DECK_SPOT,
           ];
           const blendFactor2 =
@@ -1870,7 +1866,7 @@ export function World({
             look
               .copy(head())
               .lerp(
-                tertiaryVector(0, FRAME.y, FRAME.z),
+                vec3(0, FRAME.y, FRAME.z),
                 1 - span(easedProgress, 5.4, 6.4),
               );
           lookRate = 3;
@@ -1894,7 +1890,7 @@ export function World({
         state2.stage === 'switchOn2'
       ) {
         // Full power: up above the roofs, down the street, and stop face to face with Hiro.
-        const hover = tertiaryVector(
+        const hover = vec3(
           LANDING.x,
           HOVER_Y,
           LANDING.z + HOVER_BACK,
@@ -1906,8 +1902,8 @@ export function World({
           const rise = span(easedProgress, 0.7, 2.3),
             travel = span(easedProgress, 2.2, 5.2);
           const up = vector.bayAt.clone().setY(rise * 9);
-          const vector3 = up.clone().add(tertiaryVector(0, 3, -12)),
-            vector4 = hover.clone().add(tertiaryVector(0, 4, 9));
+          const vector3 = up.clone().add(vec3(0, 3, -12)),
+            vector4 = hover.clone().add(vec3(0, 4, 9));
           const vector5 =
             travel > 0
               ? new THREE.CubicBezierCurve3(
@@ -1951,7 +1947,7 @@ export function World({
           baymax.root.position
             .copy(hover)
             .add(
-              tertiaryVector(
+              vec3(
                 Math.sin(elapsedSeconds * 0.9) * 0.12 +
                   Math.sin(elapsedSeconds * 0.37) * 0.07,
                 pulseY - feint * 0.05,
@@ -2052,7 +2048,7 @@ export function World({
         if (easedProgress > 0.12 && easedProgress - deltaSeconds <= 0.12) {
           st.fire(
             baymax.fistWorld(new THREE.Vector3()),
-            tertiaryVector(-6, 0.03, LANDING.z - 2),
+            vec3(-6, 0.03, LANDING.z - 2),
           );
           audio.whoosh();
         }
@@ -2105,17 +2101,17 @@ export function World({
         // Approach outside the shoulder, then look down into the upward-facing socket.
         const R0 = LANDING,
           chest = baymax.chestWorld(scratchVector).clone(),
-          onHim = tertiaryVector(chest.x - 0.75, 0, chest.z - 0.35),
-          approach = tertiaryVector(chest.x - 2.4, 0, chest.z - 1.1);
+          onHim = vec3(chest.x - 0.75, 0, chest.z - 0.35),
+          approach = vec3(chest.x - 2.4, 0, chest.z - 1.1);
         raise = 0;
         freeLook = 0;
         if (state2.chip !== 'out') {
           // Down the ladder, across to him, and up onto him to get at the bay.
           const path = [
             DECK_SPOT,
-            tertiaryVector(LADDER_X + 0.4, DECK.y, -89.7),
-            tertiaryVector(LADDER_X, DECK.y, -88.85),
-            tertiaryVector(LADDER_X, 0, -88.85),
+            vec3(LADDER_X + 0.4, DECK.y, -89.7),
+            vec3(LADDER_X, DECK.y, -88.85),
+            vec3(LADDER_X, 0, -88.85),
             approach,
             onHim,
           ];
@@ -2130,9 +2126,9 @@ export function World({
           along(path, blendFactor4, feet);
           look.copy(
             easedProgress < 0.8
-              ? tertiaryVector(LADDER_X, DECK.y, -88)
+              ? vec3(LADDER_X, DECK.y, -88)
               : easedProgress < 2.3
-                ? tertiaryVector(LADDER_X, 0.4, -87.6)
+                ? vec3(LADDER_X, 0.4, -87.6)
                 : baymax.dockWorld(scratchVector),
           );
           eye = THREE.MathUtils.lerp(
@@ -2155,7 +2151,7 @@ export function World({
               FirstPerson.blend(
                 fp.eyeAt(),
                 look.clone(),
-                tertiaryVector(0, FRAME.y - 0.9, FRAME.z),
+                vec3(0, FRAME.y - 0.9, FRAME.z),
                 clue * 0.95,
               ),
             );
@@ -2165,7 +2161,7 @@ export function World({
           const path = [
             onHim,
             approach,
-            tertiaryVector(R0.x + 0.3, 0, R0.z - 2.6),
+            vec3(R0.x + 0.3, 0, R0.z - 2.6),
             READER_SPOT,
           ];
           along(
@@ -2190,7 +2186,7 @@ export function World({
                 : st.readerWorld(),
             )
             .lerp(
-              st.readerWorld().add(tertiaryVector(0, 0.05, 0)),
+              st.readerWorld().add(vec3(0, 0.05, 0)),
               span(scalarValue3, 1.6, 4),
             );
           if (scalarValue3 > 4.2)
@@ -2219,8 +2215,8 @@ export function World({
           along(
             [
               READER_SPOT,
-              tertiaryVector(1.4, 0, -87.4),
-              tertiaryVector(LANDING.x * 0.85, 0, LANDING.z - FEET - LEAD),
+              vec3(1.4, 0, -87.4),
+              vec3(LANDING.x * 0.85, 0, LANDING.z - FEET - LEAD),
             ],
             span(easedProgress, 5.3, 7.6),
             feet,
@@ -2229,7 +2225,7 @@ export function World({
             .copy(baymax.root.position)
             .setY(0.9)
             .lerp(
-              tertiaryVector(LANDING.x, 0.4, LANDING.z - FEET),
+              vec3(LANDING.x, 0.4, LANDING.z - FEET),
               span(easedProgress, 6.6, 7.6),
             );
           lookRate = 3;
@@ -2237,9 +2233,9 @@ export function World({
           // He takes him by the feet and hauls him back: across onto the walkway's line, then
           // straight up it, through the middle of the ring, a braced pull at a time.
           const blendFactor5 = tugged((easedProgress - 8.3) / 10, 10);
-          const vector6 = tertiaryVector(LANDING.x, 0, LANDING.z),
-            vector7 = tertiaryVector(0, 0, LANDING.z - 1.1),
-            cameraAnchor = tertiaryVector(0, 0, CROSS_ROOT_Z - 1.2);
+          const vector6 = vec3(LANDING.x, 0, LANDING.z),
+            vector7 = vec3(0, 0, LANDING.z - 1.1),
+            cameraAnchor = vec3(0, 0, CROSS_ROOT_Z - 1.2);
           const root = along([vector6, vector7, cameraAnchor], blendFactor5);
           const cz = root.z + LIE_CENTRE,
             fz = root.z - FEET,
@@ -2266,7 +2262,7 @@ export function World({
               FirstPerson.blend(
                 fp.eyeAt(),
                 look.clone(),
-                tertiaryVector(0, FRAME.y, FRAME.z - 3),
+                vec3(0, FRAME.y, FRAME.z - 3),
                 glance * 0.9,
               ),
             );
@@ -2405,7 +2401,7 @@ export function World({
         // Through. The rest of him comes out of the gate after Hiro, slides off its lip onto the
         // ground, and the gate closes behind him.
         const blendFactor6 = tugged(easedProgress / (EMERGE - 1.2), 6);
-        const root = tertiaryVector(0, 0, HOME_CROSS_ROOT_Z).lerp(
+        const root = vec3(0, 0, HOME_CROSS_ROOT_Z).lerp(
           HOME_BAYMAX,
           blendFactor6,
         );
@@ -2431,7 +2427,7 @@ export function World({
         look
           .set(root.x, baymax.root.position.y + 0.6, root.z + 1.3)
           .lerp(
-            tertiaryVector(HOME_GATE.x, HOME_GATE.y - 1, HOME_GATE.z),
+            vec3(HOME_GATE.x, HOME_GATE.y - 1, HOME_GATE.z),
             span(easedProgress, EMERGE - 2, EMERGE - 0.6) * 0.6,
           );
         lookRate = 3.5;
@@ -2724,7 +2720,7 @@ export function World({
         .clone()
         .add(baymax.ankleWorld('R'))
         .multiplyScalar(0.5);
-      const heldFeet = tertiaryVector(anchor.x, 0, anchor.z - 0.58);
+      const heldFeet = vec3(anchor.x, 0, anchor.z - 0.58);
       if (set === 'home') heldFeet.z = Math.min(HOME_GATE.z - 0.05, heldFeet.z);
       heldFeet.y = set === 'home' ? homeFloor(heldFeet.z) : rampY(heldFeet.z);
       feet.lerp(heldFeet, grip);
@@ -2747,7 +2743,7 @@ export function World({
     eyeGlow.position
       .copy(scratchVector)
       .add(
-        tertiaryVector(
+        vec3(
           Math.sin(pose.yaw) * 0.55 * BS,
           0,
           Math.cos(pose.yaw) * 0.55 * BS,
@@ -2896,7 +2892,7 @@ export function World({
     if (vector.shake > 0 && !reducedMotion) {
       const firstValue2 = vector.shake * vector.shake * 0.1;
       camera.position.add(
-        tertiaryVector(
+        vec3(
           Math.sin(elapsedSeconds * 61) * firstValue2,
           Math.sin(elapsedSeconds * 73 + 1) * firstValue2,
           Math.sin(elapsedSeconds * 57 + 2) * firstValue2 * 0.5,
@@ -2922,7 +2918,7 @@ export function World({
       } else if (state2.chip === 'out' && state2.cart === 'hand') {
         if (card.parent !== hands.rightSocket) hands.rightSocket.attach(card);
         card.position.lerp(
-          tertiaryVector(0.055, 0.065, 0),
+          vec3(0.055, 0.065, 0),
           1 - Math.exp(-deltaSeconds * 9),
         );
         const gripQ = hands.rightSocket
@@ -2942,7 +2938,7 @@ export function World({
         card.visible = true;
         if (state2.cart === 'slot' && stReader) {
           const rotationQuaternion = stReader.readerQuat(),
-            normalVector2 = tertiaryVector(0, 1, 0).applyQuaternion(
+            normalVector2 = vec3(0, 1, 0).applyQuaternion(
               rotationQuaternion,
             );
           const seat = stReader

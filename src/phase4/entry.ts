@@ -18,9 +18,6 @@ const dev: { step: DistrictStep; start: BayStart } | null =
         ? { step: 'bay', start: param }
         : null;
 
-/**
- * Data contract used by Bay 6 and its city approach.
- */
 type DistrictEntry = {
   active: boolean;
   step: DistrictStep;

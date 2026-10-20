@@ -121,9 +121,6 @@ export const REENTRY_Z = 16.6;
 const RUN_END = REENTRY_Z + 2.9;
 /** The gate's plane (createPortalGate(24) in ExperienceDirector). */
 const RING_Z = 24;
-/**
- * Data contract used by shared runtime services.
- */
 export type ShotContext = {
   chest: Vector3;
   normal: Vector3;

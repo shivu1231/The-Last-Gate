@@ -3,9 +3,6 @@ import { reducedMotion } from '../config/experience';
 import { useSceneState } from '../state/SceneStateManager';
 
 // An asymmetric aperture in one continuous mask, never sliding rectangular lids.
-/**
- * Owns covered scene transitions state and its existing runtime lifecycle.
- */
 export class TransitionDirector {
   private timeline: gsap.core.Timeline | null = null;
   constructor() {

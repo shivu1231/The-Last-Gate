@@ -1,8 +1,5 @@
 import { Vector3 } from 'three';
 
-/**
- * Data contract used by regulator fitting and telemetry.
- */
 export type FacilityShot = {
   p: [number, number, number];
   l: [number, number, number];

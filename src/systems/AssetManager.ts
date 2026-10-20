@@ -23,9 +23,6 @@ const MANIFEST: Partial<Record<ExperienceState, AssetEntry[]>> = {
   AWAKE: [{ url: MODEL_URL, kind: 'gltf' }],
 };
 
-/**
- * Owns shared runtime services state and its existing runtime lifecycle.
- */
 class AssetManager {
   private baymax: Promise<Group> | null = null;
   private baymaxTemplate: Group | null = null;
@@ -83,9 +80,9 @@ class AssetManager {
       entry.kind === 'gltf'
         ? this.gltf.loadAsync(entry.url).then((group) => group.scene)
         : entry.kind === 'texture'
-          ? this.textures.loadAsync(entry.url).then((timeSeconds: Texture) => {
-              timeSeconds.colorSpace = SRGBColorSpace;
-              return timeSeconds;
+          ? this.textures.loadAsync(entry.url).then((texture: Texture) => {
+              texture.colorSpace = SRGBColorSpace;
+              return texture;
             })
           : audioEngine.load(entry.url);
     pending = source

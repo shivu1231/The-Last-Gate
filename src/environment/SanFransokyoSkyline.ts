@@ -86,10 +86,10 @@ function neon(
     drawingContext.shadowBlur = 14;
     drawingContext.strokeRect(10, 10, width - 20, height - 20);
   }
-  const timeSeconds = new THREE.CanvasTexture(canvas);
-  timeSeconds.colorSpace = THREE.SRGBColorSpace;
-  timeSeconds.anisotropy = 4;
-  return timeSeconds;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
+  return texture;
 }
 
 /**
@@ -101,7 +101,7 @@ export function buildSanFransokyo(sceneKit: SceneKit, sunDir: THREE.Vector3) {
       startValue + random() * (endValue - startValue);
   const textures: THREE.Texture[] = [];
   const disposeExtra = () =>
-    textures.forEach((timeSeconds) => timeSeconds.dispose());
+    textures.forEach((texture) => texture.dispose());
   const city = new THREE.Group();
   city.name = 'san-fransokyo';
   sceneKit.root.add(city);

@@ -96,7 +96,7 @@ function palette(sceneKit: SceneKit) {
 }
 
 /**
- * Build a tube along the existing authored utility route.
+ * Build a tube along the authored utility route.
  */
 function pipe(
   sceneKit: SceneKit,

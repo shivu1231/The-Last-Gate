@@ -145,21 +145,21 @@ function label() {
  * Build the handheld regulator remote with its guarded switch and output dial.
  */
 export function createLimiterController(): LimiterController {
-  const geometry = new Set<THREE.BufferGeometry>(),
-    material = new Set<THREE.Material>(),
-    texture = new Set<THREE.Texture>();
-  const geometry2 = <G extends THREE.BufferGeometry>(xPosition: G) => (
-    geometry.add(xPosition),
-    xPosition
+  const geometries = new Set<THREE.BufferGeometry>(),
+    materials = new Set<THREE.Material>(),
+    textures = new Set<THREE.Texture>();
+  const ownGeometry = <G extends THREE.BufferGeometry>(geometry: G) => (
+    geometries.add(geometry),
+    geometry
   );
-  const texture2 = (timeSeconds: THREE.Texture) => (
-    texture.add(timeSeconds),
-    timeSeconds
+  const ownTexture = (texture: THREE.Texture) => (
+    textures.add(texture),
+    texture
   );
-  const std = (material2: THREE.MeshStandardMaterialParameters) => {
-    const material3 = new THREE.MeshStandardMaterial(material2);
-    material.add(material3);
-    return material3;
+  const std = (parameters: THREE.MeshStandardMaterialParameters) => {
+    const material = new THREE.MeshStandardMaterial(parameters);
+    materials.add(material);
+    return material;
   };
   const root = new THREE.Group();
   root.name = 'limiter-controller';
@@ -174,17 +174,17 @@ export function createLimiterController(): LimiterController {
     rotationY = 0,
     rotationZ = 0,
   ) => {
-    const mesh = new THREE.Mesh(geometry2(geometry3), material2);
+    const mesh = new THREE.Mesh(ownGeometry(geometry3), material2);
     mesh.position.set(xPosition, yPosition, zPosition);
     mesh.rotation.set(rotationX, rotationY, rotationZ);
     parent.add(mesh);
     return mesh;
   };
 
-  const paintTex = texture2(
+  const paintTex = ownTexture(
     wornPaint('#a59f92', 61, { rustSpots: 6, scratchCount: 70, size: 256 }),
   );
-  const darkTex = texture2(
+  const darkTex = ownTexture(
     wornPaint('#3b3a38', 62, {
       metal: '#a9a8a2',
       rustSpots: 2,
@@ -192,7 +192,7 @@ export function createLimiterController(): LimiterController {
       size: 256,
     }),
   );
-  const plateTex = texture2(
+  const plateTex = ownTexture(
     paint(128, 128, (drawingContext, width, height) => {
       const result = seeded(63);
       drawingContext.fillStyle = '#202224';
@@ -221,14 +221,14 @@ export function createLimiterController(): LimiterController {
   const darkSteel = std({ color: '#3d4144', roughness: 0.42, metalness: 0.85 });
   const rubber = std({ color: '#161718', roughness: 0.85, metalness: 0 });
   const red = std({ color: '#b51d18', roughness: 0.38, metalness: 0.25 });
-  const face = std({ map: texture2(gaugeFace()), roughness: 0.55 });
+  const face = std({ map: ownTexture(gaugeFace()), roughness: 0.55 });
   const chev = std({
-    map: texture2(chevrons()),
+    map: ownTexture(chevrons()),
     roughness: 0.5,
     metalness: 0.2,
   });
   const sticker = std({
-    map: texture2(label()),
+    map: ownTexture(label()),
     roughness: 0.6,
     metalness: 0.05,
   });
@@ -240,17 +240,17 @@ export function createLimiterController(): LimiterController {
     opacity: 0.16,
     depthWrite: false,
   });
-  material.add(glass);
+  materials.add(glass);
   const lampMat = new THREE.MeshBasicMaterial({
     color: '#2a2f2a',
     toneMapped: false,
   });
-  material.add(lampMat);
+  materials.add(lampMat);
   const lensMat = new THREE.MeshBasicMaterial({
     color: '#4a1210',
     toneMapped: false,
   });
-  material.add(lensMat);
+  materials.add(lensMat);
 
   // Body: a rounded slab, chamfered paint worn through on the long top edges.
   const value = 0.062,
@@ -604,9 +604,9 @@ export function createLimiterController(): LimiterController {
     dispose() {
       gsap.killTweensOf(state);
       root.removeFromParent();
-      geometry.forEach((geometry3) => geometry3.dispose());
-      material.forEach((material2) => material2.dispose());
-      texture.forEach((timeSeconds) => timeSeconds.dispose());
+      geometries.forEach((geometry3) => geometry3.dispose());
+      materials.forEach((material2) => material2.dispose());
+      textures.forEach((texture) => texture.dispose());
     },
   };
   controller.setOn(false);
@@ -615,9 +615,6 @@ export function createLimiterController(): LimiterController {
 
 // ─────────────────────────────────────────────────────────────── first-person hands
 
-/**
- * Side of the first-person hand rig.
- */
 export type HandSide = 'left' | 'right';
 /**
  * Named hand shapes a scene can ask for with FirstPersonHands.pose():
@@ -642,9 +639,6 @@ export type HandPose =
   | 'hook'
   | 'fist';
 
-/**
- * Data contract used by character geometry and posing.
- */
 export type FirstPersonHands = {
   /** Parent it to the camera (the camera must be in the scene). Camera at Hiro's eye, -Z forward. */
   root: THREE.Object3D;
@@ -997,20 +991,20 @@ function buildHand(side: -1 | 1, own: OwnResource): HandRig {
       );
       // A soft knuckle on the back of each first joint (same skin, just a slightly warmer tone).
       if (index === 0) {
-        const material = new THREE.Mesh(sphere, skinDark);
-        material.scale.set(radius * 0.95, radius * 0.62, radius * 0.95);
-        material.position.set(0, radius * 0.38, 0.001);
-        segmentIndex.add(material);
+        const mesh = new THREE.Mesh(sphere, skinDark);
+        mesh.scale.set(radius * 0.95, radius * 0.62, radius * 0.95);
+        mesh.position.set(0, radius * 0.38, 0.001);
+        segmentIndex.add(mesh);
       }
       if (index === 2) {
-        const material2 = new THREE.Mesh(sphere, nail);
-        material2.scale.set(
+        const part = new THREE.Mesh(sphere, nail);
+        part.scale.set(
           scalarValue2 * 0.78,
           scalarValue2 * 0.26,
           len * 0.36,
         );
-        material2.position.set(0, scalarValue2 * 0.74, -len * 0.6);
-        segmentIndex.add(material2);
+        part.position.set(0, scalarValue2 * 0.74, -len * 0.6);
+        segmentIndex.add(part);
       }
       joints.push(segmentIndex);
       parent = segmentIndex;
@@ -1039,10 +1033,10 @@ function buildHand(side: -1 | 1, own: OwnResource): HandRig {
       parent.add(segmentIndex);
       segmentIndex.add(new THREE.Mesh(seg(len, value, value2), skin));
       if (index === 2) {
-        const material = new THREE.Mesh(sphere, nail);
-        material.scale.set(0.0066, 0.0024, 0.0085);
-        material.position.set(0, 0.0071, -len * 0.58);
-        segmentIndex.add(material);
+        const mesh = new THREE.Mesh(sphere, nail);
+        mesh.scale.set(0.0066, 0.0024, 0.0085);
+        mesh.position.set(0, 0.0071, -len * 0.58);
+        segmentIndex.add(mesh);
       }
       thumb.push(segmentIndex);
       parent = segmentIndex;
@@ -1105,9 +1099,6 @@ const blendOf = (state: Shape): Blend => ({
   thumb: [...state.thumb],
   at: new THREE.Vector3().fromArray(state.at),
 });
-/**
- * Apply the existing interpolation curve without changing its timing or bounds.
- */
 function damp(secondEntry: Blend, to: Shape, blendFactor: number) {
   secondEntry.f.forEach((xPosition, index) => {
     for (let segmentIndex = 0; segmentIndex < 3; segmentIndex++)
